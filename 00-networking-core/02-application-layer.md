@@ -534,14 +534,14 @@ sequenceDiagram
     participant B as Browser
     participant S as Server
 
-    Note over B,S: First visit — no cookie yet
-    B->>S: GET /index.html HTTP/1.1\n(no Cookie header)
-    S-->>B: HTTP/1.1 200 OK\nSet-Cookie: session_id=a3f9b2; Path=/; HttpOnly
+    Note over B,S: First visit - no cookie yet
+    B->>S: GET /index.html HTTP/1.1 (no Cookie header)
+    S-->>B: HTTP/1.1 200 OK + Set-Cookie: session_id=a3f9b2
     Note over B: Browser stores cookie in cookie file
 
-    Note over B,S: Subsequent request — cookie attached
-    B->>S: GET /dashboard HTTP/1.1\nCookie: session_id=a3f9b2
-    S-->>B: HTTP/1.1 200 OK\n(personalized response)
+    Note over B,S: Subsequent request - cookie attached
+    B->>S: GET /dashboard HTTP/1.1 + Cookie: session_id=a3f9b2
+    S-->>B: HTTP/1.1 200 OK (personalized response)
     Note over S: Server reads session_id, looks up user session
 ```
 
