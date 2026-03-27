@@ -2,6 +2,14 @@
 
 Production-grade command reference for Senior SREs. Extracted and synthesized from the full knowledge base (sections 00–11), covering 51 tools across Linux networking, packet analysis, DNS, TLS, firewalls, eBPF, Kubernetes, and cloud CLIs.
 
+Each part is also available as a standalone file under [`12-command-cheatsheet/`](./12-command-cheatsheet/):
+
+| Part | File | Tools |
+|------|------|-------|
+| Part 1 — Linux Network Core | [01-linux-network-core.md](./12-command-cheatsheet/01-linux-network-core.md) | `ip`, `ss`, `tc`, `ethtool`, `bridge`, `conntrack`, `nstat`, `sysctl`, `ping`, `mtr`, `traceroute`, `arp`, `nc`, `socat`, `nmap`, `iperf3`, `nsenter` |
+| Part 2 — Capture / DNS / HTTP / TLS / Firewall | [02-capture-dns-http-tls-firewall.md](./12-command-cheatsheet/02-capture-dns-http-tls-firewall.md) | `tcpdump`, `tshark`, `dig`, `nslookup`, `host`, `resolvectl`, `curl`, `wget`, `openssl`, `iptables`, `ip6tables`, `nft`, `ipset` |
+| Part 3 — eBPF / Kubernetes / Cloud / Container | [03-ebpf-kubernetes-cloud-container.md](./12-command-cheatsheet/03-ebpf-kubernetes-cloud-container.md) | `bpftool`, `bpftrace`, `perf`, `strace`, `lsof`, `kubectl`, `istioctl`, `cilium`, `hubble`, `aws`, `az`, `docker`, `crictl`, `dmesg`, `journalctl`, `systemctl`, `vtysh`, `trivy`, `vault` |
+
 ---
 
 ## How to Use This Cheatsheet
