@@ -1,5 +1,32 @@
 # Linux Routing and Policy Routing
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Linux Routing: Route Lookup Algorithm](#linux-routing-route-lookup-algorithm)
+  - [Longest Prefix Match](#longest-prefix-match)
+  - [Route Attributes](#route-attributes)
+- [Policy Routing: The Routing Policy Database (RPDB)](#policy-routing-the-routing-policy-database-rpdb)
+  - [Three Built-in Tables](#three-built-in-tables)
+- [Source-Based Routing: Multi-Homed Server](#source-based-routing-multi-homed-server)
+  - [Configuring Source-Based Routing](#configuring-source-based-routing)
+  - [fwmark-Based Routing (Used by Kubernetes/VPNs)](#fwmark-based-routing-used-by-kubernetesvpns)
+- [VRF: Virtual Routing and Forwarding](#vrf-virtual-routing-and-forwarding)
+- [ECMP: Equal-Cost Multi-Path Routing](#ecmp-equal-cost-multi-path-routing)
+  - [Hash-Based Flow Selection](#hash-based-flow-selection)
+  - [Resilient ECMP (Kernel 5.12+)](#resilient-ecmp-kernel-512)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Traffic Taking Wrong Path in Multi-Homed Server](#scenario-traffic-taking-wrong-path-in-multi-homed-server)
+- [Failure Modes](#failure-modes)
+- [Debugging Commands Reference](#debugging-commands-reference)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Linux routing is more powerful and more complex than most engineers realize. Beyond the basic "ip route show" there's a Policy Routing Database (RPDB) with 253 routing tables, source-based routing, VRF isolation, and ECMP with resilient hashing. When traffic takes an unexpected path on a multi-homed server, understanding the RPDB is the only way to diagnose it. This file covers the full routing architecture with production scenarios for multi-homed servers, VRF isolation, and ECMP failover.

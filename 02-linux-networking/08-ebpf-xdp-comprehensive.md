@@ -1,5 +1,40 @@
 # eBPF and XDP: Programmable Kernel Networking
 
+## Table of Contents
+
+- [Overview](#overview)
+- [BPF Program Types for Networking](#bpf-program-types-for-networking)
+  - [BPF Program Types Reference](#bpf-program-types-reference)
+- [BPF Maps: Sharing State Between Programs and Userspace](#bpf-maps-sharing-state-between-programs-and-userspace)
+  - [Map Types](#map-types)
+- [BPF Verifier: The Safety Gate](#bpf-verifier-the-safety-gate)
+  - [Common Verifier Rejection Reasons](#common-verifier-rejection-reasons)
+- [XDP: eXpress Data Path](#xdp-express-data-path)
+  - [XDP Return Codes](#xdp-return-codes)
+  - [XDP Modes](#xdp-modes)
+  - [Production XDP: DDoS Mitigation Pattern](#production-xdp-ddos-mitigation-pattern)
+- [TC eBPF: clsact Qdisc](#tc-ebpf-clsact-qdisc)
+  - [TC eBPF Return Codes](#tc-ebpf-return-codes)
+  - [Cilium's Use of TC eBPF](#ciliums-use-of-tc-ebpf)
+- [AF_XDP: Zero-Copy Userspace Processing](#af_xdp-zero-copy-userspace-processing)
+  - [Architecture](#architecture)
+  - [Four Ring Buffers](#four-ring-buffers)
+  - [Zero-Copy vs Copy Mode](#zero-copy-vs-copy-mode)
+- [bpftrace: One-Liners for Network Debugging](#bpftrace-one-liners-for-network-debugging)
+- [CO-RE: Compile Once, Run Everywhere](#co-re-compile-once-run-everywhere)
+- [Cilium: eBPF-Native Kubernetes Networking](#cilium-ebpf-native-kubernetes-networking)
+  - [Key Cilium eBPF Programs](#key-cilium-ebpf-programs)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: XDP Program Dropping Legitimate Traffic](#scenario-xdp-program-dropping-legitimate-traffic)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 eBPF has fundamentally changed Linux networking. Cilium replaces iptables and kube-proxy entirely with eBPF. Cloudflare uses XDP to drop DDoS traffic at 100Gbps. Facebook uses AF_XDP for high-speed packet processing. A Senior SRE who has only used iptables is already behind the curve. This file covers the complete eBPF networking stack: program types, maps, the verifier, XDP for in-kernel packet processing, AF_XDP for near-zero-copy userspace processing, and bpftrace for observability.

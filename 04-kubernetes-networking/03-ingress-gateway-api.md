@@ -1,5 +1,33 @@
 # Ingress and Gateway API
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Ingress Spec](#ingress-spec)
+  - [Ingress Traffic Flow](#ingress-traffic-flow)
+- [Ingress Controllers: Feature Comparison](#ingress-controllers-feature-comparison)
+- [Ingress Limitations](#ingress-limitations)
+- [Gateway API](#gateway-api)
+  - [Canary Traffic Weighting with HTTPRoute](#canary-traffic-weighting-with-httproute)
+- [HTTPRoute Deep Dive](#httproute-deep-dive)
+- [TLS Termination](#tls-termination)
+  - [At Ingress (Traditional)](#at-ingress-traditional)
+  - [At Gateway (Gateway API)](#at-gateway-gateway-api)
+  - [Traefik-Specific: Built-in ACME](#traefik-specific-built-in-acme)
+- [Traefik IngressRoute CRD](#traefik-ingressroute-crd)
+- [Production Scenario: Canary Deployment Traffic Routing Failure](#production-scenario-canary-deployment-traffic-routing-failure)
+  - [Annotation Approach (NGINX Ingress) — Common Mistakes](#annotation-approach-nginx-ingress-common-mistakes)
+  - [Gateway API Approach (Canonical Solution)](#gateway-api-approach-canonical-solution)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Kubernetes Ingress is the north-south gateway for HTTP/HTTPS traffic entering the cluster. It decouples routing logic (host, path, TLS termination) from individual service LoadBalancers. However, the Ingress spec was intentionally minimal when designed in 2015, and the gaps drove an explosion of controller-specific annotations. Gateway API (SIG-Network, GA in K8s 1.28) is the structured evolution — role-based, expressive, and portable across controllers.

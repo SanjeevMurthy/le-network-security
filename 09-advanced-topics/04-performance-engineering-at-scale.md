@@ -1,5 +1,36 @@
 # Performance Engineering at Scale
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Hardware Offloads](#hardware-offloads)
+  - [TSO: TCP Segmentation Offload](#tso-tcp-segmentation-offload)
+  - [GRO: Generic Receive Offload](#gro-generic-receive-offload)
+  - [LRO vs GRO: Do Not Use LRO](#lro-vs-gro-do-not-use-lro)
+  - [Checksum Offload](#checksum-offload)
+- [RSS: Receive Side Scaling](#rss-receive-side-scaling)
+  - [RPS: Receive Packet Steering (Software RSS)](#rps-receive-packet-steering-software-rss)
+  - [RFS: Receive Flow Steering](#rfs-receive-flow-steering)
+  - [XPS: Transmit Packet Steering](#xps-transmit-packet-steering)
+- [DPDK: Kernel Bypass](#dpdk-kernel-bypass)
+- [Connection Scaling](#connection-scaling)
+  - [Port Range and TIME_WAIT](#port-range-and-time_wait)
+  - [SO_REUSEPORT](#so_reuseport)
+  - [Accept Queue Tuning](#accept-queue-tuning)
+  - [How Nginx Handles 100K Connections](#how-nginx-handles-100k-connections)
+- [Packet Processing Pipeline](#packet-processing-pipeline)
+- [Benchmarking](#benchmarking)
+  - [Tool Reference](#tool-reference)
+  - [Benchmarking Pitfalls](#benchmarking-pitfalls)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Nginx Proxy at 50K RPS Hitting Accept Queue Drops — Tuning Sequence](#nginx-proxy-at-50k-rps-hitting-accept-queue-drops-tuning-sequence)
+- [Performance Benchmarks and Real Numbers](#performance-benchmarks-and-real-numbers)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 Network performance engineering at staff and principal level is the ability to reason about the entire path from wire to application — understanding where each nanosecond goes, which kernel mechanisms are the bottleneck, and which tuning knobs have second-order effects that will hurt you later. The difference between a senior engineer and a staff engineer here is not knowing more sysctl values — it is knowing the mechanical reason behind each value, being able to predict the failure mode when you change it, and designing systems that don't require heroic tuning in the first place.

@@ -1,5 +1,36 @@
 # Zero-Trust Architecture for Kubernetes Microservices
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [1. Workload Identity: SPIFFE/SPIRE](#1-workload-identity-spiffespire)
+  - [2. mTLS with Istio: STRICT PeerAuthentication](#2-mtls-with-istio-strict-peerauthentication)
+  - [3. L7 Authorization: Istio AuthorizationPolicy](#3-l7-authorization-istio-authorizationpolicy)
+  - [4. Policy as Code: OPA Gatekeeper](#4-policy-as-code-opa-gatekeeper)
+  - [5. Kubernetes Network Policies](#5-kubernetes-network-policies)
+  - [6. Ingress: External Traffic](#6-ingress-external-traffic)
+  - [7. Secrets: External Secrets Operator + IRSA](#7-secrets-external-secrets-operator-irsa)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+- [Phased Rollout Strategy](#phased-rollout-strategy)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale (500 services)](#at-10x-scale-500-services)
+- [Security Design](#security-design)
+  - [Zero Trust Principles Applied](#zero-trust-principles-applied)
+  - [SOC 2 Controls Mapping](#soc-2-controls-mapping)
+- [Cost Considerations](#cost-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

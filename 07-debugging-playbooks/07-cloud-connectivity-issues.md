@@ -1,5 +1,28 @@
 # 07: Cloud Connectivity Issues (AWS Focus)
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [AWS Connectivity Layers (What Can Block Traffic)](#aws-connectivity-layers-what-can-block-traffic)
+- [Decision Tree](#decision-tree)
+- [Section 1: Cross-VPC Connectivity](#section-1-cross-vpc-connectivity)
+  - [Step 1: Verify Peering or TGW Connection](#step-1-verify-peering-or-tgw-connection)
+  - [Step 2: Check Route Tables](#step-2-check-route-tables)
+  - [Step 3: Check Security Groups](#step-3-check-security-groups)
+  - [Step 4: Check NACLs (Stateless — Both Directions)](#step-4-check-nacls-stateless-both-directions)
+  - [Step 5: VPC Flow Logs Analysis](#step-5-vpc-flow-logs-analysis)
+- [Section 2: Private Subnet to Internet (NAT Gateway)](#section-2-private-subnet-to-internet-nat-gateway)
+  - [Common Architecture Check](#common-architecture-check)
+- [Section 3: Direct Connect / VPN](#section-3-direct-connect-vpn)
+  - [Direct Connect Debugging](#direct-connect-debugging)
+  - [VPN Debugging](#vpn-debugging)
+- [Section 4: PrivateLink / VPC Endpoints](#section-4-privatelink-vpc-endpoints)
+- [Azure Connectivity Notes](#azure-connectivity-notes)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: EC2 instances or containers cannot reach resources in another VPC, private subnet instances cannot reach the internet, Direct Connect or VPN connectivity is lost, PrivateLink endpoints are not resolving or unreachable, or cross-account connectivity fails.

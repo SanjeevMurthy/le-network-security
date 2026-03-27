@@ -1,5 +1,38 @@
 # API Gateway Architecture for Large-Scale Microservices
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [1. Deployment Pattern: Edge Gateway + BFF + Sidecar](#1-deployment-pattern-edge-gateway-bff-sidecar)
+  - [2. Authentication at the Gateway](#2-authentication-at-the-gateway)
+  - [3. Rate Limiting: Sliding Window with Redis](#3-rate-limiting-sliding-window-with-redis)
+  - [4. Routing and Service Discovery](#4-routing-and-service-discovery)
+  - [5. Circuit Breaking and Retry Policy](#5-circuit-breaking-and-retry-policy)
+  - [6. mTLS from Gateway to Backend](#6-mtls-from-gateway-to-backend)
+  - [7. Observability: Request ID and Trace Propagation](#7-observability-request-id-and-trace-propagation)
+- [Technology Comparison](#technology-comparison)
+  - [Gateway Technology Trade-offs](#gateway-technology-trade-offs)
+  - [Kong vs Envoy Decision](#kong-vs-envoy-decision)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale (1M RPS)](#at-10x-scale-1m-rps)
+- [Security Design](#security-design)
+  - [Gateway Security Controls](#gateway-security-controls)
+  - [Gateway API Key Security](#gateway-api-key-security)
+- [Cost Considerations](#cost-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

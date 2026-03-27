@@ -1,5 +1,33 @@
 # Network Segmentation
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Why Segmentation Matters](#why-segmentation-matters)
+- [Macro-Segmentation](#macro-segmentation)
+  - [VLANs (Virtual LANs)](#vlans-virtual-lans)
+  - [VPC Subnets](#vpc-subnets)
+  - [Separate VPCs per Environment](#separate-vpcs-per-environment)
+- [Micro-Segmentation](#micro-segmentation)
+  - [Kubernetes NetworkPolicy](#kubernetes-networkpolicy)
+- [PCI-DSS Network Segmentation](#pci-dss-network-segmentation)
+- [Zero-Trust Network Access (ZTNA)](#zero-trust-network-access-ztna)
+- [Istio Service Mesh as L7 Segmentation](#istio-service-mesh-as-l7-segmentation)
+- [Segmentation Validation](#segmentation-validation)
+  - [Penetration Testing](#penetration-testing)
+  - [Automated Validation with NetworkPolicy](#automated-validation-with-networkpolicy)
+  - [Blast Radius Simulation](#blast-radius-simulation)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Network segmentation divides a network into isolated zones to limit the blast radius of a security breach. If an attacker compromises one segment, they should not be able to reach others. This is the foundational principle behind zero-trust architectures: "never trust, always verify, and assume breach."

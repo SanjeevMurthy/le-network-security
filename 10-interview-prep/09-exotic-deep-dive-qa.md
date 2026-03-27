@@ -1,5 +1,20 @@
 # Exotic and Deep Dive Q&A — Kernel Internals and Advanced TCP/IP
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Walk through the complete path of an incoming packet from NIC to userspace socket buffer. Include interrupt handling, NAPI, sk_buff, all kernel subsystems.](#q-walk-through-the-complete-path-of-an-incoming-packet-from-nic-to-userspace-socket-buffer-include-interrupt-handling-napi-sk_buff-all-kernel-subsystems)
+- [Q: Explain NAPI and interrupt coalescing. A high-traffic server has high CPU from NIC interrupts despite low packet loss. How do you tune it?](#q-explain-napi-and-interrupt-coalescing-a-high-traffic-server-has-high-cpu-from-nic-interrupts-despite-low-packet-loss-how-do-you-tune-it)
+- [Q: Compare TCP BBR and TCP CUBIC. A backend service on a WAN link (100ms RTT, 1% packet loss) achieves only 10% of available bandwidth. Would switching to BBR help?](#q-compare-tcp-bbr-and-tcp-cubic-a-backend-service-on-a-wan-link-100ms-rtt-1-packet-loss-achieves-only-10-of-available-bandwidth-would-switching-to-bbr-help)
+- [Q: Explain conntrack table internals. Production is logging "nf_conntrack: table full." Walk through diagnosis, remediation, and when to bypass conntrack entirely.](#q-explain-conntrack-table-internals-production-is-logging-nf_conntrack-table-full-walk-through-diagnosis-remediation-and-when-to-bypass-conntrack-entirely)
+- [Q: Explain AF_XDP (XDP Sockets) and zero-copy packet processing. When would you use AF_XDP instead of standard sockets?](#q-explain-af_xdp-xdp-sockets-and-zero-copy-packet-processing-when-would-you-use-af_xdp-instead-of-standard-sockets)
+- [Q: What is the SO_REUSEPORT socket option, how does it work, and what problem does it solve for high-performance servers?](#q-what-is-the-so_reuseport-socket-option-how-does-it-work-and-what-problem-does-it-solve-for-high-performance-servers)
+- [Q: What does the BPF verifier check and why does it reject programs? What are the most common reasons a production eBPF program fails to load?](#q-what-does-the-bpf-verifier-check-and-why-does-it-reject-programs-what-are-the-most-common-reasons-a-production-ebpf-program-fails-to-load)
+- [Q: How does Cilium's eBPF datapath replace iptables? Walk through the actual BPF hook points and what they replace.](#q-how-does-ciliums-ebpf-datapath-replace-iptables-walk-through-the-actual-bpf-hook-points-and-what-they-replace)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 This section contains questions that appear in final-round interviews at infrastructure-focused companies (Cloudflare, Meta, Google, Fastly, kernel-focused startups). They test whether you understand how the system works at the source-code level, not just how to use it. If you can answer these credibly, you demonstrate that you have read kernel source, studied networking internals, or built systems at a level where these details mattered. Source material: `09_Exotic_and_Deep_Dive_Questions.md` (extended). See `09-advanced-topics/` for eBPF and kernel internals deep dives.

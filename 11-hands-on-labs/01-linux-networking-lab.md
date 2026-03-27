@@ -1,5 +1,41 @@
 # Lab 01: Linux Networking
 
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [Prerequisites](#prerequisites)
+- [Debugging Methodology Alignment](#debugging-methodology-alignment)
+- [Lab 1A: Build a Network Namespace Bridge from Scratch](#lab-1a-build-a-network-namespace-bridge-from-scratch)
+  - [Setup: Create the Bridge and Namespaces](#setup-create-the-bridge-and-namespaces)
+  - [Setup: Create veth Pairs and Attach to Bridge](#setup-create-veth-pairs-and-attach-to-bridge)
+  - [Verify: Connectivity Between Namespaces](#verify-connectivity-between-namespaces)
+  - [Setup: Enable Internet Access (NAT/MASQUERADE)](#setup-enable-internet-access-natmasquerade)
+  - [Inspect the Bridge Forwarding Database](#inspect-the-bridge-forwarding-database)
+  - [Cleanup](#cleanup)
+- [Lab 1B: Reproduce and Fix Conntrack Table Exhaustion](#lab-1b-reproduce-and-fix-conntrack-table-exhaustion)
+  - [Background](#background)
+  - [Setup: Verify Current Conntrack State](#setup-verify-current-conntrack-state)
+  - [The Break: Reduce nf_conntrack_max to 100](#the-break-reduce-nf_conntrack_max-to-100)
+  - [Symptoms: Flood Connections to Trigger Exhaustion](#symptoms-flood-connections-to-trigger-exhaustion)
+  - [Diagnosis: Confirm Table Exhaustion](#diagnosis-confirm-table-exhaustion)
+  - [Root Cause](#root-cause)
+  - [Fix](#fix)
+  - [Verify](#verify)
+  - [Cleanup](#cleanup)
+- [Lab 1C: Debug iptables Blocking with TRACE](#lab-1c-debug-iptables-blocking-with-trace)
+  - [Setup: Start a Test Service](#setup-start-a-test-service)
+  - [The Break: Add a DROP Rule](#the-break-add-a-drop-rule)
+  - [Symptoms](#symptoms)
+  - [Diagnosis: Identify the Blocking Rule with TRACE](#diagnosis-identify-the-blocking-rule-with-trace)
+  - [Root Cause](#root-cause)
+  - [Fix](#fix)
+  - [Verify](#verify)
+  - [Cleanup](#cleanup)
+- [Summary: Linux Networking Lab Checklist](#summary-linux-networking-lab-checklist)
+- [Interview Discussion Points](#interview-discussion-points)
+
+---
+
 ## Learning Objectives
 
 - Build container-style networking from scratch using Linux primitives (network namespaces, veth pairs, bridges)

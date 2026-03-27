@@ -1,5 +1,32 @@
 # Container Security
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Image Hardening: The Attack Surface Reduction Stack](#image-hardening-the-attack-surface-reduction-stack)
+  - [Base Image Comparison](#base-image-comparison)
+- [Image Scanning: Trivy vs Grype vs Snyk vs ECR](#image-scanning-trivy-vs-grype-vs-snyk-vs-ecr)
+- [Runtime Security: Falco and Tetragon](#runtime-security-falco-and-tetragon)
+  - [Falco: Kernel Syscall Monitoring](#falco-kernel-syscall-monitoring)
+  - [Tetragon: eBPF Enforcement](#tetragon-ebpf-enforcement)
+- [Pod Security Standards (PSA)](#pod-security-standards-psa)
+- [seccomp: System Call Filtering](#seccomp-system-call-filtering)
+- [AppArmor: Mandatory Access Control](#apparmor-mandatory-access-control)
+- [Kyverno: Policy Enforcement](#kyverno-policy-enforcement)
+  - [Core Security Policies](#core-security-policies)
+  - [OPA Gatekeeper Alternative](#opa-gatekeeper-alternative)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Cryptominer Detected: Falco Alert to Kill Pod Workflow](#cryptominer-detected-falco-alert-to-kill-pod-workflow)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Container security is defense-in-depth across the entire artifact lifecycle. The threat model is straightforward: if an attacker exploits a vulnerability in a container running as root with no seccomp profile and a writable filesystem, they may achieve host escape and full node compromise. The controls at each layer directly constrain the blast radius. Build-time controls reduce the attack surface (minimal images, no CVEs). Deploy-time controls limit privilege (non-root, no capabilities, seccomp). Admission controls enforce these at the cluster gate. Runtime controls detect when something that bypassed all other layers is actively executing.

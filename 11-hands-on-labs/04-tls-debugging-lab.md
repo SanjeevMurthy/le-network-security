@@ -1,5 +1,48 @@
 # Lab 04: TLS Debugging
 
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [Prerequisites](#prerequisites)
+- [Debugging Methodology Alignment](#debugging-methodology-alignment)
+- [Lab 4A: Build Your Own PKI (CA -> Intermediate -> Leaf Cert)](#lab-4a-build-your-own-pki-ca-intermediate-leaf-cert)
+  - [Setup: Create Root CA](#setup-create-root-ca)
+  - [Setup: Create Intermediate CA](#setup-create-intermediate-ca)
+  - [Setup: Create Server (Leaf) Certificate](#setup-create-server-leaf-certificate)
+  - [Setup: Configure nginx with TLS](#setup-configure-nginx-with-tls)
+  - [Verify: Test the Full PKI Chain](#verify-test-the-full-pki-chain)
+- [Lab 4B: Reproduce and Debug Certificate Expiry](#lab-4b-reproduce-and-debug-certificate-expiry)
+  - [Setup: Create a Short-Lived (Already Expired) Certificate](#setup-create-a-short-lived-already-expired-certificate)
+  - [The Break: Deploy Expired Cert to nginx](#the-break-deploy-expired-cert-to-nginx)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Fix: Renew the Certificate](#fix-renew-the-certificate)
+  - [Verify](#verify)
+- [Lab 4C: Debug Chain of Trust Failure (Missing Intermediate)](#lab-4c-debug-chain-of-trust-failure-missing-intermediate)
+  - [The Break: Deploy Leaf Cert Only (No Intermediate in Chain)](#the-break-deploy-leaf-cert-only-no-intermediate-in-chain)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Root Cause](#root-cause)
+  - [Fix: Add Intermediate to nginx ssl_certificate](#fix-add-intermediate-to-nginx-ssl_certificate)
+  - [Verify](#verify)
+- [Lab 4D: mTLS Setup and Debugging](#lab-4d-mtls-setup-and-debugging)
+  - [Setup: Create Client CA and Client Certificate](#setup-create-client-ca-and-client-certificate)
+  - [Setup: Configure nginx for mTLS (Correct Setup First)](#setup-configure-nginx-for-mtls-correct-setup-first)
+  - [Verify: Correct mTLS Works](#verify-correct-mtls-works)
+  - [The Break: Use Wrong CA for Client Certificate](#the-break-use-wrong-ca-for-client-certificate)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Root Cause](#root-cause)
+  - [Fix Option A: Sign Client Cert with the Correct CA](#fix-option-a-sign-client-cert-with-the-correct-ca)
+  - [Fix Option B: Add the Rogue CA to nginx's Trusted CA Bundle](#fix-option-b-add-the-rogue-ca-to-nginxs-trusted-ca-bundle)
+  - [Verify](#verify)
+  - [Cleanup](#cleanup)
+- [Summary: TLS Debugging Lab Checklist](#summary-tls-debugging-lab-checklist)
+- [Quick Reference: openssl s_client Cheatsheet](#quick-reference-openssl-s_client-cheatsheet)
+- [Interview Discussion Points](#interview-discussion-points)
+
+---
+
 ## Learning Objectives
 
 - Build a complete PKI chain (root CA -> intermediate CA -> leaf cert) using only openssl

@@ -1,5 +1,43 @@
 # Lab 02: Kubernetes Networking
 
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [Prerequisites](#prerequisites)
+- [Debugging Methodology Alignment](#debugging-methodology-alignment)
+- [Lab 2A: Trace CNI Pod-to-Pod Packet Path](#lab-2a-trace-cni-pod-to-pod-packet-path)
+  - [Setup: Deploy Two Pods on Different Nodes](#setup-deploy-two-pods-on-different-nodes)
+  - [Trace: Map the Network Path](#trace-map-the-network-path)
+  - [Verify with tcpdump at Each Hop](#verify-with-tcpdump-at-each-hop)
+- [Lab 2B: Reproduce and Fix ndots:5 DNS Latency](#lab-2b-reproduce-and-fix-ndots5-dns-latency)
+  - [Background](#background)
+  - [Setup and Baseline Measurement](#setup-and-baseline-measurement)
+  - [The Break: Observe the Actual DNS Queries](#the-break-observe-the-actual-dns-queries)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Fix Option 1: Set ndots:1 in Pod Spec](#fix-option-1-set-ndots1-in-pod-spec)
+  - [Fix Option 2: Use FQDN with Trailing Dot](#fix-option-2-use-fqdn-with-trailing-dot)
+  - [Before/After Comparison](#beforeafter-comparison)
+- [Lab 2C: NetworkPolicy Break/Fix — Missing DNS Egress](#lab-2c-networkpolicy-breakfix-missing-dns-egress)
+  - [Setup: Deploy Frontend and Backend](#setup-deploy-frontend-and-backend)
+  - [The Break: Apply Broken NetworkPolicy](#the-break-apply-broken-networkpolicy)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Root Cause](#root-cause)
+  - [Fix](#fix)
+  - [Verify](#verify)
+  - [Cleanup](#cleanup)
+- [Lab 2D: kube-proxy iptables Rules Inspection](#lab-2d-kube-proxy-iptables-rules-inspection)
+  - [Setup: Deploy a ClusterIP Service](#setup-deploy-a-clusterip-service)
+  - [Inspect kube-proxy iptables Rules](#inspect-kube-proxy-iptables-rules)
+  - [IPVS Mode (Alternative)](#ipvs-mode-alternative)
+  - [Verify Load Distribution](#verify-load-distribution)
+  - [Cleanup](#cleanup)
+- [Summary: Kubernetes Networking Lab Checklist](#summary-kubernetes-networking-lab-checklist)
+- [Interview Discussion Points](#interview-discussion-points)
+
+---
+
 ## Learning Objectives
 
 - Trace the exact packet path for pod-to-pod traffic across nodes — every hop, every interface

@@ -1,5 +1,32 @@
 # Network Namespaces: Container Network Isolation
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Namespace Types and Composition](#namespace-types-and-composition)
+  - [What Network Namespace Isolation Means](#what-network-namespace-isolation-means)
+- [Creating and Managing Namespaces](#creating-and-managing-namespaces)
+  - [Manual Namespace Operations](#manual-namespace-operations)
+  - [Building a Namespace with Connectivity](#building-a-namespace-with-connectivity)
+- [Container Networking: How Docker and containerd Connect Namespaces](#container-networking-how-docker-and-containerd-connect-namespaces)
+  - [Docker Network Bootstrap Sequence](#docker-network-bootstrap-sequence)
+  - [How containerd/CRI Creates Pod Namespaces](#how-containerdcri-creates-pod-namespaces)
+- [Kubernetes Pod netns: The Pause Container Model](#kubernetes-pod-netns-the-pause-container-model)
+- [Debugging Containers by Entering Namespaces](#debugging-containers-by-entering-namespaces)
+  - [nsenter: The Essential Tool](#nsenter-the-essential-tool)
+  - [ip netns exec for Named Namespaces](#ip-netns-exec-for-named-namespaces)
+  - [kubectl debug and netshoot](#kubectl-debug-and-netshoot)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Container Can't Resolve DNS](#scenario-container-cant-resolve-dns)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Network namespaces are the kernel mechanism that makes container networking possible. Every Docker container, Kubernetes pod, and network-isolated process runs in a separate network namespace — a complete, private copy of the networking stack. Understanding namespaces at the kernel level lets you debug container networking issues that are invisible from the outside: you enter the namespace and use the same tools you'd use on a real host. This file covers the implementation, composition with other namespace types, Docker/Kubernetes integration, and production debugging techniques.

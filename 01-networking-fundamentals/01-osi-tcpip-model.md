@@ -1,5 +1,30 @@
 # OSI and TCP/IP Model — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [OSI vs TCP/IP Model Mapping](#osi-vs-tcpip-model-mapping)
+- [Layer-by-Layer: Tools, Failures, and First Response](#layer-by-layer-tools-failures-and-first-response)
+  - [Layer 1 — Physical](#layer-1-physical)
+  - [Layer 2 — Data Link](#layer-2-data-link)
+  - [Layer 3 — Network](#layer-3-network)
+  - [Layer 4 — Transport](#layer-4-transport)
+  - [Layer 5 — Session](#layer-5-session)
+  - [Layer 6 — Presentation](#layer-6-presentation)
+  - [Layer 7 — Application](#layer-7-application)
+- [Packet Walk: HTTP Request from Browser to Server](#packet-walk-http-request-from-browser-to-server)
+- [How Production Failures Present Per Layer](#how-production-failures-present-per-layer)
+- [Production Failure Modes](#production-failure-modes)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Debugging Guide: Layer-by-Layer Checklist](#debugging-guide-layer-by-layer-checklist)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 The OSI and TCP/IP models are not memorization exercises — they are **debugging frameworks**. When production fails, the model tells you *which layer to interrogate first* and *which tools apply*. A senior SRE doesn't recite layers; they use layer boundaries to scope a problem from "is the physical link up?" to "is the application interpreting the response correctly?" in under 60 seconds.

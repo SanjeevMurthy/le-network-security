@@ -1,0 +1,1818 @@
+# Extracted: Network 2.pdf (21 pages)
+
+
+---PAGE 1---
+How Processes Communicate
+Let's have a quick look at the technical aspect of how applications communicate
+We'll cover the following
+• Program vs. Process vs. Thread
+• Sockets
+• Addressing
+• Quick Quiz!
+Program vs. Process vs. Thread #
+We’ve loosely used the term ‘process’ pretty much interchangeably with the
+term ‘application’ in the last few chapters. Now, let’s now get a finer
+definition.
+A program is simply an executable file. An application such as MS Word
+is one example.
+A process is any currently running instance of a program. So one
+program can have several copies of it running at once. One MS Word
+program can have multiple open windows.
+A thread is a lightweight process. One process can have multiple running
+threads. The difference between threads and processes is that threads do
+lightweight singular jobs.
+Here’s the MS Word example illustrated:
+A Program:
+MS Word
+A Process:
+Editing a
+document
+A Process:
+Creating a new
+document
+A Process:
+Opening a
+Document
+Thread 1:
+Saves images
+Thread 2:
+Handles fonts
+Thread 1: Sets
+up page from
+template
+Thread 2:
+Loads default
+fonts
+Thread 1: Gets
+Document from
+memory
+Examples of programs, processes, and threads
+Processes that exist on the same machine can and do regularly communicate
+with each other following the rules of the machine’s OS. However, we are
+more interested in how processes that run on different machines
+communicate.
+Sockets #
+Processes on different machines send messages to each other through the
+computer network. The interface between a process and the computer
+network is called a socket. Note that sockets do not have anything to do with
+hardware – they are software interfaces.
+Processes simply direct their messages to sockets and don’t worry about it
+after that.
+Addressing #
+Messages have to be addressed to a certain application on a certain end
+H
+i i d
+i h
+i ll
+illi
+f
+d
+d h
+d
+d
+system. How is it done with potentially millions of end systems and hundreds
+of applications on each of them?
+Well, it’s done via addressing constructs like IP addresses and ports. While
+both were touched upon previously, we would like to reintroduce ports a bit
+more in-depth.
+Ports
+Since every end-system may have a number of
+applications running, ports are used to address the
+packet to specific applications. As stated previously,
+some ports are reserved such as port 80 for HTTP
+and port 443 for HTTPS.
+An Analogy: Post
+Continuing with our post analogy, you can think of
+an end-system like a large apartment complex. Each
+apartment in the complex is an application.
+The mailing address of the complex is like the IP
+address of the end-system. All running applications
+share it, just like all apartments share the street
+address. Each application running on a host has a
+different port number, just like each apartment has a
+different apartment number.
+Ephemeral Ports
+The port that an application will use is usually
+predefined by its application developers. So an
+application can have port 3000 reserved for it. But
+what if several instances (processes) of an
+application are running at once? How will the
+system address those processes?
+Well, the answer lies in Ephemeral Ports. Different port numbers are
+dynamically generated for each instance of an application. The port is freed
+once the application is done using it.
+Furthermore, server processes need to have well defined and fixed port
+numbers so that clients can connect to them in a systematic and predictable
+way. However, clients don’t need to have reserved ports. They can use
+ephemeral ports. Servers can also use ephemeral ports in addition to the
+reserved ones. For instance, a client makes the initial connection to the server
+on a well-known port and the rest of the communication is carried out by
+connecting to an ephemeral port on the server.
+Quick Quiz! #
+1
+A process is a running instance of a program
+COMPLETED 0%
+1 of 3
+A) True
+B) False
+Now that we are familiar with some basic application layer terms, in the next
+lesson, let’s get into the finer details of some key application layer protocols!
+
+---PAGE 2---
+HTTP: The Basics
+Welcome to the core of this course! We are }nally getting started with protocols, the }rst
+of which is HTTP.
+We'll cover the following
+• Introduction
+• Objects
+• The Anatomy of a URL
+• HTTP
+• HTTP Requires Lower Layer Reliability
+• Types of HTTP Connections
+• Non-persistent HTTP
+• Persistent HTTP
+• Quick Quiz!
+Introduction #
+The Internet was an obscure set of methods for file transfer and email used by
+academics and researchers. The World Wide Web was invented to allow the
+European research organization CERN to present documents linked by
+hypertexts. All of that changed though when it caught the public’s eye and
+popularized the Internet. The web was different from other services such as
+cable television, because it served content based on demand. People could
+watch what they wanted. HTTP or HyperText Transfer Protocol is the
+protocol at the core of the web.
+Objects #
+Web pages are objects that consist of other objects.
+An object is simply a file like an HTML file, PNG file, MP3 file, etc.
+Each object has a URL
+The base object of a web page is often an HTML file that has references
+to other objects by making requests for them via their URL.
+📝 Note: HTML or HyperText Markup Language is the standard
+markup language to build webpages.
+The Anatomy of a URL #
+A URL, or Universal Resource Locator, is used to locate files that exist on
+servers. URLs consist of the following parts:
+Protocol in use
+The hostname of the server
+The location of the file
+Arguments to the file
+http://www.educative.io/allourses/course.php?auth=44&user=5
+1 of 5
+HTTP #
+Let’s get back into HTTP. It’s a client-server protocol that specifies how Web
+clients request Web pages from Web servers and how Web servers send them.
+Remember the following diagram from the lesson on Network Application
+Architectures? Well, it was actually outlining HTTP in general.
+The orange arrow represents an HTTP request
+The blue arrow represents an HTTP response
+Cli
+t
+S
+Show me a video on YouTube
+Sure, here it is.
+Client
+Server
+Clients obtain content (such as videos) and/or services (such as an online calculator) from servers.
+The first message is called an HTTP request and the second one an HTTP
+response. There’s a whole class of protocols that are considered requestresponse protocols. HTTP is one of them. We will look in more detail at the
+HTTP request message in the next lesson and response after that!
+Note that HTTP is a stateless protocol: servers do not store any information
+about clients by default. So if a client requests the same object multiple times
+in a row, the server would send it and would not know that the same client is
+requesting the same object repeatedly.
+HTTP Requires Lower Layer Reliability #
+Application layer protocols rely on underlying transport layer protocols
+called UDP (User Datagram Protocol) and TCP (Transmission Control
+Protocol).
+For now, all you need to know is that TCP ensures that messages are
+always delivered. Messages get delivered in the order that they are sent.
+UDP does not ensure that messages get delivered. This means that
+some messages may get dropped and so never be received.
+HTTP uses TCP as its underlying transport protocol so that messages are
+guaranteed to get delivered in order. This allows the application to
+function without having to build any extra reliability as it would’ve had
+to with UDP.
+This sort of reliance on other layers for certain jobs is one of the key
+advantages of a layered architecture!
+TCP is connection-oriented, meaning a connection has to be initiated
+with servers using a series of starting messages.
+Once the connection has been made, the client exchanges messages with
+the server until the connection is officially closed by sending a few
+ending messages.
+Types of HTTP Connections #
+There are two kinds of HTTP connections:
+Non-persistent HTTP connections
+Persistent HTTP connections
+These two kinds of HTTP connections use TCP differently. Let’s discuss the key
+advantages and disadvantages of each.
+Non-persistent HTTP #
+Non-persistent HTTP connections use one TCP connection per request.
+Assume a client requests the base HTML file of a web page. Here is what
+happens:
+1. The client initiates a TCP connection with a server
+2. The client sends an HTTP request to the server
+3. The server retrieves the requested object from its storage and sends it
+4. The client receives the object which in this case is an HTML file. If that
+file has references to more objects, steps 1-4 are repeated for each of
+those
+5. The server closes the TCP connection
+For each HTTP request, more requests tend to follow, as well to fetch images,
+javascript files, CSS files, and other objects.
+The underlying TCP connection requires three TCP messages are sent between
+the client and server. Similarly, when the connection is closed, three TCP
+messages are sent back and forth between the client and server.
+Persistent HTTP #
+An HTTP session typically involves multiple HTTP request-response pairs, for
+which separate TCP connections are established and then torn down between
+the same client and server. This is inefficient. Later on, Persistent HTTP was
+developed, which used a single client-server TCP connection for all the HTTP
+request-responses for a session.
+Typically, if there have been no requests for a while, the server closes the
+connection. The duration of time before the server closes the connection is
+
+---PAGE 3---
+configurable.
+Quick Quiz! #
+1
+What does HTTP stand for?
+COMPLETED 0%
+1 of 8
+A) HyperText Transmission Protocol
+B) HyperTime Transmission Plan
+C) HyperText Transfer Protocol
+D) HandleTransmission Transfer Plan
+In the next lesson, we’ll discuss HTTP request messages in more detail.
+HTTP: Request Messages
+HTTP request messages are a pivotal part of the protocol. Let's have a close look at
+them!
+We'll cover the following
+• Introduction
+• HTTP Request Messages
+• The Anatomy of an HTTP Request Line
+• HTTP Methods
+• URL
+• Version
+• The Anatomy of HTTP Header Lines
+Introduction #
+There are two types of HTTP messages as discussed previously:
+HTTP request messages
+HTTP response messages
+We’ll study request messages in this one.
+HTTP Request Messages #
+Let’s look at request messages first. Here is an example of a typical HTTP
+message:
+1
+2
+3
+4
+5
+6
+7
+GET /path/to/file/index.html HTTP/1.1
+Host: www.educative.io
+Connection: close
+User-agent: Mozilla/5.0
+Accept-language: fr
+Accept: text/html
+an HTTP request message
+It should be noted that,
+HTTP messages are in plain ASCII text
+Each line of the message ends with two control characters: a carriage
+return and a line feed: \r\n .
+The last line of the message also ends with a carriage return and a
+line feed!
+This particular message has 6 lines, but HTTP messages can have one or
+as many lines as needed.
+The first line is called the request line while the rest are called header
+lines.
+The Anatomy of an HTTP Request Line #
+The HTTP request line is followed by an HTTP header. We’ll look at the
+request line first. The request line consists of three parts:
+Method
+URL
+Version
+Let’s discuss each.
+GET path/to/file HTTP 1.1
+HTTP request line
+1 of 4
+HTTP Methods #
+HTTP methods tell the server what to do. There are a lot of HTTP methods but
+we’ll study the most common ones: GET , POST , HEAD , PUT , or DELETE .
+GET  is the most common and requests data.
+POST  puts an object on the server.
+This method is generally used when the client is not sure where the
+new data would reside. The server responds with the location of the
+object.
+The data posted can be a message for a bulletin board, newsgroup,
+mailing list, a command, a web form, or an item to add to a database.
+The POST method technically requests a page but that depends on
+what was entered.
+HEAD  is similar to the GET  method except that the resource requested
+does not get sent in response. Only the HTTP headers are sent instead.
+This is useful for quickly retrieving meta-information written in
+response headers, without having to transport the entire content. In
+other words, it’s useful to check with minimal traffic if a certain
+object still exists. This includes its meta-data, like the last modified
+date. The latter can be useful for caching.
+This is also useful for testing and debugging.
+PUT  uploads an enclosed entity under a supplied URI. In other words,
+it puts data at a specific location. If the URI refers to an already existing
+resource, it’s replaced with the new one. If the URI does not point to an
+existing resource, then the server creates the resource with that URI.
+DELETE  deletes an object at a given URL.
+Note that while most forms are sent from the POST method, the GET method is
+also used sometimes with the entries of the form appended to the URL, as in
+arguments like this:
+http://www.website.com/form.php/?Name=PostMan?Age=45?Interest=Post
+forms with GET requests
+However, sending forms with a POST request is generally better because:
+
+---PAGE 4---
+1. The amount of data that can be sent via a post request is unlimited.
+2. The form’s fields are not shown in the URL.
+📝 Note: URIs & URLs
+Uniform Resource Locators (URLs) URLs are used to identify an
+object over the web. RFC 2396. A URL has the following format:
+protocol://hostname:port/path-and-file-name
+Uniform Resource Identifiers (URIs) can be more specific than
+URLs in such a way that they can locate fragments within objects
+too RFC 3986. A URI has the following format:
+http://host:port/path?request-parameters#nameAnchor . For instance,
+https://www.educative.io/collection/page/10370001/610552069803212
+8/6460983855808512/#http-methods  is a URI.
+URL #
+This is the location that any HTTP method is referring to.
+Version #
+The HTTP version is also specified in the request line. The latest version of
+HTTP is HTTP/2.
+The Anatomy of HTTP Header Lines #
+The HTTP request line is followed by an HTTP header. A lot of HTTP headers
+exist! We’ll be covering the most important ones in this lesson. However, if
+you’re interested, you can read further about all of them.
+The first header line specifies the Host  that the request is for.
+The second one defines the type of HTTP Connection . It’s Non-persistent
+in the case of the following drawing as the connection is specified to be
+closed.
+The user-agent  line specifies the client. This is useful when the server
+has different web pages that exist for different devices and browsers.
+The Accept-language  header specifies the language that is preferred. The
+server checks if a web page in that language exists and sends it if it does,
+otherwise the server sends the default page.
+The Accept  header defines the sort of response to accept. It can be
+anything like HTML files, images, and audio/video.
+GET/path/to/file/index.html HTTP/1.1
+Host: www.educative.io
+Connection: close
+User-agent:Mozilla/5.0
+Accept-language: fr
+Accept: text/html
+1 of 7
+In the next lesson, we’ll conduct an exercise to look at real HTTP request
+messages!
+Exercise: Looking at a Real HTTP Request
+In this lesson, you will be looking at real HTTP messages right from your browser!
+We'll cover the following
+• Open up the Developer Tools on Your Browser
+• Go to the Network Tab
+• Click on Any Entry
+• An Example of an Entry
+Open up the Developer Tools on Your Browser #
+Have a look at this GIF. We were on Firefox here.
+1. Navigate to any website. We picked google.com.
+2. Right-click anywhere.
+3. Click on ‘inspector tools’ in the drop-down menu.
+The process should be similar for other browsers.
+Go to the Network Tab #
+1. The network tab should be one of the tabs on the top-bar (or sidebar in
+some browsers).
+2. Find it and click on it.
+3. There may be a chance that your browser hasn’t logged any network
+calls. In that case, just reload the page.
+Click on Any Entry #
+1. You’ll see a bunch of calls. Click on any one of them.
+2. You’ll see details about the HTTP message including the request headers,
+the kind of request, and the headers. We encourage you to spend some
+time exploring this.
+A
+E
+l
+f
+E t
+#
+
+---PAGE 5---
+An Example of an Entry #
+IP address of remote server. Notice the port number is
+443 which is reserved for HTTPS
+Status code: 200 ok means the resource was found.
+The response headers. Try tallying each
+with what we learned in the last lesson.
+NID=somehiddenstring
+Now that we have a clear idea of what HTTP request messages look like, let’s
+study the response messages in the next lesson.
+HTTP: Response Messages
+Let's look at what HTTP response messages look like!
+We'll cover the following
+• Introduction
+• Status Line
+• Status Code
+• Header Lines
+• How HTTP Headers Are Chosen
+• Quick Quiz on HTTP!
+Introduction #
+Let’s start with a typical example of an HTTP response message:
+1
+2
+3
+4
+5
+6
+7
+8
+9
+HTTP/1.1 200 OK
+Connection: close
+Date: Tue, 18 Aug 2015 15: 44 : 04 GMT
+Server: Apache/2.2.3 (CentOS)
+Last-Modified: Tue, 18 Aug 2015 15:11:03 GMT 
+Content-Length: 6821
+Content-Type: text/html
+[The object that was requested]
+It has 3 parts: an initial status line, some header lines and an entity body.
+HTTP/1.1 200 OK
+Connection: close
+Date: Tue, 18 Aug 2015 15: 44 : 04 GMT
+Server: Apache/2.4.39 (CentOS)
+Last-Modified: Th, 08 Aug 2013 23:54:35 GMT
+Content-Length: 6821
+Content-Type: text/html
+[The object that was requested]
+Status
+Header Lines
+object
+An HTTP response message
+📝 Note: HTTP response messages don’t have the URL or the
+method fields. Those are strictly for request messages.
+Status Line #
+HTTP response status lines start with the HTTP version.
+Status Code #
+The status code comes next which tells the client if the request
+succeeded or failed.
+There are a lot of status codes:
+1xx codes fall in the informational category
+2xx codes fall in the success category
+3xx codes are for redirection
+4xx is client error
+5xx is server error
+Here is a list of some common status codes and their meanings:
+200 OK : the request was successful, and the result is appended with the
+response message.
+404 File Not Found : the requested object doesn’t exist on the server.
+400 Bad Request : generic error code that indicates that the request was in
+a format that the server could not comprehend.
+500 HTTP Internal Server Error : the request could not be completed
+because the server encountered some unexpected error.
+505 HTTP Version Not Supported : the requested HTTP version is not
+supported by the server.
+Have a look at pages 39 and 40 of RFC 2616 for a comprehensive list.
+Header Lines #
+Let’s study the header lines.
+Connection type. In this case, indicates that the server will close  the
+TCP connection after it sends the response.
+Date. The date at which the response was generated.
+Server. Gives server software specification of the server that generated
+the message. Apache in this case.
+Last-Modified. The date on which the object being sent was last
+modified.
+Content-Length. The length of the object being sent in 8-bit bytes.
+Content-Type. The type of content. The type of the file is not determined
+by the file extension of the object, but by this header.
+The response body contains the file requested.
+How HTTP Headers Are Chosen #
+Lastly, you must be wondering how browsers decide which HTTP headers to
+include in requests and how servers decide which headers to return in the
+response. That depends on a complex mix of factors such as the browser,
+the user configurations and products.
+Quick Quiz on HTTP! #
+
+---PAGE 6---
+1
+What is HTTP?
+COMPLETED 0%
+1 of 5
+A) HTTP stands for Hypertext Transfer Protocol. It’s a set of
+rules for transferring of data on the web.
+B) A language in which websites are written.
+C) The world wide web is HTTP
+D) The starting of URLs
+In the next lesson, we’ll look at real HTTP responses via a simple commandline tool!
+Exercise: Looking at a Real HTTP Response
+In this lesson, we'll look at and study real HTTP responses via cURL.
+We'll cover the following
+•
+cURL
+• Explanation
+• Sample Output
+• Quick Quiz!
+cURL #
+Run the following command to look at a real HTTP response.
+1
+curl http://example.org --head -silent
+cURL (pronounced ‘curl’) is a command-line tool that transfers data to or from
+a server. The transfer can be based on a vast set of protocols, so we’ll be
+seeing cURL a lot. It’s perfect for our purposes because it doesn’t require live
+user interaction. cURL stands for “Client URL.” You can read more about cURL
+on its manpage.
+Explanation #
+Let’s learn about all of its components.
+curl  is the name of the command that tells the terminal that this is a curl
+command.
+The --head  flag or -I  in short, tells cURL to send an HTTP request with
+the head method. In other words, the entity-body of the HTTP message is
+t e
+ead
+et od.
+ot e
+o ds, t e e t ty body o t e
+essage s
+not fetched.
+The -silent  flag tells cURL to not display the progress meter. The
+progress meter is interpreted as an error on our platform, which is why
+we decided to remove it. The command is perfectly fine without this flag
+otherwise.
+We encourage you to explore the cURL command. You can find a list of all the
+flags under the ‘options’ heading on cURL’s manpage. Try different websites
+and different flags and see what you get!
+Sample Output #
+The output of this command is an HTTP response such as the following. Notice
+the HTTP response code and the headers.
+HTTP/1.1 200 OK
+Content-Encoding: gzip
+Accept-Ranges: bytes
+Cache-Control: max-age=604800
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 23 Sep 2019 06:48:39 GMT
+Etag: "1541025663"
+Expires: Mon, 30 Sep 2019 06:48:39 GMT
+Last-Modified: Fri, 09 Aug 2013 23:54:35 GMT
+Server: ECS (ord/5726)
+X-Cache: HIT
+Content-Length: 606
+Quick Quiz! #
+1
+What is cURL?
+A) A tool that diverts http responses by making them ‘curl’
+B) A command line tool that copies URLs
+COMPLETED 0%
+1 of 2
+C) A command line tool for transferring data based on various
+protocols
+In the next lesson, let’s have a look at one of the key concepts of computer
+networks – cookies!
+
+---PAGE 7---
+Cookies
+Let's discuss another key concept of computer networking, cookies!
+We'll cover the following
+•
+Set-cookie  Header
+• Example
+• Blocking Third-Party Cookies Is Not Enough!
+• Quick Quiz!
+Introduction
+You might have heard of the term ‘cookie’ used a lot
+in the context of computer networks and privacy.
+Let’s have a closer look at what they are.
+HTTP is a stateless protocol, but we often see
+websites where session state is needed. For instance,
+imagine you are browsing for products on an ecommerce website. How does the server know if you
+are logged in or not, or if the protocol is stateless?
+How does the server know what’s in your shopping
+cart when checking out if the protocol is stateless?
+Cookies allow the server to keep track of this sort of
+information.
+How Cookies Work
+Cookies are unique string identifiers that can
+be stored on the client’s browser.
+These identifiers are set by the server through HTTP headers when the
+client first navigates to the website.
+After the cookie is set, it’s sent along with subsequent HTTP requests to
+the same server. This allows the server to know who is contacting it
+and hence serve content accordingly.
+So the HTTP request, the HTTP response, the cookie file on the client’s
+browser, and a database of cookie-user values on the server’s end are all
+involved in the process of setting and using cookies.
+Set-cookie Header #
+Let’s look at how cookies work in a bit more detail. When a server wants to set
+a cookie on the client-side, it includes the header Set-cookie: value  in the
+HTTP response. This value is then appended to a special cookie file stored
+on your browser. The cookie file contains:
+The website’s domain
+The string value of the cookie
+The date that the cookie expires (yes, much like actual cookies, they do
+expire)
+Have a look at the following slides to see how cookies work in practice.
+GET /index.html HTTP 1.1
+Accept: image/gif, image/x-bitmap, image/jpeg, */*
+Accept-Language: en
+Connection: Keep-Alive
+User-Agent: Mozilla/1.22
+Host: educative.io
+Referrer: http:www.google.com?q=best+courses+ever
+HTTP Request
+First ever request from a client to
+educative.io does not contain any cookies.
+1 of 3
+The Dangers of Cookies ☠ 
+While cookies seem like a great idea to make HTTP
+persistent when needed, cookies have been
+severely abused in the past.
+If a website has stored a cookie on your browser, it
+knows exactly when you visit it, what pages you
+visit and in what order. This itself makes some
+people uncomfortable.
+Third-party Cookies
+Also, websites may not necessarily know personally
+identifiable information about you such as your
+name (by the way, websites that require you to signup do know your name), and they may only know
+the value of your cookie. But what if websites can
+track what you do on other websites? Well, they
+can. Welcome to the concept of third-party cookies.
+cookie monster; image attribution:
+https://www.~ickr.com/photos/tomcrouse/23712101336
+While we can’t go into too much detail, it suffices to know that third-party
+cookies are cookies set for domains that are not being visited.
+Example #
+1. A user visits amazon.com.
+2. A cookie for free-stats.com is subsequently set on their browser because
+free-stats has placed an advertisement on Amazon. Notice that this is a
+third-party cookie!
+3. Suppose, the user visits ebay.com, and eBay also has placed an
+advertisement for free-stats.com.
+4. The same cookie set on the Amazon site will be reused and sent to
+free-stats along in an HTTP request with the name of the host that the
+user is on.
+5. Free-stats can in this way track every website the user visits that they
+are advertising on and create more targeted ads in order to generate
+g
+g
+g
+greater revenue.
+Also, the public has largely considered third-party cookies to be a breach of
+privacy and so rejected them. Most modern browsers come with the in-built
+option to block third-party cookies.
+Blocking Third-Party Cookies Is Not Enough! #
+However, firms have come up with several workarounds including but not
+limited to:
+Respawning cookies
+Flash cookies
+Entity tags
+Canvas fingerprinting
+Quick Quiz! #
+1
+What is a cookie?
+COMPLETED 0%
+1 of 2
+A) An identifier that’s stored in client browsers. It’s used by
+websites to serve customized content.
+B) An http header
+C) Only a way to track people across websites
+D) They are http headers that make http stateless
+
+---PAGE 8---
+Now that we know the basics of cookies, let’s look at them in practice with a
+quick exercise!
+Exercise: View and Manage Your Cookies
+In this lesson, we'll go through an exercise to manage your browser's cookies.
+We'll cover the following
+• Viewing Cookies For a Page
+• Managing Cookies
+• Chrome
+• Safari
+• Firefox
+Viewing Cookies For a Page #
+For most browsers, while you can’t view your entire cookie file, you can view
+cookies for individual websites.
+1. Open up any website of your choice.
+2. Open up the developer tools. All browsers have some form of developer
+tools.
+3. Click on the storage tab to view details of the cookies that the website
+has set.
+Managing Cookies #
+Most modern browsers allow some degree of cookie management (viewing,
+editing and deleting), which can be integral to protecting your privacy on the
+Internet. Here are some links to instructions on how to manage cookies for
+popular browsers. Unfortunately, for most browsers, all cookies cannot be
+viewed at once, but they can be managed.
+Chrome #
+Google has provided some instructions to view cookies on Chrome. Have a
+look!
+Safari #
+This Apple Support page has some instructions on managing cookies. While
+you can’t view the content of the cookie files, you can view which websites
+have stored cookies on your browser.
+Firefox #
+Here’s an official page to manage cookies on Firefox.
+Now that we have a good understanding of HTTP, and HTTP specific
+constructs, let’s move on to a new protocol!
+Email: SMTP
+Let's now discuss some important protocols that make email what it is.
+We'll cover the following
+• History of SMTP
+• How SMTP Works
+• Error Handling
+• Quick Quiz!
+Introduction
+Email has been a key application of the Internet since
+its early days.
+Today, almost all formal or official correspondences
+occur on email. In fact, a lot of major corporations
+communicate primarily through email both externally
+and internally despite the advent of instant messaging.
+Let’s see how this evergreen application really works!
+SMTP
+There are many protocols associated with email. One popular choice is a
+combination of POP3  and SMTP . One is used to send emails that are stored in a
+user’s inbox and the other is used to retrieve emails sent to you. However, the
+very core of electronic mail is the Simple Mail Transfer Protocol (SMTP).
+SMTP uses TCP, which means that transfers are reliable. The connection is
+established at port 25 .
+📝
+
+---PAGE 9---
+📝 Note A good mnemonic to remember what SMTP does is Sending
+Mail To People.
+Also, for ease and consistency, we are defining User Agents as agents that
+allow users to compose, view, delete, reply to, and forward emails.
+Applications such as Apple Mail, Microsoft Outlook, and Gmail’s webmail are
+examples of user agents.
+History of SMTP #
+Let’s delve a bit into the history of SMTP which is incredibly important to
+understand why it’s designed the way it is.
+SMTP predates HTTP by quite a margin and therefore has some antiquated
+design properties.
+For example, all SMTP messages have to be encoded into 7-bit ASCII. This
+made sense in the early days when computer networks did not have the
+capacity to email large images, audio, or videos, and when email was
+primarily text that could fit in ASCII characters. We needed 7-bit encoding and
+decoding because mostly US-ASCII characters were being used in which the
+MSB (most significant bit) of the byte was 0, so there was no point in sending 8
+bits per character. Instead 7 bits per character were transmitted.
+Sending text with characters that require a greater number of bits per
+character, or binary data became challenging. Therefore, all email
+attachments are encoded into 7-bit ASCII even today when sending, and then
+decoded upon receiving. This requires additional computational work.
+How SMTP Works #
+Let’s look at how this ubiquitous protocol works.
+1. When an email is sent, its sent to the sender’s SMTP server using the
+SMTP protocol.
+The SMTP server is configured in your email client. The general
+format of the domain of the SMTP server is smtp.example.com  where
+the main email address of the sender is user@example.com . But it’s not
+mandatory to adhere to this format. We could set up, say,
+zeus.example.com  to serve as our SMTP server, if we wanted. From a
+security point of view, it is probably a good idea, since people are
+unlikely to guess it as easily.
+2. The email is now placed on a message queue in the sending SMTP
+server.
+3. Then, the SMTP server initiates a connection with the recipient server
+and will conduct an initial SMTP handshake.
+If the recipient is on the same SMTP server as the sender (for
+instance alice@gmail.com sending to bob@gmail.com), then the
+SMTP server doesn’t need to connect to the recipient’s server.
+4. The SMTP server will finally send the message to the recipient’s email
+server.
+5. The email is then downloaded from the recipient’s SMTP server using
+other protocols when the recipient logs in to their email account or
+'user agent.’ In other words, the recipient’s SMTP server copies the email
+to the recipient’s mail-box.
+📝 Note SMTP is a push protocol because the email client sends the
+email out to the server when it needs to. Which means it only sends data
+to servers. Other protocols called Mail Access Protocols such as POP
+and IMAP are used for getting email from a server and are called pull
+protocols because the client asks their POP/IMAP server if they have any
+new messages whenever they feel like.
+Have a look at the following slides to get a clearer picture.
+Sender
+Sender's SMTP Server
+Recipient's SMTP Server
+Recipient
+The sender wants to send the receiver an email
+1 of 7
+Error Handling #
+There are many scenarios where sending an email may fail. Here are a few.
+If the email is not sent for any reason such as a misspelled recipient
+address, the email is returned to the sender with a “not delivered”
+message.
+If the recipient SMTP server is offline, the sending SMTP server keeps
+trying to send the email, say, every 30 minutes or so. It stops trying
+after a few days and alerts the sender about the mail not delivered
+error.
+Also, SMTP does not use any intermediate servers. So, even if an attempt
+to send an email fails because of any reason such as the receiving server
+being down, the email won’t be stored on an intermediary server. It will
+be stored on the sending SMTP server.
+Quick Quiz! #
+1
+SMTP is a pull protocol
+COMPLETED 0%
+1 of 2
+A) True
+B) False
+Let’s do an exercise with another popular command-line tool to check what
+your domain’s mail server is in the next lesson!
+
+---PAGE 10---
+Exercise: Checking a Domain’s Mail Server with
+nslookup
+In this lesson, we'll use nslookup to look up a domain's mail server.
+We'll cover the following
+•
+nslookup
+• Outlook
+• Gmail
+• Yahoo!
+nslookup #
+nslookup , or name server lookup, is a command-line tool that can be used to
+find the name and IP address of the SMTP server for a domain like live.com or
+gmail.com. Have a look at the following command.
+Outlook #
+1
+nslookup -type=mx https://outlook.live.com
+The mx  in the -type=mx  flag stands for Mail Exchanger record, which
+essentially means the SMTP server.
+There is a lot more that nslookup  can be used for. Here’s the manpage for
+nslookup  if you want to learn more.
+Ignore what authoritative and non-authoritative mean for now. You’ll
+understand them when we get to DNS.
+Try any other domain of your choice! Here are a couple of very popular ones.
+Gmail #
+1
+nslookup -type=mx gmail.com
+In this case, one of the SMTP servers for Gmail is alt1.gmail-smtpin.l.google.com .
+Yahoo! #
+1
+2
+3
+nslookup -type=mx mail.yahoo.com
+Let’s study pull protocols like POP and IMAP in some detail in the next lesson.
+Email: POP & IMAP
+Let's now discuss the other side of the coin for how email works.
+We'll cover the following
+• POP
+• POP Phases
+• POP Modes
+• IMAP
+• Quick Quiz!
+POP and IMAP are used to retrieve email from an email server. Either one can
+be used. Let’s discuss both.
+POP #
+The most commonly used version of the Post Office Protocol (POP) is version
+3, or POP3. This is how it works:
+POP Phases #
+Emails are simply downloaded from the server in 4 phases: connect,
+authorize, transaction, update.
+1. Connect: The user agent first connects to the POP3 server on TCP using
+port 110 .
+2. Authorize: The user agent authenticates the user with a username and a
+password.
+3. Transaction: The user can now retrieve emails and mark emails for
+deletion.
+4. Update: After the user agent quits and closes the POP3 session, the server
+makes updates based on the user’s commands. So if the user marked an
+email for deletion, it will delete it. No copy of a deleted email is kept on
+the server
+the server.
+Note that only what’s in the user’s inbox is downloaded. Other
+folders such as sent items, outbox, or drafts are not synced. So POP3
+does not synchronize the folders.
+POP Modes #
+POP works in two modes.
+Download and delete: Once emails are downloaded from the server to
+the user agent, they are all deleted from there.
+Download and keep: Emails are not deleted from the server once they
+are downloaded onto the user agent.
+However, with the download and delete model, you can only use one client to
+check your emails. If you use multiple devices to check your email, this
+method is not appropriate because emails will not look the same across
+devices at different times. Also, users won’t be able to reread emails from
+different devices.
+Have a look at the following slides for an example of how emails might not be
+in sync on multiple devices with POP.
+Sender: work
+Subject: Meeting
+Sender: Brand
+Subject:
+Advertisement
+Sender: Friend
+Subject: Meme
+Emails reside on server
+
+---PAGE 11---
+1 of 10
+IMAP #
+The Internet Message Access Protocol (IMAP), like POP, is also a mail access
+protocol used for retrieving email. It is a bit more complex than POP and
+hence allows you to view your email from multiple devices. With IMAP,
+though:
+Emails are kept on the server and not deleted.
+Local copies of the emails are cached on each device.
+It syncs up all of the user’s folders including custom folders.
+The inbox would look exactly the same on all clients.
+If an email is deleted from one user agent, it will be deleted off the
+server.
+Deleted emails won’t be visible from other devices either.
+Quick Quiz! #
+Q
+Which of the following are valid differences between POP3 and
+IMAP?
+A)
+POP3 is less accurate
+IMAP is more accurate
+B)
+POP3 does not sync folders whereas IMAP does
+POP3 might make for different email structures on
+different devices
+POP3 deletes emails on servers by default but IMAP
+does not
+COMPLETED 0%
+1 of 1
+C)
+POP3 works more accurately
+IMAP is better
+D)
+POP3 syncs all folders
+IMAP does not sync folders across clients
+Email: Message Format
+Let's study the exact format of an email message!
+We'll cover the following
+• Introduction
+• Header Lines
+• Message Body
+• Exercise: View Raw Emails
+Introduction #
+Email messages have a format the same way that HTTP request and response
+messages do. Let’s dive right into it.
+Header Lines #
+Email messages start with header lines, much akin to HTTP. The header lines
+contain important metadata about the email.
+The header lines consist of keywords followed by a colon, followed by a
+value.
+Every header line is separated by a new line with a carriage return ( \r ).
+Every header must have the To:  and From:  header lines.
+The rest of the headers, including the subject:  header line, are optional.
+Message Body #
+The message body of the email follows the header lines after a blank line.
+Here is an example of what an email message looks like:
+from: user@gmail.com
+to: anotherUser@gmail.com
+subject: Network Fundamentals
+Header
+Lines
+Message Message Message
+Message
+Body
+Exercise: View Raw Emails #
+Open up your favorite email agent. Google search “view headers with name of
+agent.” For example, I could Google “view headers with Gmail.” Here are some
+instructions for common clients:
+1. Gmail
+2. Outlook
+3. Yahoo!
+Once you have the instructructions, study the headers. Can you figure out
+what each does? For your reference, here is a sample of email headers. Note
+that they are a bit simplified for your ease.
+Delivered-To: user@gmail.com
+Date: Thu, 16 May 2019 03:36:28 +0000 (UTC)
+From: Fahim from Educative <fahim+newsletter@educative.io>
+Mime-Version: 1.0
+Reply-to: fahim@educative.io
+Subject: Data analysis with R
+To: user@gmail.com
+ 
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Mime-Version: 1.0
+ 
+Hey User,
+ 
+With the way technology is evolving, more and more data is being produce
+d a=
+nd tracked every day. And because of that, the skills to work with that da
+t=
+a, to make sense of it and turn into useful insight, are more in-demand th
+a=
+n ever before.
+ 
+If recent trends are anything to go by, in the future the ability to wor
+k w=
+ith large quantities of data won=E2=80=99t be the field of just data scien
+t=
+i t
+it E2 80 99
+i
+t
+b
+kill
+i d
+t i
+k
+
+---PAGE 12---
+ists - it=E2=80=99s going to become a necessary skill across industries, k
+i=
+nd of like using a word processor.
+ 
+For years, R has been at the forefront of the data science revolution. It=
+=E2=80=99s beloved by data scientists and statisticians for its robust sta
+t=
+istical functionality, outstanding graphing ability, and extensibility thr
+o=
+ugh packages. The recent data science craze has just breathed new life int
+o=
+ it.
+ 
+Learn R from Scratch https://www.educative.io/collection/6151088528949248/
+5=
+357220915052544?utm_source=3Dsendgrid&utm_medium=3Demail&utm_campaign=3Dle
+a=
+rn-r-from-scratch&utm_content=3D is designed to get you up to speed writin
+g=
+ code in R as quickly as possible. You'll start with the very basics and w
+o=
+rk your way up to advanced concepts like exception handling. By the time y
+o=
+u're done, you'll be able to write detailed, useful code in R yourself.
+ 
+Get started with R, stay on top of the data science craze, and solve realw=
+orld problems with data.
+ 
+Happy learning!
+ 
+-- Fahim
+ 
+CEO & co-founder, educative.io=20
+ 
+1203 114th Ave SE,=20
+Bellevue, WA 98004
+📝 Note the headers are from a received email and not the headers
+when it was sent, which is what we discussed initially. So, the Delivered-
+To  header is derived from the To:  header in the originally sent email.
+The SMTP or the POP server probably make this transformation. More
+likely the SMTP server.
+If you wish to study each of these headers and the format in detail, have a
+look at RFC5322.
+1
+Why is SMTP not used for transferring emails from the recipient’s
+mail server to the recipient’s user agent?
+COMPLETED 0%
+1 of 7
+A) SMTP is a push protocol whereas the task of transferring
+email messages from the recipient’s mail server to the
+recipient’s personal computer is a pull operation.
+B) SMTP is a pull protocol, whereas the task of transferring
+email messages from the recipient’s mail server to the
+recipient’s personal computer is a push operation.
+C) SMTP is a push protocol whereas the task of transferring
+email messages to the recipient’s mail server from the
+recipient’s personal computer is a pull operation.
+D) SMTP is a pull protocol whereas the task of transferring
+email messages to the recipient’s mail server from the
+recipient’s personal computer is a push operation.
+Now that we have a good idea of email, let’s move on to the directory of the
+web: DNS.
+DNS: Introduction
+DNS is the Internet's directory service. Let's jump right in!
+We'll cover the following
+• How Do We Find Things on The Internet?
+• Distributed Hierarchical Database
+• DNS Namespaces
+• Root DNS Servers
+• Top-level Servers
+• Authoritative Servers
+• Local DNS Cache
+• Local DNS Servers
+• Quick Quiz!
+How Do We Find Things on The Internet? #
+Generally, using one of the following ways:
+Addresses or locations that specify where something is.
+Just like with a physical address, we still may need a map to get to
+the address. On the Internet, the addresses are typically IP addresses,
+and routers know the map.
+Names. In particular, domain names, or the unique name that identifies
+a websites, are mapped into IP addresses based on lookup service that
+uses a database. The most well-known lookup service is the Domain
+Name System (DNS). So when you enter the URL ‘educative.io’ into your
+browser, it uses DNS to find the actual IP address of the server that hosts
+it.
+Content-based addressing.
+The content itself is used to look up its location.
+
+---PAGE 13---
+📝 Note A Useful Analogy: Domain names are like actual people
+names and IPs are like phone numbers.
+In this lesson, our focus will be on DNS, the client-server application layer
+protocol that translates hostnames on the Internet to IP addresses.
+At the core, the Internet operates on IP addresses, but these are difficult to
+remember for humans. So, DNS names are preferably used at the application
+layer for which the DNS provides a mapping to IP addresses. For example,
+HTTP first translates the DNS hostname provided by the user in the URL to its
+IP address and then attempts to connect to the server. Furthermore, DNS is
+not just a protocol. It also consists of a distributed database of names that map
+to IP addresses. So essentially it’s a directory service.
+Distributed Hierarchical Database #
+One single database on one single server does not scale for reasons such as:
+Single point of failure. If the server that has the database crashes, DNS
+would stop working entirely, which is too risky.
+Massive amounts of traffic. Everyone would be querying that one server.
+It will not be able to handle that amount of load.
+Maintenance. Maintaining the server would become critical to the
+operation of DNS.
+Location. Where would the server be located?
+This is why DNS employs several servers, each with part of the database. Also,
+the servers exist in a hierarchy. To understand this hierarchy better, you need
+to understand how URLs are broken down into their hierarchies. Have a look
+at the following diagram.
+discuss.educative.io
+sub-domain
+second-level domain
+top-level domain
+sub do
+a
+top e e do
+a
+DNS Namespaces #
+The parts of the URL above roughly map to DNS servers. These servers
+manage the abstract space of domains. The servers all exist in a hierarchy.
+Have a look at the following diagram.
+Root Servers
+io Servers
+edu Servers
+com Servers
+educative.io
+portfol.io
+...
+dartmouth.edu
+harvard.edu
+facebook.com
+...
+amazon.com
+...
+...
+Top-level
+domains
+Second-level
+domains
+A fraction of the hierarchy of DNS servers
+Root DNS Servers #
+Root DNS servers are the first point of contact for a DNS query (after the
+client’s local cache of names and IP addresses). They exist at the top of the
+hierarchy and point to the appropriate TLD server in reply to the query. So a
+query for educative.io  would return the IP address of a server for the toplevel domain, io .
+As of the writing of this course, there are 1017 instances of root servers
+operated by 12 different organizations. To get a full list and an interactive
+map, have a look at root-servers.org.
+Top-level Servers #
+Servers in the top-level domain hold mappings to DNS servers for certain
+domains. Each domain is meant to be used by specific organizations only.
+Here are some common domains:
+com: This TLD was initially meant for commercial organizations only -
+but it has now been opened for general use.
+Example: codinginterview.com
+edu: Used by educational institutions.
+Example: stanford.edu
+gov: Only used by the U.S. government.
+Example: nasa.gov
+mil: Used by U.S. military organizations.
+Example: army.mil
+net: It was initially intended for use by organizations working in network
+technology such as ISPs, but it is now a general purpose domain like com.
+Example: doubleclick.net
+org: This domain was intended for non-profit organizations but has been
+opened for general use now.
+mozilla.org
+pk, uk, us,…: Country suffixes. 244 two-letter ones exist.
+Some new and uncommon suffixes include: name, mobi, biz, pro.
+International domains: 中國
+Today, the set of top-level domain-names is managed by the Internet
+Corporation for Assigned Names and Numbers (ICANN).
+Once one of these servers is contacted, it points to the authoritative name
+server of that organization.
+Authoritative Servers #
+Every organization with a public website or email server provides DNS
+records. These records have hostname to IP address mappings stored for that
+organization. These records can either be stored on a dedicated DNS server
+for that organization or they can pay for a service provider to store the
+records on their server.
+This is the next link in the chain. If this server has the answer that we are
+looking for, the IP address that it has is finally returned to the client. However,
+this server may not have the sought after answer if the domain has a subdomain. In that case, this server may point to a server that has records of the
+subdomain.
+For instance, if the DNS record for cs.stanford.edu is being looked for, a DNS
+server separate from ‘stanford.edu’ may hold records for the sub-domain ‘cs.’
+Local DNS Cache #
+DNS mappings are often also cached locally on the client end-system to
+avoid repetitive lookups and saves time for often visited websites.
+This is done via an entity called the local resolver library, which is part
+of the OS. The application makes an API call to this library. This library
+manages the local DNS cache.
+If the local resolver library does not have a cached answer for the client,
+it will contact the organization’s local DNS server.
+This local DNS server is typically configured on the client machine either
+using a protocol called DHCP or can be configured statically.
+So, if it’s configured manually, any local DNS server of the client’s choice
+can be chosen. A few open DNS servers are incredibly popular, such as
+the ones by Google.
+Local DNS Servers #
+There is one type of server that we ignored — the local DNS Server. Local
+DNS servers are usually the first point of contact after a client checks its local
+cache. These servers are generally hosted at the ISP and contain some
+mappings based on what websites users visit.
+☠ Security Warning: ISPs have a record of which IP address they
+assigned to which customers. Furthermore, their DNS server has the IP
+addresses of who contacts it and what hostname they were trying to
+resolve. So your ISP technically has a record of all of the websites you
+visit. Yikes! P.S. if this makes you uncomfortable, you can change your
+DNS server to any open public DNS server.
+For an overview of how a query is resolved, have a look at the following
+slides.
+
+---PAGE 14---
+A user
+Root Server
+Server for 'io'
+Server for educative
+The user's local DNS server
+A user opens up a browser to start working on the networks course that they purchased
+1 of 12
+Quick Quiz! #
+1
+Which entity is contacted first when resolving a DNS name?
+A) local resolver library
+B) root server
+C) local DNS server
+COMPLETED 0%
+1 of 2
+local DNS server
+D) .com server
+Now that we have an idea of how DNS works, let’s look at an exercise in the
+next lesson!
+Exercise: Finding Name Servers
+In this lesson, we will look at a few command-line tools to lookup domain name servers.
+We'll cover the following
+• Finding The Authoritative Name Server Using host
+• Checking What Your Local DNS Server Is
+• Output
+Finding The Authoritative Name Server Using
+host #
+1
+host -t ns google.com
+host  is a DNS lookup utility. It is normally used to map hostnames to IP
+addresses. However, with a combination of flags, it can be programmed to
+perform a myriad of DNS-related tasks.
+The syntax of the command above, for instance, is
+1
+host -t ns hostname.com
+host  invokes the host command
+-t  is the type  flag. It is used to specify the type of the command. Check
+out host’s manpage for a list of all the types available.
+ns  specifies the type. It stands for the name server in this case.
+hostname.com  can be any website of your choice.
+We encourage you to experiment, explore, and get creative with the tool!
+Checking What Your Local DNS Server Is #
+To check the IP address of your local DNS server, run the following command
+on UNIX based machines. If you’re on a mobile machine, try
+www.whatsmydnsserver.com. There are a lot of instructions available for
+Windows machines online.
+1
+cat /etc/resolv.conf
+Output #
+Here is what the output may look like
+# Dynamic resolv.conf(5) file for glibc resolver(3) generated by resolvcon
+f(8)
+#     DO NOT EDIT THIS FILE BY HAND -- YOUR CHANGES WILL BE OVERWRITTEN
+nameserver 169.254.169.254
+search c.educative-exec-env.internal google.internal
+You can safely ignore the first two lines since they are comments. On the third
+line, nameserver  shows the IP address of the local DNS server. On the last line,
+search  represents the default search domain that is used to resolve a query
+for a domain with no suffix (for example, www.facebook).
+📝 Note: Educative’s code widgets run on a remote server. The code
+runs there, the output is then sent back to your machine and displayed.
+So, the DNS server shown here is local to the server that runs Educative’s
+code.
+Now that we have a good idea of how DNS works, let’s study DNS records and
+messages in the next lesson.
+
+---PAGE 15---
+DNS: Records and Messages
+Let's now get into what DNS records and messages look like.
+We'll cover the following
+• Resource Records
+• Format
+• Types of RRs
+• DNS Messages
+Resource Records #
+The DNS distributed database consists of entities called RRs, or Resource
+Records.
+Format #
+RRs are 4-tuples with the following entries:
+(name, value, type, ttl)
+Every resource record has a type  and a TTL  along with a name-value  pair.
+The TTL specifies how long an RR entry can be cached by the client. The
+remaining fields are described for each RR type below.
+Types of RRs #
+Address
+Type A  addresses are used to map IPv4 addresses to hostnames.
+name  is the hostname in question.
+value  is the IP address of the hostname.
+Example: educative.io. 299 IN A 104.20.7.183  where 299 is the
+TTL, educative.io is the name, A  is the type, and 104.20.7.183  is the
+value.
+C
+i
+l
+Canonical name
+Type CNAME  records are records of alias hostnames against actual
+hostnames. For example if, ibm.com  is really servereast.backup2.com ,
+then the latter is the canonical name of ibm.com .
+name  is the alias name for the real or ‘canonical’ name of the server.
+value  is the canonical name of the server.
+Example: bar.example.com. CNAME foo.example.com.
+Mail Exchanger
+We have seen this one before! Type MX  records are records of the
+server that accepts email on behalf of a certain domain.
+The name  is the name of the host.
+value  is the name of the mail server associated with the host.
+Example: educative.io mail exchanger = 10 aspmx2.googlemail.com.
+These resource records are stored in text form in special files called zone
+files.
+DNS Messages #
+There are a few kinds of DNS messages, out of which the most common are
+query and reply, and both have the same format. Study the following slides
+for a detailed overview of a DNS message.
+Identification
+Flags
+Number of RRs
+Number of questions
+Number of authority RRs
+Number of additional RRs
+Questions
+(variable number of questions)
+Answers
+(variable number of resource records)
+Authority
+(variable number of resource records)
+Additional Information
+(variable number of resource records)
+Here is a generic DNS message
+1 of 10
+There are also zone transfer request and response. But, those are not used
+by common clients. Backup or secondary DNS servers use them for zone
+transfers, which are when zone files are copied from one server to another.
+This takes place over TCP.
+1
+Which of the following are valid DNS record entry types?
+A) A
+B) M
+
+---PAGE 16---
+COMPLETED 0%
+1 of 3
+B) M
+C) CNAME
+D) A and C
+E) A and B
+In the next lesson, we’ll use command-line tools to look at DNS response
+messages and resource records!
+Exercise: Looking At DNS Response Messages and
+Resource Records
+In this lesson, we'll use command-line tools to look at DNS response messages and
+resource records!
+We'll cover the following
+• Revisiting Nslookup
+• Output
+• Looking At Real DNS Response Messages With dig
+Revisiting Nslookup #
+1
+nslookup -type=A educative.io
+nslookup  is a versatile tool for DNS lookups. The type  flag determines the
+type of RR that you want to look into!
+Output #
+nslookup  can be used to look at DNS records. In this example, we looked up
+educative.io .
+Here’s what the output may look like:
+Server:     169.254.169.254
+Address:    169.254.169.254#53
+ 
+Non-authoritative answer:
+Name:   educative.io
+Address: 104.20.7.183
+N
+d
+ti
+i
+Name:   educative.io
+Address: 104.20.6.183
+The first two lines are the IP address of the local DNS server which is
+169.254.169.254  in our case.
+The last few lines return the type A RR that maps educative.io  to the IP
+address 104.20.6.183 . It says ‘non-authoritative’ because the answer is
+coming from a local DNS server’s cache, and not from Educative’s
+authoritative DNS server.
+If you’re wondering what TTL  values look like, run the following command.
+The value in the TTL  field is in seconds, so a value of 279 is 4 minutes and 39
+seconds.
+1
+nslookup -debug educative.io
+Looking At Real DNS Response Messages With
+dig #
+dig educative.io
+dig  is a command-line tool used to query DNS servers. dig  stands for domain
+information groper, and it displays the actual messages that were received
+from DNS servers. You can decipher the output for yourself now that you
+know what a DNS message looks like.
+As always, we encourage you to read the dig manpage and explore the
+command for yourself!
+We have now studied the Internet’s directory in detail. Let’s move on to
+another protocol. See you in the next lesson!
+
+---PAGE 17---
+BitTorrent
+BitTorrent is a key protocol and has millions of users simultaneously and actively sharing
+and downloading hundreds of thousands of }les of all types: music, movies, books, and
+so on.
+We'll cover the following
+• Overview of BitTorrent
+• How It Works
+• Trackers and torrent }les
+• A Simpli}ed BitTorrent Session
+• Swarming
+• Tit-for-tat
+We have already had an overview of what the Peer-to-peer and Hybrid
+architectures are. BitTorrent falls more in the hybrid category than pure P2P.
+Here it is on a spectrum of decentralization:
+Client/Server
+Hybrid
+Peer-to-peer
+Centralized
+Partly Centralized
+Decentralized
+HTTP
+BitTorrent
+Gnutella
+On a spectrum of decentralization, BitTorrent falls in the middle.
+Overview of BitTorrent #
+Overview of BitTorrent #
+BitTorrent is a protocol for peer-to-peer file sharing. A BitTorrent Client is an
+application that uses this protocol.
+Since BitTorrent is based on a hybrid architecture, it retains some centralized
+components.
+For example, a central controller that maintains a list of participating
+nodes is involved.
+But the centralized component is not involved in resource-intensive
+operations. So there will never be too much load on it.
+Data is instead downloaded or uploaded directly to and by peers.
+The file is first supplied to a peer in pieces called chunks, and then they
+also distribute the file to other peers.
+This is sometimes called a peer-assisted system.
+How It Works #
+Trackers and torrent }les #
+How do clients find peers to connect to? Well, clients connect to a special
+tracker node first. The tracker responds with the IP and the port of a few other
+peers who are downloading the same file.
+📝 Note: Modern BitTorrent clients are trackerless and use a
+Distributed Hash Table instead, but that’s beyond the scope of this
+course.
+So clients can find peers through trackers. But how do clients find the tracker
+in the first place? Clients begin by downloading a ‘torrent file’ from a web
+server which has the URL of the tracker. The torrent file also contains a SHA1
+hash of each file chunk. Can you guess why?
+A Simpli}ed BitTorrent Session #
+1. Download the ‘torrent file’ from a web server.
+1. Download the torrent file  from a web server.
+2. Connect to the tracker and get a list of peers.
+3. Connect to the peers - initially as a ‘leecher.’
+4. While the file is not yet fully downloaded:
+Advertise to peers which blocks are available locally.
+Request blocks from peers.
+Compare hash of downloaded blocks to the hash in the torrent file.
+Can you guess why?
+5. Turn into a ‘seeder,’ i.e., continue uploading to peers without
+downloading.
+Swarming #
+Study the following animation to get an idea of how a file is distributed in
+chunks. Note that it starts with one peer that has the file in its entirety and
+then the peers start distributing the file to each other.
+CC BY-SA 3.0 via Wikimedia Commons
+Once a peer has the entire file it can choose to leave (selfishly) or choose to
+stay as a seeder.
+The distinct chunks of the file are represented by different colors in the
+diagram above, as are the bits being transferred. The initial blank gray boxes
+represent that none of the machines has any bit of the file. Eventually, all the
+machines have the entire file.
+So what this protocol needs really is to give peers the incentive to upload. That
+is where the tit-for-tat scheme comes in.
+Tit-for-tat #
+Every ten seconds, a peer in the network will calculate which four peers
+are supplying data at the highest rate to it. It will then supply data to
+them in return. These 4 peers are said to be unchoked in the sense that
+they are now receiving data in return.
+📝 Note: This list of top four peers may change every 10 seconds.
+A peer in the network will randomly pick another peer every thirty
+seconds and supply data to them. The best-case scenario would be that
+the peer becomes one of the randomly picked peer’s top 4 suppliers.
+Naturally, that random peer would start supplying data in return. Then if
+the randomly picked peer is sending data at a fast enough rate, it may
+also become part of the peer’s top four suppliers. In other words, two
+peers partnered randomly will continue working with each other if they
+are satisfied with the trading. This randomly picked partner is said to be
+optimistically unchoked.
+The result of this scheme is that everyone has an incentive to upload. The
+scheme is an instance of an old successful idea that stems from Axelrod’s
+tournament.
+Quiz on BitTorrent
+1
+What category does BitTorrent fall in?
+A) Cleint/Server
+B) Hybrid
+
+---PAGE 18---
+COMPLETED 0%
+1 of 2
+C) Peer-to-peer
+That concludes our study of application layer protocols! Let’s move on to the
+next layer at last.
+What Is the Transport Layer?
+We }nished the application layer, and now we'll study the transport layer.
+We'll cover the following
+• You Are Here!
+• Key Responsibilities of the Transport Layer
+• The Post Analogy
+• Where It Exists
+• Transport Layer Protocols
+• Quick Quiz!
+You Are Here! #
+Let’s zoom out and have a look at the big picture.
+Application
+Transport
+Network
+Data Link
+Physical
+you
+are
+here
+Key Responsibilities of the Transport Layer #
+Extends network to the applications: the transport layer takes
+messages from the network to applications. In other words, while the
+network layer (directly below the transport layer) transports messages
+from one end-system to another, the transport layer delivers the message
+to and from the relevant application on an end-system.
+The Post Analogy #
+The Post Analogy #
+Imagine you post a package across the world. Presumably, a ship or an
+airplane would carry the message to the relevant country. However, the post
+system of that country would take it to the relevant address. The plane/ship is
+the network layer and the post system is the transport layer.
+Have a look at the slides for a clearer explanation.
+Host 1
+Host 2
+suppose two end-systems are communicating with each other on Skype via the internet
+1 of 4
+Here are some other responsibilities of the transport layer.
+Logical application-to-application delivery, the transport layer makes
+it so that applications can address other applications on other endsystems directly. This is true even if it exists halfway across the world. So
+it provides a layer of abstraction.
+Segments data. The transport layer also divides the data into
+manageable pieces called ‘segments’ or ‘datagrams.’
+Can allow multiple conversations. Tracks each application to
+application connection or ‘conversation’ separately, which can allow
+multiple conversations to occur at once.
+Multiplexes & demultiplexes data. It ensures that the data reaches the
+relevant application within an end-system. So if multiple packets get sent
+to one host, each will end up at the correct application.
+Where It Exists #
+The transport layer does not have anything to do with the core of the
+network. Its only responsibility is to take messages from an application
+on a machine and hand them off to the network layer. The network layer
+transfers messages from one host to another.
+The transport layer also receives messages from the network layer and
+transports them to the correct application.
+Therefore, the transport layer and its protocols reside on end-systems! It is
+also the first layer in the OSI reference model (from the bottom) that
+distinguishes between applications.
+Transport Layer Protocols #
+The transport layer has two prominent protocols: the transmission control
+protocol and the user datagram protocol. In general, an application
+developer will have to choose between the two. We’ll discuss the intricacies of
+each in detail in upcoming chapters, but here is a quick overview.
+TCP
+Delivers messages that we call
+‘segments’ reliably and in order.
+Detects any modifications that
+may have been introduced in the
+packets during delivery and
+corrects them.
+Handles the volumes of traffic at
+one time within the network
+core by sending only an
+appropriate amount of data at
+one time.
+Examples of
+applications/application
+protocols that use TCP are: HTTP,
+UDP
+Does not ensure in-order
+delivery of messages that we call
+‘datagrams.’
+Detects any modifications that
+may have been introduced in the
+packets during delivery but does
+not correct them by default.
+Does not ensure reliable
+delivery.
+Generally faster than TCP
+because of the reduced overhead
+of ensuring uncorrupted
+delivery of packets in order.
+
+---PAGE 19---
+p
+E-mail, File Transfers.
+Applications that use UDP
+include: Domain Name System
+(DNS), live video streaming, and
+Voice over IP (VoIP).
+Quick Quiz! #
+1
+The transport layer in the OSI reference model uses the services of
+______ layer.
+COMPLETED 0%
+1 of 2
+A) Data link
+B) Session
+C) Network
+In the next lesson, we’ll have a more in-depth look at multiplexing and
+demultiplexing!
+Multiplexing and Demultiplexing
+Let's discuss how the transport layer handles so many simultaneous connections over
+one network!
+We'll cover the following
+• What are Multiplexing & Demultiplexing?
+• What is Demultiplexing?
+• What is Multiplexing?
+• How Do They Work in the Transport Layer?
+• Quick Quiz!
+What are Multiplexing & Demultiplexing? #
+End-systems typically run a variety of applications at the same time. For
+example, at any given time a browser, a music streaming service, and an
+email agent could be running.
+So how does the end-system know which process to deliver packets to? Well,
+that’s where the transport layer’s demultiplexing comes in.
+What is Demultiplexing? #
+Demultiplexing is the process of delivering the correct packets to the correct
+applications from one stream.
+Here’s a useful analogy: deciphering the mail that should be delivered to
+which houses after a large shipment of packages are received at a post office.
+Application
+Transport
+Network
+Link
+Physical
+Data
+as bits
+End systems run many programs at once which leaves us with the question: what process to deliver which packet to?
+What is Multiplexing? #
+Also, multiplexing allows messages to be sent to more than one destination
+host via a single medium.
+An analogy would be when several packages to several different locations are
+mailed out from one house.
+Application
+Transport
+Network
+Link
+Physical
+Data as 
+bits
+End systems can be talking to many other applications at once which leaves us with the question: how to send
+messages such that they arrive to the correct process?
+Multiplexing and demultiplexing are usually a concern when one protocol
+(TCP for example) is used by many others (HTTP, SMTP, FTP) in an upper layer.
+Here’s a simplified view of what multiplexing and demultiplexing are.
+Application 1
+Application 2
+Application 3
+Application n
+.
+.
+.
+Transport Layer
+Multiplexing
+ 
+Applications sending messages to several other applications through
+one stream made possible through transport layer multiplexing  
+Multiplexing
+1 of 5
+
+---PAGE 20---
+o  5
+How Do They Work in the Transport Layer? #
+Recall that sockets are gateways between applications and the network, i.e., if
+an application wants to send something over to the network, it will write the
+message to its socket.
+Sockets have an associated port number with them. We looked at ports
+briefly in a previous lesson, but here’s a quick overview
+Port numbers are 16-bit long and range from 0 and 65,535.
+The first 1023 ports are reserved for certain applications and are called
+well-known ports. For example, port 80 is reserved for HTTP.
+The transport layer labels packets with the port number of the application a
+message is from and the one it is addressed to. This is what allows the layer to
+multiplex and demultiplex data.
+Quick Quiz! #
+Q
+The transport layer in the TCP/IP reference model uses ______ to
+multiplex/demultiplex messages for different applications.
+COMPLETED 0%
+1 of 1
+A) IP address
+B) Port number
+C) Application names
+Let’s look at connectionless multiplexing and demultiplexing in the next
+lesson!
+Multiplexing & Demultiplexing in UDP
+Connectionless refers to multiplexing and demultiplexing with UDP. Let's dive right in.
+We'll cover the following
+• Ports
+• Multiplexing & Demultiplexing in UDP
+• On Port Assignment in UDP
+• Quick Quiz!
+Ports #
+Here’s a quick refresher on what ports are because that needs to be crystal
+clear in order for you to understand multiplexing and demultiplexing.
+Sockets, which are gateways to applications, are identified by a
+combination of an IP address and a 16-bit port number. That means 
+2
+= 65536 port numbers exist. However, they start from port 0 so they
+exist in the range of 0 −65535.
+16
+Socket
+Port Number = 2331
+Sockets have associated port numbers!
+Out of these, the port numbers 0 −1023 are well-known and are
+reserved for certain standard protocols. Port 80, for instance, is reserved
+for HTTP whereas port 22 is reserved for SSH.
+Refer to page 16 of RFC 1700 for more details regarding what port
+number is assigned to what protocol.
+Multiplexing & Demultiplexing in UDP #
+When a datagram is sent out from an application, the port number of the
+associated source and destination application is appended to it in the
+UDP protocol header.
+When the datagram is received at the receiving host, it sends the
+datagram off to the relevant application’s socket based on destination
+port number.
+If the source port and source IP address of two datagrams are different
+but the destination port and IP address are the same, the datagrams will
+still get sent to the same application.
+Here are some slides to give you a quick overview of what happens.
+ 
+An application produces data  
+Sender
+Receiver
+Internet
+Src Application
+1 of 6
+On Port Assignment in UDP #
+It’s far more common to let the port on the client-side of an application be
+i
+d d
+i
+ll
+i
+d
+f h
+i
+i
+l
+Thi i b
+f
+
+---PAGE 21---
+assigned dynamically instead of choosing a particular port. This is because for
+communication, both parties must be able to identify each other. Since the
+client initiates communication to the server, it must know the port number of
+the application on the server. However, the server doesn’t need to know the
+client application’s port number in advance. When the first datagram from
+the client reaches the server, it will carry the client port number, which the
+server can use to send datagrams back to the client.
+However, server-side applications generally do not use dynamically allocated
+ports! This is because they are running well-known protocols like HTTP and
+need to be bound to specific ports.
+Quick Quiz! #
+1
+Ports 0 - 1023 are termed as ephemeral ports.
+COMPLETED 0%
+1 of 3
+A) True
+B) False
+Let’s look at the principles of reliable data transfer in the next lesson. This is
+key to building a good foundation for later lesson on TCP!

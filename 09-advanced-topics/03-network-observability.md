@@ -1,5 +1,36 @@
 # Network Observability
 
+## Table of Contents
+
+- [Overview](#overview)
+- [The Four Signals for Networking](#the-four-signals-for-networking)
+- [RED Method for Networking](#red-method-for-networking)
+- [Key Prometheus Metrics](#key-prometheus-metrics)
+  - [Node-Level Network Metrics (node_exporter)](#node-level-network-metrics-node_exporter)
+  - [Container-Level Network Metrics (cAdvisor, kubelet)](#container-level-network-metrics-cadvisor-kubelet)
+  - [Alerting Rules](#alerting-rules)
+- [Grafana Dashboards](#grafana-dashboards)
+  - [Network I/O Dashboard (per Node)](#network-io-dashboard-per-node)
+  - [DNS Query and Error Rate Dashboard](#dns-query-and-error-rate-dashboard)
+- [Distributed Tracing for Network Latency](#distributed-tracing-for-network-latency)
+  - [W3C Trace Context (traceparent)](#w3c-trace-context-traceparent)
+  - [Correlating Network Latency with Application Traces](#correlating-network-latency-with-application-traces)
+- [Hubble (Cilium): eBPF-Based Flow Observability](#hubble-cilium-ebpf-based-flow-observability)
+  - [Hubble CLI](#hubble-cli)
+  - [Hubble Metrics for Prometheus](#hubble-metrics-for-prometheus)
+- [eBPF Observability: bpftrace One-Liners](#ebpf-observability-bpftrace-one-liners)
+  - [Pixie for Kubernetes eBPF Observability](#pixie-for-kubernetes-ebpf-observability)
+- [DNS Observability](#dns-observability)
+  - [CoreDNS Metrics Reference](#coredns-metrics-reference)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Silent 0.1% Error Rate from Packet Drops — eBPF Observability Pipeline to Root Cause](#silent-01-error-rate-from-packet-drops-ebpf-observability-pipeline-to-root-cause)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 Network observability is the discipline of making the network's internal state visible through external signals. At the staff and principal level, this is not about which dashboard to use — it is about designing an observability pipeline that can detect a 0.1% packet drop rate before customers notice, trace a latency spike to a single network hop, and give on-call engineers enough signal to diagnose a novel failure in under five minutes. Observability is an architectural concern: it must be designed in, not bolted on.

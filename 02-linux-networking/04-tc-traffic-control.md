@@ -1,5 +1,32 @@
 # TC: Traffic Control and Queuing Disciplines
 
+## Table of Contents
+
+- [Overview](#overview)
+- [TC Architecture](#tc-architecture)
+  - [The Three Components](#the-three-components)
+  - [TC Object Hierarchy](#tc-object-hierarchy)
+- [Queueing Disciplines](#queueing-disciplines)
+  - [pfifo_fast (Legacy Default)](#pfifo_fast-legacy-default)
+  - [fq_codel (Fair Queuing + Controlled Delay)](#fq_codel-fair-queuing-controlled-delay)
+  - [HTB: Hierarchical Token Bucket](#htb-hierarchical-token-bucket)
+  - [TBF: Token Bucket Filter](#tbf-token-bucket-filter)
+  - [fq: Fair Queuing with Pacing](#fq-fair-queuing-with-pacing)
+- [netem: Network Emulation for Testing](#netem-network-emulation-for-testing)
+- [CNI Bandwidth Plugin: TC in Kubernetes](#cni-bandwidth-plugin-tc-in-kubernetes)
+  - [How the Bandwidth CNI Plugin Works](#how-the-bandwidth-cni-plugin-works)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Bandwidth Throttling Not Working for Noisy Neighbor Pod](#scenario-bandwidth-throttling-not-working-for-noisy-neighbor-pod)
+- [Failure Modes](#failure-modes)
+- [Debugging Commands Reference](#debugging-commands-reference)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Traffic Control (TC) in Linux is the layer between the kernel's packet processing and the NIC transmit ring. It decides: what order packets leave, at what rate, and whether some get dropped to prevent congestion. For SREs, TC matters when: a "noisy neighbor" pod exhausts bandwidth, you're emulating network conditions in staging, or you need to understand why Kubernetes bandwidth-limited pods still saturate node links. This file covers the full TC architecture from qdisc primitives to CNI integration.

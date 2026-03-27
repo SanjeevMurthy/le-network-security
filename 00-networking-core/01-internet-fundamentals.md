@@ -1,5 +1,38 @@
 # Internet Fundamentals — Networking Core
 
+## Table of Contents
+
+- [Overview](#overview)
+- [1. What is a Network?](#1-what-is-a-network)
+  - [Two Purposes of Computer Networks](#two-purposes-of-computer-networks)
+  - [Network Types by Geographic Scale](#network-types-by-geographic-scale)
+  - [Network Components](#network-components)
+- [2. The Internet: A Network of Networks](#2-the-internet-a-network-of-networks)
+  - [ISP Hierarchy](#isp-hierarchy)
+- [3. History of the Internet](#3-history-of-the-internet)
+  - [Timeline](#timeline)
+  - [Key Events in Detail](#key-events-in-detail)
+- [4. Internet Standards](#4-internet-standards)
+  - [Why Standards Matter](#why-standards-matter)
+  - [Request for Comments (RFCs)](#request-for-comments-rfcs)
+  - [How a Protocol Becomes a Standard](#how-a-protocol-becomes-a-standard)
+- [5. The Layered Architecture](#5-the-layered-architecture)
+  - [Why Layers?](#why-layers)
+  - [An Analogy: The Postal System](#an-analogy-the-postal-system)
+  - [The TCP/IP 4-Layer Model](#the-tcpip-4-layer-model)
+  - [Layer Responsibilities](#layer-responsibilities)
+  - [TCP/IP vs. OSI at a Glance](#tcpip-vs-osi-at-a-glance)
+  - [Encapsulation](#encapsulation)
+- [6. End Systems and the Network Core](#6-end-systems-and-the-network-core)
+  - [End Systems (Hosts)](#end-systems-hosts)
+  - [Clients and Servers](#clients-and-servers)
+  - [The Network Core: Packet Switching](#the-network-core-packet-switching)
+  - [Addressing: How Packets Find Their Destination](#addressing-how-packets-find-their-destination)
+- [Summary](#summary)
+- [What Comes Next](#what-comes-next)
+
+---
+
 ## Overview
 
 This guide establishes the conceptual foundation for everything else in this series. Before studying protocols, packet captures, or failure analysis, you need a clear mental model of what the Internet is, how it came to be, and how it is organized. The topics here — network types, the ISP hierarchy, Internet history, standards, layered architecture, and end systems — are the vocabulary and mental scaffolding that make everything else legible.

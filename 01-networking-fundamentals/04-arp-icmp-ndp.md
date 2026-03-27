@@ -1,5 +1,30 @@
 # ARP, ICMP, and NDP — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [ARP: Address Resolution Protocol](#arp-address-resolution-protocol)
+  - [Mechanics](#mechanics)
+  - [ARP Cache Operations](#arp-cache-operations)
+  - [Gratuitous ARP (GARP) — HA Failover Mechanism](#gratuitous-arp-garp-ha-failover-mechanism)
+  - [ARP in AWS (Proxy ARP and VPC ARP)](#arp-in-aws-proxy-arp-and-vpc-arp)
+- [ICMP: Internet Control Message Protocol](#icmp-internet-control-message-protocol)
+  - [ICMP Types That Matter in Production](#icmp-types-that-matter-in-production)
+  - [ICMP Type 3 Code 4: Fragmentation Needed (MTU Black Holes)](#icmp-type-3-code-4-fragmentation-needed-mtu-black-holes)
+- [Traceroute and Tracepath Internals](#traceroute-and-tracepath-internals)
+- [Production Scenario: MTU Black Hole Causing Silent Packet Drops](#production-scenario-mtu-black-hole-causing-silent-packet-drops)
+  - [Investigation](#investigation)
+- [NDP: Neighbor Discovery Protocol (IPv6)](#ndp-neighbor-discovery-protocol-ipv6)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 ARP and ICMP are the unsung protocols that make IP networks actually work — and also the source of some of the most confusing production failures. ARP resolves the L3-to-L2 mapping that every IP packet depends on. ICMP carries the error signals that enable path discovery, MTU negotiation, and basic reachability testing. NDP is IPv6's replacement for both. Understanding these protocols deeply means you can diagnose failures that look random but are actually deterministic.

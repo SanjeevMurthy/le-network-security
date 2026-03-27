@@ -1,5 +1,36 @@
 # High-Availability Networking Architecture
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [Physical Layer: NIC Bonding and ToR Redundancy](#physical-layer-nic-bonding-and-tor-redundancy)
+  - [IP Gateway Redundancy: VRRP and Gratuitous ARP](#ip-gateway-redundancy-vrrp-and-gratuitous-arp)
+  - [BGP: ECMP, BFD, and Fast Convergence](#bgp-ecmp-bfd-and-fast-convergence)
+  - [Anycast Routing](#anycast-routing)
+  - [Cloud-Layer HA: Multi-AZ Networking](#cloud-layer-ha-multi-az-networking)
+  - [Health Checks: Application-Aware](#health-checks-application-aware)
+  - [Graceful Shutdown and Connection Draining](#graceful-shutdown-and-connection-draining)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+  - [Split-Brain Prevention](#split-brain-prevention)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale (10x traffic, 10x data centers)](#at-10x-scale-10x-traffic-10x-data-centers)
+- [Security Design](#security-design)
+  - [Network Security Controls](#network-security-controls)
+  - [Out-of-Band Management Network](#out-of-band-management-network)
+- [Cost Considerations](#cost-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

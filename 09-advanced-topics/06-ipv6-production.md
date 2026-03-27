@@ -1,5 +1,44 @@
 # IPv6 in Production
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Address Structure and Notation](#address-structure-and-notation)
+  - [Format](#format)
+  - [Prefix Notation](#prefix-notation)
+- [Address Types](#address-types)
+  - [Well-Known Multicast Addresses](#well-known-multicast-addresses)
+- [NDP: Neighbor Discovery Protocol](#ndp-neighbor-discovery-protocol)
+  - [NS/NA: Neighbor Solicitation / Advertisement](#nsna-neighbor-solicitation-advertisement)
+  - [RS/RA: Router Solicitation / Advertisement](#rsra-router-solicitation-advertisement)
+  - [DAD: Duplicate Address Detection](#dad-duplicate-address-detection)
+- [SLAAC vs DHCPv6](#slaac-vs-dhcpv6)
+  - [SLAAC: Stateless Address Autoconfiguration](#slaac-stateless-address-autoconfiguration)
+  - [DHCPv6: Stateful Address Management](#dhcpv6-stateful-address-management)
+- [Dual-Stack](#dual-stack)
+  - [Happy Eyeballs (RFC 8305)](#happy-eyeballs-rfc-8305)
+- [IPv6 in AWS](#ipv6-in-aws)
+  - [Dual-Stack VPC Configuration](#dual-stack-vpc-configuration)
+  - [EKS IPv6-Only Pods](#eks-ipv6-only-pods)
+- [Transition Mechanisms](#transition-mechanisms)
+  - [NAT64 + DNS64](#nat64-dns64)
+  - [464XLAT (Mobile Networks)](#464xlat-mobile-networks)
+  - [6in4 and 6rd Tunneling](#6in4-and-6rd-tunneling)
+- [Security Considerations](#security-considerations)
+  - [Neighbor Cache Exhaustion](#neighbor-cache-exhaustion)
+  - [ICMPv6 Filtering Mistakes](#icmpv6-filtering-mistakes)
+  - [Extension Header Abuse](#extension-header-abuse)
+- [Common Mistakes](#common-mistakes)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [IPv6-Only K8s Cluster Connecting to IPv4 Database](#ipv6-only-k8s-cluster-connecting-to-ipv4-database)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Debugging Guide](#debugging-guide)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 IPv6 is no longer optional. AWS, GCP, and Azure all offer IPv6-only and dual-stack configurations. Apple mandated IPv6 compatibility for App Store submissions in 2016. Mobile networks globally default to IPv6 (T-Mobile USA runs 100% IPv6 natively). At the staff and principal level, IPv6 proficiency means understanding the failure modes that are invisible to engineers who have only worked in IPv4 environments: SLAAC breaking IP-based access control, neighbor cache exhaustion attacks unique to /64 subnets, ICMPv6 filtering mistakes that silently break path MTU discovery, and the Happy Eyeballs algorithm's implications for latency-sensitive applications. Engineers who can design a dual-stack production cluster and configure NAT64/DNS64 for an IPv6-only Kubernetes deployment are significantly more deployable.

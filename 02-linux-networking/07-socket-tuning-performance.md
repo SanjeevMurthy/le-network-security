@@ -1,5 +1,39 @@
 # Socket Tuning and Network Performance
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Socket Buffer Architecture: Three Levels](#socket-buffer-architecture-three-levels)
+  - [Level 1: Per-Socket Buffer Sizing](#level-1-per-socket-buffer-sizing)
+  - [Level 2: Per-Protocol (tcp_mem)](#level-2-per-protocol-tcp_mem)
+  - [Level 3: Socket Memory Monitoring](#level-3-socket-memory-monitoring)
+- [TCP Window Scaling](#tcp-window-scaling)
+  - [Why Window Scaling Matters](#why-window-scaling-matters)
+  - [Diagnosing Window Scaling Issues](#diagnosing-window-scaling-issues)
+- [Sysctls Reference Table](#sysctls-reference-table)
+  - [Critical Interactions](#critical-interactions)
+- [NUMA-Aware Networking](#numa-aware-networking)
+  - [Why NUMA Matters for Network Performance](#why-numa-matters-for-network-performance)
+- [RSS and NIC Queue Tuning](#rss-and-nic-queue-tuning)
+  - [Receive Side Scaling](#receive-side-scaling)
+  - [NIC Ring Buffer Tuning](#nic-ring-buffer-tuning)
+- [Interrupt Coalescing](#interrupt-coalescing)
+  - [The Latency vs Throughput Trade-off](#the-latency-vs-throughput-trade-off)
+- [Benchmarking: Tools and Interpretation](#benchmarking-tools-and-interpretation)
+  - [iperf3: Throughput Testing](#iperf3-throughput-testing)
+  - [netperf: Latency Testing](#netperf-latency-testing)
+  - [ss: Real-Time Connection Inspection](#ss-real-time-connection-inspection)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: iperf3 Shows 1Gbps but Application Only Achieves 100Mbps](#scenario-iperf3-shows-1gbps-but-application-only-achieves-100mbps)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Default Linux socket parameters are tuned for a 1990s internet — 64KB buffers, 128-connection listen backlog, 28K ephemeral ports. A modern production server handling 100K connections to a CDN over 10Gbps WAN links needs fundamentally different parameters. This file covers the complete socket tuning stack: from per-socket buffers to global TCP memory limits, RSS for multi-core scaling, and how to correctly interpret benchmarking results.

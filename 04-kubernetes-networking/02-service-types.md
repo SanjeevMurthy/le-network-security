@@ -1,5 +1,28 @@
 # Kubernetes Service Types
 
+## Table of Contents
+
+- [Overview](#overview)
+- [ClusterIP](#clusterip)
+- [NodePort](#nodeport)
+- [LoadBalancer](#loadbalancer)
+- [ExternalName](#externalname)
+- [Headless Service (ClusterIP: None)](#headless-service-clusterip-none)
+- [EndpointSlice](#endpointslice)
+- [ExternalIPs](#externalips)
+- [Session Affinity](#session-affinity)
+- [Service Type Comparison](#service-type-comparison)
+- [Production Scenario: StatefulSet DNS Not Resolving](#production-scenario-statefulset-dns-not-resolving)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 A Kubernetes Service is a stable network identity for a set of pods selected by label. Pods are ephemeral — they come and go with rolling updates and node failures. Services provide the permanent ClusterIP, DNS name, and load-balancing endpoint that consumers depend on. Understanding each service type, its implementation, and its failure modes is foundational for production cluster operations.

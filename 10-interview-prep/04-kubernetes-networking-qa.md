@@ -1,5 +1,19 @@
 # Kubernetes Networking — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Trace the complete packet path from a pod on Node A to a pod on Node B. Include all interfaces, tables, and decisions.](#q-trace-the-complete-packet-path-from-a-pod-on-node-a-to-a-pod-on-node-b-include-all-interfaces-tables-and-decisions)
+- [Q: How does kube-proxy implement ClusterIP? Walk through the iptables rules for a service with 3 endpoints.](#q-how-does-kube-proxy-implement-clusterip-walk-through-the-iptables-rules-for-a-service-with-3-endpoints)
+- [Q: Why is Cilium eBPF better than kube-proxy at scale? Be specific about the mechanism.](#q-why-is-cilium-ebpf-better-than-kube-proxy-at-scale-be-specific-about-the-mechanism)
+- [Q: A NetworkPolicy is blocking traffic. How do you debug it without guessing?](#q-a-networkpolicy-is-blocking-traffic-how-do-you-debug-it-without-guessing)
+- [Q: What causes ndots:5 DNS latency in Kubernetes and what are the trade-offs of fixing it?](#q-what-causes-ndots5-dns-latency-in-kubernetes-and-what-are-the-trade-offs-of-fixing-it)
+- [Q: Istio mTLS — how does it work without changing application code?](#q-istio-mtls-how-does-it-work-without-changing-application-code)
+- [Q: StatefulSet pod DNS — why does it need a headless service and how does it work?](#q-statefulset-pod-dns-why-does-it-need-a-headless-service-and-how-does-it-work)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 Kubernetes networking interviews test whether you understand that K8s networking is entirely built on Linux primitives — veth pairs, iptables/eBPF, network namespaces, and routing tables. Every "K8s networking issue" is ultimately a Linux networking issue. The key questions interviewers ask: can you trace a packet from pod A to pod B step by step? Can you debug a NetworkPolicy without guessing? Do you understand why kube-proxy iptables mode breaks at scale? Source material: `06_Cross_Domain_Integration.md` and `02-linux-networking/`. See `04-kubernetes-networking/` for deeper reading.

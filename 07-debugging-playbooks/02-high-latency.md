@@ -1,5 +1,24 @@
 # 02: High Latency — Service Is Slow
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [Latency vs Throughput: Distinguish First](#latency-vs-throughput-distinguish-first)
+- [Decision Tree](#decision-tree)
+- [Step-by-Step Procedure](#step-by-step-procedure)
+  - [Step 1: Break Down Latency by Phase](#step-1-break-down-latency-by-phase)
+  - [Step 2: DNS Latency Check](#step-2-dns-latency-check)
+  - [Step 3: TCP Retransmission Analysis](#step-3-tcp-retransmission-analysis)
+  - [Step 4: Network Path Analysis](#step-4-network-path-analysis)
+  - [Step 5: Server-Side Resource Check](#step-5-server-side-resource-check)
+  - [Step 6: Application-Level Latency](#step-6-application-level-latency)
+  - [Step 7: K8s-Specific Latency Sources](#step-7-k8s-specific-latency-sources)
+- [TCP Retransmission Capture with tcpdump](#tcp-retransmission-capture-with-tcpdump)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: p99 latency is elevated, health checks are passing but responses are slow, users report slowness, or latency alerts fire. The service is reachable (use `01-service-not-reachable.md` if it is not) but slower than baseline.

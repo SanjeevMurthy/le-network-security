@@ -1,5 +1,31 @@
 # NAT, PAT, and Ephemeral Ports — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [SNAT vs DNAT vs PAT](#snat-vs-dnat-vs-pat)
+- [conntrack: Linux Connection Tracking](#conntrack-linux-connection-tracking)
+  - [conntrack States and Timeouts](#conntrack-states-and-timeouts)
+  - [conntrack Timeouts by Protocol](#conntrack-timeouts-by-protocol)
+- [conntrack Table Exhaustion](#conntrack-table-exhaustion)
+  - [Diagnosis and Fix](#diagnosis-and-fix)
+- [Ephemeral Port Range](#ephemeral-port-range)
+  - [Port Exhaustion vs conntrack Exhaustion](#port-exhaustion-vs-conntrack-exhaustion)
+- [AWS NAT Gateway Limitations](#aws-nat-gateway-limitations)
+  - [AWS NAT Gateway SNAT Behavior](#aws-nat-gateway-snat-behavior)
+- [Production Scenario: Microservice Can't Open New Connections Despite Low CPU](#production-scenario-microservice-cant-open-new-connections-despite-low-cpu)
+  - [Step-by-Step Diagnosis](#step-by-step-diagnosis)
+  - [Fix](#fix)
+- [Tuning Reference](#tuning-reference)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Network Address Translation is one of those concepts that seems simple until you're staring at a production incident where perfectly healthy services can't open new connections. NAT exhaustion and conntrack table overflow produce identical symptoms — connection failures with no firewall blocks — and distinguishing between them is a matter of knowing exactly which kernel counters to check. This guide covers the full stack: conntrack mechanics, SNAT/DNAT, port exhaustion, and the specific behaviors of AWS NAT Gateway.

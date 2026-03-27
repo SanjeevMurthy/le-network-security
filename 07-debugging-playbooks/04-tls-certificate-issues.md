@@ -1,5 +1,23 @@
 # 04: TLS Certificate Issues
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [TLS Error Classification](#tls-error-classification)
+- [Decision Tree](#decision-tree)
+- [Step-by-Step Procedure](#step-by-step-procedure)
+  - [Step 1: Get the Exact TLS Error](#step-1-get-the-exact-tls-error)
+  - [Step 2: Inspect the Certificate](#step-2-inspect-the-certificate)
+  - [Step 3: Check Expiry](#step-3-check-expiry)
+  - [Step 4: Check Hostname (SAN)](#step-4-check-hostname-san)
+  - [Step 5: Check the Certificate Chain](#step-5-check-the-certificate-chain)
+  - [Step 6: Kubernetes cert-manager Checks](#step-6-kubernetes-cert-manager-checks)
+  - [Step 7: mTLS Debugging](#step-7-mtls-debugging)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: services fail with TLS errors, browsers show certificate warnings, mTLS authentication is failing, cert-manager shows failed certificate requests, or you see `SSL_ERROR_RX_RECORD_TOO_LONG`, `certificate has expired`, `CERTIFICATE_VERIFY_FAILED`, or `handshake failure` errors.

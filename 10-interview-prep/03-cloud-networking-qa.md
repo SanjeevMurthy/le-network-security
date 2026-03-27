@@ -1,5 +1,20 @@
 # Cloud Networking — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: VPC Peering vs Transit Gateway vs PrivateLink — when do you use each and what are the hard limits?](#q-vpc-peering-vs-transit-gateway-vs-privatelink-when-do-you-use-each-and-what-are-the-hard-limits)
+- [Q: Why do you need explicit route table entries for VPC peering? Why isn't it automatic?](#q-why-do-you-need-explicit-route-table-entries-for-vpc-peering-why-isnt-it-automatic)
+- [Q: You have Direct Connect for primary connectivity and a VPN as backup. How does BGP route preference control failover, and what are the timing considerations?](#q-you-have-direct-connect-for-primary-connectivity-and-a-vpn-as-backup-how-does-bgp-route-preference-control-failover-and-what-are-the-timing-considerations)
+- [Q: EKS pods are getting EADDRNOTAVAIL errors connecting to RDS. You suspect pod IP exhaustion. Walk through diagnosis and WARM_IP_TARGET tuning.](#q-eks-pods-are-getting-eaddrnotavail-errors-connecting-to-rds-you-suspect-pod-ip-exhaustion-walk-through-diagnosis-and-warm_ip_target-tuning)
+- [Q: Security Group vs NACL — what is the fundamental difference and when does it matter?](#q-security-group-vs-nacl-what-is-the-fundamental-difference-and-when-does-it-matter)
+- [Q: Route 53 health check failover — how does it work, what triggers it, and what are the timing gaps?](#q-route-53-health-check-failover-how-does-it-work-what-triggers-it-and-what-are-the-timing-gaps)
+- [Q: AWS NAT Gateway has a per-destination connection limit of 55,000. How does this cause problems in production and how do you architect around it?](#q-aws-nat-gateway-has-a-per-destination-connection-limit-of-55000-how-does-this-cause-problems-in-production-and-how-do-you-architect-around-it)
+- [Q: Azure CNI vs Azure CNI Overlay — what is the difference and how would you migrate?](#q-azure-cni-vs-azure-cni-overlay-what-is-the-difference-and-how-would-you-migrate)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 Cloud networking interviews test whether you understand that AWS VPCs, Azure VNets, and GCP VPCs are software-defined overlays with specific constraints that don't exist in physical networks. The most common failure patterns are: treating cloud networking like on-premises networking (wrong mental model), not knowing the service limits (NAT Gateway 55K connections, VPC peering 125 peers, etc.), and not understanding the stateful vs stateless distinction for Security Groups vs NACLs. See `03-cloud-networking/` for deeper reading.

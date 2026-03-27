@@ -1,5 +1,40 @@
 # Azure Load Balancers: From L4 to Global
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Azure Load Balancer (Standard)](#azure-load-balancer-standard)
+  - [Key Components](#key-components)
+  - [HA Ports Mode](#ha-ports-mode)
+  - [Standard vs Basic ALB](#standard-vs-basic-alb)
+  - [Outbound Rules and SNAT](#outbound-rules-and-snat)
+- [Application Gateway](#application-gateway)
+  - [Key Features](#key-features)
+  - [Autoscaling (v2 SKU)](#autoscaling-v2-sku)
+  - [Health Probe Configuration](#health-probe-configuration)
+- [Azure Front Door](#azure-front-door)
+  - [Key Architecture Concepts](#key-architecture-concepts)
+  - [Origins and Origin Groups](#origins-and-origin-groups)
+- [Azure Traffic Manager](#azure-traffic-manager)
+  - [Routing Methods](#routing-methods)
+  - [Traffic Manager Limitations](#traffic-manager-limitations)
+- [Load Balancer Architecture Diagram](#load-balancer-architecture-diagram)
+- [Decision Matrix](#decision-matrix)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - ["Application Gateway 502 Errors for Specific Backends — Health Probe Misconfiguration"](#application-gateway-502-errors-for-specific-backends-health-probe-misconfiguration)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+  - [Application Gateway Health and Diagnostics](#application-gateway-health-and-diagnostics)
+  - [Azure Load Balancer Diagnostics](#azure-load-balancer-diagnostics)
+  - [Front Door Diagnostics](#front-door-diagnostics)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Azure's load balancing portfolio spans four distinct products — each operating at a different layer and scope. A Senior SRE must understand not just what each product does, but the failure modes unique to each, and critically, how they compose. An Application Gateway behind Azure Front Door behind an Azure Load Balancer is a real production topology — and when something breaks, you need to know which layer to investigate first.

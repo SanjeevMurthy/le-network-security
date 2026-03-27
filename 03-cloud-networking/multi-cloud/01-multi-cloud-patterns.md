@@ -1,5 +1,45 @@
 # Multi-Cloud Networking Patterns
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Why Multi-Cloud (Real Motivations)](#why-multi-cloud-real-motivations)
+- [Routing Paradigm Differences](#routing-paradigm-differences)
+  - [AWS Routing Model](#aws-routing-model)
+  - [Azure Routing Model](#azure-routing-model)
+  - [GCP Routing Model](#gcp-routing-model)
+- [IPAM Strategy: Preventing CIDR Overlaps](#ipam-strategy-preventing-cidr-overlaps)
+  - [Address Space Allocation Strategy](#address-space-allocation-strategy)
+  - [Cloud-Native IPAM Tools](#cloud-native-ipam-tools)
+- [Cross-Cloud Connectivity Options](#cross-cloud-connectivity-options)
+  - [Option 1: Internet with Encryption (WireGuard / IPSec)](#option-1-internet-with-encryption-wireguard-ipsec)
+  - [Option 2: Cloud Provider Interconnect via Exchange](#option-2-cloud-provider-interconnect-via-exchange)
+  - [Option 3: SD-WAN Overlays](#option-3-sd-wan-overlays)
+- [DNS Federation in Multi-Cloud](#dns-federation-in-multi-cloud)
+  - [The Problem](#the-problem)
+  - [Solution Architecture: Centralized DNS Resolver](#solution-architecture-centralized-dns-resolver)
+- [Service Mesh Multi-Cluster](#service-mesh-multi-cluster)
+  - [Istio Multi-Cluster](#istio-multi-cluster)
+  - [Cilium Cluster Mesh](#cilium-cluster-mesh)
+- [Security Perimeter in Multi-Cloud](#security-perimeter-in-multi-cloud)
+- [Observability in Multi-Cloud](#observability-in-multi-cloud)
+  - [Centralized Logging](#centralized-logging)
+- [Multi-Cloud Architecture Diagram](#multi-cloud-architecture-diagram)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - ["Latency Spikes Between AWS and Azure Services — Diagnosis and Optimization"](#latency-spikes-between-aws-and-azure-services-diagnosis-and-optimization)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+  - [Cross-Cloud Connectivity Testing](#cross-cloud-connectivity-testing)
+  - [BGP Route Verification](#bgp-route-verification)
+  - [Service Mesh Cross-Cluster Health](#service-mesh-cross-cluster-health)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Multi-cloud is not a technology choice — it's an operational posture that comes with significant networking complexity. When AWS and Azure each have their own routing paradigms, CIDR management assumptions, and DNS namespaces, the seams between clouds become the most likely place for production incidents to originate. Senior SREs in multi-cloud environments spend most of their networking time at these seams — understanding BGP propagation between AWS Transit Gateway and Azure Virtual WAN, diagnosing latency spikes on cross-cloud calls that pass through an internet exchange, or debugging IPAM conflicts that were invisible until two teams merged their address spaces.

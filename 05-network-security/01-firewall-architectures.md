@@ -1,5 +1,34 @@
 # Firewall Architectures
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Stateless vs Stateful Firewalls](#stateless-vs-stateful-firewalls)
+  - [Stateless Firewalls (ACLs)](#stateless-firewalls-acls)
+  - [Stateful Firewalls (Connection Tracking)](#stateful-firewalls-connection-tracking)
+  - [Next-Generation Firewalls (NGFW)](#next-generation-firewalls-ngfw)
+- [Firewall Placement Patterns](#firewall-placement-patterns)
+  - [Defense-in-Depth Architecture](#defense-in-depth-architecture)
+  - [Perimeter (North-South) Firewalls](#perimeter-north-south-firewalls)
+  - [East-West (Microsegmentation) Firewalls](#east-west-microsegmentation-firewalls)
+  - [Host-Based Firewalls (iptables / nftables)](#host-based-firewalls-iptables-nftables)
+- [Cloud Firewalls](#cloud-firewalls)
+  - [AWS Security Groups](#aws-security-groups)
+  - [AWS NACLs (Network Access Control Lists)](#aws-nacls-network-access-control-lists)
+  - [AWS Network Firewall](#aws-network-firewall)
+  - [Azure Firewall](#azure-firewall)
+- [Firewall Rule Ordering](#firewall-rule-ordering)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Firewalls enforce network access control by inspecting and filtering traffic based on defined rules. Understanding how firewalls work at each layer — from stateless ACLs to next-generation deep packet inspection — is fundamental for Senior SREs designing secure, observable infrastructure.

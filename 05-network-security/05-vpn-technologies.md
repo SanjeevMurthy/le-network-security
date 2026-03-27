@@ -1,5 +1,34 @@
 # VPN Technologies
 
+## Table of Contents
+
+- [Overview](#overview)
+- [IPSec Architecture](#ipsec-architecture)
+  - [IKE (Internet Key Exchange) — Phase-Based Architecture](#ike-internet-key-exchange-phase-based-architecture)
+  - [IKEv1 vs IKEv2](#ikev1-vs-ikev2)
+  - [ESP vs AH](#esp-vs-ah)
+  - [Transport vs Tunnel Mode](#transport-vs-tunnel-mode)
+- [WireGuard](#wireguard)
+  - [WireGuard Cryptography (Noise Protocol Framework)](#wireguard-cryptography-noise-protocol-framework)
+  - [WireGuard Configuration](#wireguard-configuration)
+- [WireGuard vs OpenVPN vs IPSec Comparison](#wireguard-vs-openvpn-vs-ipsec-comparison)
+- [AWS Site-to-Site VPN](#aws-site-to-site-vpn)
+- [Split Tunneling vs Full Tunnel](#split-tunneling-vs-full-tunnel)
+- [Perfect Forward Secrecy (PFS)](#perfect-forward-secrecy-pfs)
+- [WireGuard in Kubernetes](#wireguard-in-kubernetes)
+  - [Cilium WireGuard Node-to-Node Encryption](#cilium-wireguard-node-to-node-encryption)
+  - [Calico WireGuard Encryption](#calico-wireguard-encryption)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Virtual Private Networks (VPNs) create encrypted tunnels between endpoints over untrusted networks. For Senior SREs, VPN knowledge spans from kernel-level protocol mechanics to cloud site-to-site connectivity and Kubernetes node encryption.

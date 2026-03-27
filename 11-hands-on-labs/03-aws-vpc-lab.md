@@ -1,5 +1,40 @@
 # Lab 03: AWS VPC Networking
 
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [Prerequisites](#prerequisites)
+- [Debugging Methodology Alignment](#debugging-methodology-alignment)
+- [Lab 3A: VPC + 3-Tier Subnet Design](#lab-3a-vpc-3-tier-subnet-design)
+  - [Architecture](#architecture)
+  - [Setup: Create VPC](#setup-create-vpc)
+  - [Setup: Create Subnets](#setup-create-subnets)
+  - [Setup: Internet Gateway + Elastic IP + NAT Gateway](#setup-internet-gateway-elastic-ip-nat-gateway)
+  - [Setup: Route Tables](#setup-route-tables)
+  - [Verify: Routing Behavior](#verify-routing-behavior)
+- [Lab 3B: Security Group + NACL Debugging](#lab-3b-security-group-nacl-debugging)
+  - [Background: SG vs NACL](#background-sg-vs-nacl)
+  - [Setup: Create Security Groups](#setup-create-security-groups)
+  - [The Break: NACL That Forgets Ephemeral Return Ports](#the-break-nacl-that-forgets-ephemeral-return-ports)
+  - [Symptoms](#symptoms)
+  - [Diagnosis: VPC Flow Logs](#diagnosis-vpc-flow-logs)
+  - [Root Cause](#root-cause)
+  - [Fix: Add the Missing Ephemeral Port Rules](#fix-add-the-missing-ephemeral-port-rules)
+- [Lab 3C: VPC Peering Troubleshooting](#lab-3c-vpc-peering-troubleshooting)
+  - [Setup: Create Two VPCs](#setup-create-two-vpcs)
+  - [Setup: Create VPC Peering Connection](#setup-create-vpc-peering-connection)
+  - [The Break: Add Route Only on One Side](#the-break-add-route-only-on-one-side)
+  - [Symptoms](#symptoms)
+  - [Diagnosis](#diagnosis)
+  - [Root Cause](#root-cause)
+  - [Fix: Add the Missing Route in VPC-B](#fix-add-the-missing-route-in-vpc-b)
+  - [Verify](#verify)
+  - [Cleanup](#cleanup)
+- [Summary: AWS VPC Lab Checklist](#summary-aws-vpc-lab-checklist)
+- [Interview Discussion Points](#interview-discussion-points)
+
+---
+
 ## Learning Objectives
 
 - Design and build a production 3-tier VPC from scratch using AWS CLI

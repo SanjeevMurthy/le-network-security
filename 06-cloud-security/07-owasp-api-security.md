@@ -1,5 +1,51 @@
 # OWASP API Security Top 10
 
+## Table of Contents
+
+- [Overview](#overview)
+- [API1: Broken Object Level Authorization (BOLA)](#api1-broken-object-level-authorization-bola)
+  - [Attack Mechanics](#attack-mechanics)
+  - [Network-Level Mitigations](#network-level-mitigations)
+  - [Application Fix](#application-fix)
+- [API2: Broken Authentication](#api2-broken-authentication)
+  - [JWT Algorithm Confusion Attack](#jwt-algorithm-confusion-attack)
+  - [Network-Level Mitigations](#network-level-mitigations)
+- [API3: Broken Object Property Level Authorization (BOPLA)](#api3-broken-object-property-level-authorization-bopla)
+  - [Attack Mechanics](#attack-mechanics)
+  - [Fix: Explicit Schema Validation](#fix-explicit-schema-validation)
+- [API4: Unrestricted Resource Consumption](#api4-unrestricted-resource-consumption)
+  - [Attack Scenarios](#attack-scenarios)
+  - [Network-Level + Gateway Controls](#network-level-gateway-controls)
+- [API5: Broken Function Level Authorization (BFLA)](#api5-broken-function-level-authorization-bfla)
+  - [Attack Mechanics](#attack-mechanics)
+  - [Fix: Default-Deny Function Authorization](#fix-default-deny-function-authorization)
+- [API6: Unrestricted Access to Sensitive Business Flows](#api6-unrestricted-access-to-sensitive-business-flows)
+  - [Attack Scenarios](#attack-scenarios)
+  - [Mitigations](#mitigations)
+- [API7: Server-Side Request Forgery (SSRF)](#api7-server-side-request-forgery-ssrf)
+  - [Attack Mechanics](#attack-mechanics)
+  - [Detection and Fix](#detection-and-fix)
+- [API8: Security Misconfiguration](#api8-security-misconfiguration)
+  - [Critical Misconfigurations](#critical-misconfigurations)
+  - [WAF Rules for Misconfiguration Detection](#waf-rules-for-misconfiguration-detection)
+- [API9: Improper Inventory Management](#api9-improper-inventory-management)
+  - [Symptoms of Shadow APIs](#symptoms-of-shadow-apis)
+  - [API Discovery and Inventory](#api-discovery-and-inventory)
+- [API10: Unsafe Consumption of APIs](#api10-unsafe-consumption-of-apis)
+  - [Attack Scenario](#attack-scenario)
+  - [Fix: Treat Third-Party Responses as Untrusted Input](#fix-treat-third-party-responses-as-untrusted-input)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [SSRF via Image Upload Feature Leaking AWS IAM Credentials](#ssrf-via-image-upload-feature-leaking-aws-iam-credentials)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 APIs are the nervous system of modern distributed architecture — microservices, mobile backends, SaaS integrations, and partner ecosystems all communicate through APIs. This concentration of functionality in API endpoints makes them the highest-impact attack surface in contemporary software. The OWASP API Security Top 10 (2023 edition) reflects a critical insight: five of the ten risks are authorization failures, not injection or transport vulnerabilities. Traditional WAFs and network controls provide limited protection against business logic attacks that abuse legitimate API functionality.

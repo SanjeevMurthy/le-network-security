@@ -1,5 +1,20 @@
 # Networking Fundamentals — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Walk me through the TCP state machine. A client connects to a server and then the client crashes. What states does the server go through, and what kernel timer eventually clears the connection?](#q-walk-me-through-the-tcp-state-machine-a-client-connects-to-a-server-and-then-the-client-crashes-what-states-does-the-server-go-through-and-what-kernel-timer-eventually-clears-the-connection)
+- [Q: BGP path selection: give me a scenario where local_pref overrides AS_PATH length. Why does BGP prioritize local_pref over AS_PATH?](#q-bgp-path-selection-give-me-a-scenario-where-local_pref-overrides-as_path-length-why-does-bgp-prioritize-local_pref-over-as_path)
+- [Q: You are getting EADDRNOTAVAIL errors on a high-throughput proxy server. How do you diagnose NAT port exhaustion and what are the structural fixes?](#q-you-are-getting-eaddrnotavail-errors-on-a-high-throughput-proxy-server-how-do-you-diagnose-nat-port-exhaustion-and-what-are-the-structural-fixes)
+- [Q: Explain DNS failure types. A client gets NXDOMAIN, SERVFAIL, and timeout — what causes each and how do you debug them differently?](#q-explain-dns-failure-types-a-client-gets-nxdomain-servfail-and-timeout-what-causes-each-and-how-do-you-debug-them-differently)
+- [Q: How does MTU black hole happen and how do you detect and fix it? A service has 2% of requests timing out only from certain client populations.](#q-how-does-mtu-black-hole-happen-and-how-do-you-detect-and-fix-it-a-service-has-2-of-requests-timing-out-only-from-certain-client-populations)
+- [Q: Design subnets for a 3-tier VPC with Kubernetes pod CIDRs. What constraints do you have?](#q-design-subnets-for-a-3-tier-vpc-with-kubernetes-pod-cidrs-what-constraints-do-you-have)
+- [Q: What is ECMP hash polarization and when does it cause problems in production?](#q-what-is-ecmp-hash-polarization-and-when-does-it-cause-problems-in-production)
+- [Q: How is Gratuitous ARP used in HA failover? What can go wrong?](#q-how-is-gratuitous-arp-used-in-ha-failover-what-can-go-wrong)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 This section tests whether you understand the protocols that everything else is built on. Interviewers use fundamentals questions to assess your mental model quality — a candidate who can trace a TCP state machine or explain ECMP hash polarization has the foundation to reason about unfamiliar systems. Every answer here should be grounded in specific numbers (port ranges, byte counts, timer values) and reference a real failure mode. See `01-networking-fundamentals/` for deeper reading.

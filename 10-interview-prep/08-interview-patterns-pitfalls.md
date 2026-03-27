@@ -1,5 +1,18 @@
 # Interview Patterns and Pitfalls — What Interviewers Actually Evaluate
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: An interviewer asks you to explain the OSI model. Most candidates recite all 7 layers and stop. What do Staff engineers say instead?](#q-an-interviewer-asks-you-to-explain-the-osi-model-most-candidates-recite-all-7-layers-and-stop-what-do-staff-engineers-say-instead)
+- [Q: An interviewer gives you a live scenario: "A service on port 8080 is not responding. Debug it." Many candidates jump to application logs immediately. What is the systematic 60-second triage?](#q-an-interviewer-gives-you-a-live-scenario-a-service-on-port-8080-is-not-responding-debug-it-many-candidates-jump-to-application-logs-immediately-what-is-the-systematic-60-second-triage)
+- [Q: How do you articulate trade-offs at staff level? Give me the framework.](#q-how-do-you-articulate-trade-offs-at-staff-level-give-me-the-framework)
+- [Q: What are the 5 most common failure patterns in networking interviews at the Staff level?](#q-what-are-the-5-most-common-failure-patterns-in-networking-interviews-at-the-staff-level)
+- [Q: How do you answer "debug this" questions without random commands?](#q-how-do-you-answer-debug-this-questions-without-random-commands)
+- [Q: Live debugging simulation — a pod in Kubernetes can't connect to a service. Walk me through exactly what you'd do at a terminal.](#q-live-debugging-simulation-a-pod-in-kubernetes-cant-connect-to-a-service-walk-me-through-exactly-what-youd-do-at-a-terminal)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 This section addresses the meta-layer of technical interviews: how to structure answers, what interviewers are actually measuring, how to avoid common failure patterns, and how to demonstrate different levels of seniority. Understanding these patterns is worth as much as technical knowledge — a candidate who knows every iptables command but can't structure a coherent answer under pressure will fail, while a candidate with solid fundamentals and good structure will often pass. Source material: `08_Interview_Patterns_and_Pitfalls.md` (extended). See `10-interview-prep/00-study-guide.md` for the evaluation rubric by level.

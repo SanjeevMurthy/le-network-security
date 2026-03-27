@@ -1,5 +1,35 @@
 # Zero Trust Architecture
 
+## Table of Contents
+
+- [Overview](#overview)
+- [NIST SP 800-207: Seven Tenets](#nist-sp-800-207-seven-tenets)
+  - [Tenet 1: All data sources and computing services are resources](#tenet-1-all-data-sources-and-computing-services-are-resources)
+  - [Tenet 2: All communication is secured regardless of network location](#tenet-2-all-communication-is-secured-regardless-of-network-location)
+  - [Tenet 3: Access is granted on a per-session basis](#tenet-3-access-is-granted-on-a-per-session-basis)
+  - [Tenet 4: Access is determined by dynamic policy](#tenet-4-access-is-determined-by-dynamic-policy)
+  - [Tenet 5: Enterprise monitors and measures the integrity of all assets](#tenet-5-enterprise-monitors-and-measures-the-integrity-of-all-assets)
+  - [Tenet 6: Authentication and authorization are strictly enforced before access](#tenet-6-authentication-and-authorization-are-strictly-enforced-before-access)
+  - [Tenet 7: Enterprise collects telemetry and uses it to improve security posture](#tenet-7-enterprise-collects-telemetry-and-uses-it-to-improve-security-posture)
+- [NIST ZTA Components: PE, PA, PEP](#nist-zta-components-pe-pa-pep)
+- [BeyondCorp: Google's Production ZTA](#beyondcorp-googles-production-zta)
+- [SPIFFE/SPIRE: Workload Identity](#spiffespire-workload-identity)
+- [OPA/Rego: Policy as Code](#oparego-policy-as-code)
+- [ZTA for Kubernetes: Layered Architecture](#zta-for-kubernetes-layered-architecture)
+- [Implementation Roadmap: Crawl → Walk → Run](#implementation-roadmap-crawl-walk-run)
+- [Anti-Patterns](#anti-patterns)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Implementing ZTA Incrementally Without Downtime](#implementing-zta-incrementally-without-downtime)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Zero Trust Architecture (ZTA) is the security paradigm that eliminates implicit trust from every layer of the stack. The traditional perimeter model assumed that anything inside the corporate network was trustworthy — a flat network where lateral movement was trivial once perimeter defenses fell. ZTA replaces this with a single governing principle: **never trust, always verify**. Every access request — regardless of source network, prior authentication state, or user identity — is evaluated against current signals before access is granted.

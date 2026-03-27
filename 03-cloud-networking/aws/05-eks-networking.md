@@ -4,6 +4,42 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [EKS Networking Fundamentals](#eks-networking-fundamentals)
+  - [Pod Networking Models](#pod-networking-models)
+- [VPC CNI (aws-node)](#vpc-cni-aws-node)
+  - [Maximum Pods Formula](#maximum-pods-formula)
+  - [ENI Management and Warm Pool](#eni-management-and-warm-pool)
+- [Prefix Delegation Mode](#prefix-delegation-mode)
+  - [Enabling Prefix Delegation](#enabling-prefix-delegation)
+- [Security Groups for Pods](#security-groups-for-pods)
+  - [SecurityGroupPolicy CRD](#securitygrouppolicy-crd)
+  - [Security Groups for Pods: Trade-offs](#security-groups-for-pods-trade-offs)
+- [EKS Cluster Endpoint Modes](#eks-cluster-endpoint-modes)
+- [CoreDNS in EKS](#coredns-in-eks)
+  - [ndots:5 Problem](#ndots5-problem)
+  - [Optimization](#optimization)
+- [kube-proxy in EKS](#kube-proxy-in-eks)
+  - [iptables vs IPVS Mode](#iptables-vs-ipvs-mode)
+  - [Disabling kube-proxy for Cilium](#disabling-kube-proxy-for-cilium)
+- [AWS Load Balancer Controller](#aws-load-balancer-controller)
+  - [IngressClass Annotation](#ingressclass-annotation)
+  - [Service (creates NLB)](#service-creates-nlb)
+  - [IP Mode vs Instance Mode](#ip-mode-vs-instance-mode)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Debugging Walkthrough](#debugging-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 EKS (Elastic Kubernetes Service) networking is the intersection of Kubernetes networking abstractions and AWS VPC infrastructure. Unlike other CNI plugins that use overlays, the VPC CNI plugin gives pods real VPC IP addresses — meaning pods are first-class citizens in the VPC routing domain.

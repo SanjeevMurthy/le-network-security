@@ -1,5 +1,44 @@
 # Azure VNet Fundamentals
 
+## Table of Contents
+
+- [Overview](#overview)
+- [VNet Address Space and Subnet Reservations](#vnet-address-space-and-subnet-reservations)
+  - [Multiple CIDR Blocks on a VNet](#multiple-cidr-blocks-on-a-vnet)
+- [Network Security Groups (NSGs)](#network-security-groups-nsgs)
+  - [NSG Attachment Points](#nsg-attachment-points)
+  - [Priority System](#priority-system)
+  - [NSG Service Tags](#nsg-service-tags)
+- [Application Security Groups (ASGs)](#application-security-groups-asgs)
+- [Subnet Delegation](#subnet-delegation)
+- [User-Defined Routes (UDRs)](#user-defined-routes-udrs)
+  - [Key Next-Hop Types](#key-next-hop-types)
+  - [UDR for NVA Hairpinning](#udr-for-nva-hairpinning)
+- [Azure DNS](#azure-dns)
+  - [Private DNS Zones](#private-dns-zones)
+  - [Split-Horizon DNS](#split-horizon-dns)
+- [Service Endpoints vs Private Endpoints](#service-endpoints-vs-private-endpoints)
+  - [Service Endpoints](#service-endpoints)
+  - [Private Endpoints](#private-endpoints)
+  - [Comparison](#comparison)
+- [Architecture Diagram](#architecture-diagram)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - ["AKS Pod Cannot Reach Azure Storage — Service Endpoint vs Private Endpoint Confusion"](#aks-pod-cannot-reach-azure-storage-service-endpoint-vs-private-endpoint-confusion)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+  - [Step 1: Azure Network Watcher — IP Flow Verify](#step-1-azure-network-watcher-ip-flow-verify)
+  - [Step 2: Effective Routes](#step-2-effective-routes)
+  - [Step 3: Effective NSG Rules](#step-3-effective-nsg-rules)
+  - [Step 4: NSG Flow Logs](#step-4-nsg-flow-logs)
+  - [Step 5: Private Endpoint DNS Verification](#step-5-private-endpoint-dns-verification)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Azure Virtual Network (VNet) is the fundamental building block of Azure networking. Unlike AWS VPCs where you get one CIDR block, Azure VNets support multiple CIDR blocks assigned to the same VNet — a key architectural flexibility that matters when you need non-contiguous address space or are expanding an existing VNet without downtime.

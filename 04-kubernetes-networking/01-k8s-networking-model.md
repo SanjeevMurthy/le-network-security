@@ -1,5 +1,31 @@
 # Kubernetes Networking Model
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Pod Networking Mechanics](#pod-networking-mechanics)
+  - [The veth Pair](#the-veth-pair)
+  - [Node-Level Components](#node-level-components)
+- [kube-proxy Modes](#kube-proxy-modes)
+  - [iptables Mode (Default)](#iptables-mode-default)
+  - [IPVS Mode (Recommended for 1000+ services)](#ipvs-mode-recommended-for-1000-services)
+  - [nftables Mode (Beta, K8s 1.29+)](#nftables-mode-beta-k8s-129)
+- [Service VIP Mechanics](#service-vip-mechanics)
+- [Traffic Flows](#traffic-flows)
+  - [Pod-to-Pod: Same Node](#pod-to-pod-same-node)
+  - [Pod-to-Pod: Different Nodes](#pod-to-pod-different-nodes)
+  - [Pod-to-Service](#pod-to-service)
+- [Production Scenario: Service ClusterIP Not Reachable](#production-scenario-service-clusterip-not-reachable)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Kubernetes networking is built on three inviolable rules that distinguish it from Docker's historical link-based model. Every engineer operating production clusters must internalize these rules because every debugging session starts by verifying whether they hold.

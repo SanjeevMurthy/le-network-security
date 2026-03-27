@@ -1,5 +1,30 @@
 # Azure Security
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Azure AD (Entra ID) and Managed Identity](#azure-ad-entra-id-and-managed-identity)
+  - [Managed Identity: The Azure Identity Primitive](#managed-identity-the-azure-identity-primitive)
+  - [RBAC Scope Hierarchy](#rbac-scope-hierarchy)
+- [Conditional Access: Context-Aware Identity Policy](#conditional-access-context-aware-identity-policy)
+- [Azure PIM: Just-in-Time Privilege](#azure-pim-just-in-time-privilege)
+- [Microsoft Defender for Cloud](#microsoft-defender-for-cloud)
+- [Microsoft Sentinel: SIEM + SOAR](#microsoft-sentinel-siem-soar)
+- [Azure Policy: Compliance Enforcement](#azure-policy-compliance-enforcement)
+- [NSG Flow Logs and Traffic Analytics](#nsg-flow-logs-and-traffic-analytics)
+- [Azure Key Vault](#azure-key-vault)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Lateral Movement Detected in Azure: Sentinel Alert to Containment](#lateral-movement-detected-in-azure-sentinel-alert-to-containment)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Azure security spans three interconnected planes: **identity** (Entra ID / Azure AD), **network** (NSGs, Azure Firewall, Private Endpoints), and **posture management** (Microsoft Defender for Cloud). The defining characteristic of Azure security versus AWS is the depth of Entra ID integration — identity is the control plane for both human access and workload identity through Managed Identities. A compromised Managed Identity with overly broad RBAC assignments is the Azure equivalent of AWS's overprivileged IAM role. Defender for Cloud provides unified CSPM across Azure, AWS, and GCP. Microsoft Sentinel serves as the SIEM/SOAR layer that operationalizes all security signals into detections and automated responses.

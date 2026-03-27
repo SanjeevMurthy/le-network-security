@@ -1,5 +1,41 @@
 # Secure Multi-Tier Architecture on AWS
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [VPC and Network Layout](#vpc-and-network-layout)
+  - [Edge Layer: CloudFront + WAF + Shield](#edge-layer-cloudfront-waf-shield)
+  - [Web Tier: Application Load Balancer](#web-tier-application-load-balancer)
+  - [Application Tier: EC2 ASG](#application-tier-ec2-asg)
+  - [Secrets Management](#secrets-management)
+  - [Data Tier: RDS PostgreSQL Multi-AZ](#data-tier-rds-postgresql-multi-az)
+  - [Logging and Compliance](#logging-and-compliance)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale (10x traffic, 10x data)](#at-10x-scale-10x-traffic-10x-data)
+- [Security Design](#security-design)
+  - [Defense in Depth Layers](#defense-in-depth-layers)
+  - [PCI-DSS Controls Mapping](#pci-dss-controls-mapping)
+- [Cost Considerations](#cost-considerations)
+  - [Major Cost Drivers (estimated monthly, moderate traffic)](#major-cost-drivers-estimated-monthly-moderate-traffic)
+  - [Optimization Opportunities](#optimization-opportunities)
+- [Operational Runbooks](#operational-runbooks)
+  - [Responding to a Security Group Change Alert](#responding-to-a-security-group-change-alert)
+  - [RDS Failover Procedure](#rds-failover-procedure)
+  - [Secrets Rotation Validation](#secrets-rotation-validation)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

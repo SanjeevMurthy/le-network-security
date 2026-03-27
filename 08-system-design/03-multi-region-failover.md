@@ -1,5 +1,38 @@
 # Active-Active Multi-Region Architecture on AWS
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [Global Traffic Management: Route 53](#global-traffic-management-route-53)
+  - [Compute: EKS in Both Regions](#compute-eks-in-both-regions)
+  - [Data Tier: Aurora Global Database](#data-tier-aurora-global-database)
+  - [Session State: JWT Tokens (Stateless Approach)](#session-state-jwt-tokens-stateless-approach)
+  - [Cross-Region Traffic and In-Flight Requests](#cross-region-traffic-and-in-flight-requests)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+  - [Active-Active vs Active-Passive](#active-active-vs-active-passive)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale](#at-10x-scale)
+- [Security Design](#security-design)
+  - [Cross-Region Security Controls](#cross-region-security-controls)
+  - [Blast Radius Containment](#blast-radius-containment)
+- [Cost Considerations](#cost-considerations)
+  - [Major Cost Drivers](#major-cost-drivers)
+  - [Cost Optimization](#cost-optimization)
+- [Chaos Engineering and Testing](#chaos-engineering-and-testing)
+  - [Monthly Chaos Tests](#monthly-chaos-tests)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

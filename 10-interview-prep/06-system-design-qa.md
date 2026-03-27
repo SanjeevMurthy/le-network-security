@@ -1,5 +1,17 @@
 # System Design — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Design a multi-region active-active system with RTO < 1 minute.](#q-design-a-multi-region-active-active-system-with-rto-1-minute)
+- [Q: Design a secure 3-tier architecture on AWS that is PCI-DSS compliant.](#q-design-a-secure-3-tier-architecture-on-aws-that-is-pci-dss-compliant)
+- [Q: How would you implement zero-trust for a 50-service Kubernetes platform?](#q-how-would-you-implement-zero-trust-for-a-50-service-kubernetes-platform)
+- [Q: Design the networking for an EKS cluster — CNI choice, ingress, egress, observability.](#q-design-the-networking-for-an-eks-cluster-cni-choice-ingress-egress-observability)
+- [Q: How would you migrate from a monolithic VPC to micro-segmented VPCs without downtime?](#q-how-would-you-migrate-from-a-monolithic-vpc-to-micro-segmented-vpcs-without-downtime)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 System design questions test whether you can apply networking and security knowledge at architectural scale. The evaluation criteria: do you frame the problem before diving into solutions, do you name the key trade-offs explicitly, and do you know what changes at 10x scale? A good system design answer takes 15-20 minutes and covers: requirements clarification, high-level design, key technical decisions with justification, failure modes, and scaling considerations. See `08-system-design/` for deeper reading.

@@ -1,5 +1,24 @@
 # 05: Packet Drops
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [Packet Drop Locations (from NIC to Application)](#packet-drop-locations-from-nic-to-application)
+- [Decision Tree](#decision-tree)
+- [Step-by-Step Procedure](#step-by-step-procedure)
+  - [Step 1: Confirm Drops Are Occurring](#step-1-confirm-drops-are-occurring)
+  - [Step 2: NIC-Level Drops](#step-2-nic-level-drops)
+  - [Step 3: Softirq Drops](#step-3-softirq-drops)
+  - [Step 4: Conntrack Table Drops](#step-4-conntrack-table-drops)
+  - [Step 5: iptables/nftables Drops](#step-5-iptablesnftables-drops)
+  - [Step 6: Socket-Level Drops](#step-6-socket-level-drops)
+  - [Step 7: Application Receive Queue](#step-7-application-receive-queue)
+- [Tcpdump for Drop Verification](#tcpdump-for-drop-verification)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: connections are timing out without explicit error, you observe high TCP retransmission rates, latency is high and variable, ICMP unreachables appear in logs, or `netstat -s` shows incrementing error counters. Silent packet drops are the hardest class of network problem because they leave no direct trace — you must check counters at every layer to find where the drop occurs.

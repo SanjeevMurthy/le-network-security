@@ -1,5 +1,45 @@
 # Compliance Frameworks: PCI-DSS, HIPAA, SOC 2, NIST 800-53
 
+## Table of Contents
+
+- [Overview](#overview)
+- [PCI-DSS v4.0](#pci-dss-v40)
+  - [12 Requirements Summary](#12-requirements-summary)
+  - [Requirement 1: Network Security Controls](#requirement-1-network-security-controls)
+  - [Requirement 4: Encryption in Transit](#requirement-4-encryption-in-transit)
+  - [Requirement 7: Least Privilege](#requirement-7-least-privilege)
+  - [Requirement 10: Logging and Monitoring](#requirement-10-logging-and-monitoring)
+  - [Requirement 11: Penetration Testing](#requirement-11-penetration-testing)
+- [HIPAA Security Rule](#hipaa-security-rule)
+  - [Three Safeguard Categories](#three-safeguard-categories)
+  - [HIPAA Cloud Implementation Pattern](#hipaa-cloud-implementation-pattern)
+- [SOC 2 Type II: Trust Service Criteria](#soc-2-type-ii-trust-service-criteria)
+  - [Five Trust Service Criteria](#five-trust-service-criteria)
+  - [Critical CC Controls for SREs](#critical-cc-controls-for-sres)
+  - [SOC 2 Continuous Monitoring Implementation](#soc-2-continuous-monitoring-implementation)
+- [NIST 800-53: Control Families](#nist-800-53-control-families)
+  - [Key Control Families for SREs](#key-control-families-for-sres)
+- [Compliance Control Mapping: Framework to Cloud/K8s](#compliance-control-mapping-framework-to-cloudk8s)
+- [Compliance Automation](#compliance-automation)
+  - [AWS Config Rules for PCI-DSS](#aws-config-rules-for-pci-dss)
+  - [Azure Policy Initiative for HIPAA](#azure-policy-initiative-for-hipaa)
+  - [OPA Policies for K8s Compliance (PCI)](#opa-policies-for-k8s-compliance-pci)
+  - [Automated Evidence Collection](#automated-evidence-collection)
+- [Penetration Testing in Cloud](#penetration-testing-in-cloud)
+  - [AWS Penetration Testing Policy](#aws-penetration-testing-policy)
+  - [PCI Segmentation Test](#pci-segmentation-test)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [PCI-DSS QSA Audit Finding: Firewall Segmentation Gap Between CDE and Non-CDE](#pci-dss-qsa-audit-finding-firewall-segmentation-gap-between-cde-and-non-cde)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Compliance frameworks are not the same as security. Compliance is a snapshot of controls at a point in time; security is a continuous practice. But for senior SREs, frameworks matter operationally: they define which controls must be implemented, how they must be documented, and what evidence must be collected for audits. The critical skill is mapping abstract framework requirements to specific cloud and Kubernetes controls — understanding that PCI-DSS Requirement 1 (network segmentation) translates to Security Groups + NetworkPolicy + NACLs in practice, and that a QSA audit finding on "inadequate segmentation between CDE and non-CDE" is a specific, fixable infrastructure problem.

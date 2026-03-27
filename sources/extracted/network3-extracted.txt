@@ -1,0 +1,2144 @@
+# Extracted: Network 3.pdf (24 pages)
+
+
+---PAGE 1---
+Introduction to Congestion Control
+In this lesson, we'll look at congestion control!
+We'll cover the following
+• Bandwidth Allocation Principles
+• Should Allocation Be on a per Host or per Connection Basis?
+• Ef}ciency & Power
+• Bursts of Traf}c
+• Transmission Threshold
+• Quick Quiz!
+What Is Congestion?
+When more packets than the network has bandwidth
+for are sent through, some of them start getting
+dropped and others get delayed. This phenomenon
+leads to an overall drop in performance and is called
+congestion.
+This is analogous to vehicle traffic congestion when
+too many vehicles drive on the same road at the
+same time. This slows the overall traffic down.
+How Do We Fix It?
+Congestion physically occurs at the network layer
+(i.e. in routers), however it’s mainly caused by the
+transport layer sending too much data at once. That
+means it will have to be dealt with or ‘controlled’ at
+the transport layer as well.
+Traf}c congestion at Times
+Square, NYC.
+📝 Note Congestion control also occurs in the network layer, but we’re
+skipping over that detail for now since the focus of this chapter is the
+transport layer. So congestion control with TCP is end-to-end; it exists on
+the end-systems and not the network. Also note that in this lesson, the
+term delay means end-to-end message delay.
+Congestion control is really just congestion avoidance. Here’s how the
+transport layer controls congestion:
+1. It sends packets at a slower rate in response to congestion,
+2. The ‘slower rate’ is still fast enough to make efficient use of the available
+capacity,
+3. Changes in the traffic are also kept track of.
+Congestion control algorithms are based on these general ideas and are built
+into transport layer protocols like TCP. Let’s also look at a few principles of
+bandwidth allocation before moving on.
+Bandwidth Allocation Principles #
+Should Allocation Be on a per Host or per Connection Basis?
+#
+Before we get into the key principles of bandwidth allocation, we have to
+answer the question: should bandwidth be allocated to each host or to each
+connection made by a host?
+Not all hosts are created equal; Some can send and receive at a higher data
+rate than others. Furthermore, if the bottleneck bandwidth was allocated
+equally to all hosts, some of them wouldn’t be able to use the bandwidth to its
+full capacity and some wouldn’t have enough. For example, if an Internetenabled doorbell and a busy server had the same bandwidth, the doorbell
+would have too much and the server would likely not have enough.
+The per-connection allocation, on the other hand, can be exploited by hosts
+opening multiple connections to the same end-system.
+Usually, bandwidth is allocated per connection.
+Ef}ciency & Power #
+Bursts of Traf}c #
+Suppose 4 end-systems are to use a link with a bandwidth of 200 Mbps. It may
+seem that in order to make the most efficient use of this link, the bandwidth
+should be divided equally i.e., 
+= 50 Mbps should be allocated to each
+host. However, in a real setting, each end-system would be able to use less
+than the anticipated 50 while avoiding congestion. Why? Because real traffic
+is transmitted in bursts and not in one continuous stream. Have a look at the
+following plot of a Wireshark traffic capture for a clearer picture.
+4
+200
+Plot of a Wireshark traf}c capture depicting three prominent bursts of traf}c
+Simultaneous bursts of traffic from all end-systems can cause more than the
+allocated bandwidth to be used which results in congestion and a consequent
+drop in performance.
+Therefore, bandwidth cannot be divided and allocated equally amongst
+end-systems!
+Transmission Threshold #
+The graph below depicts the effect of an increase in transmission rate on
+‘useful traffic’ (traffic that is actually received by the receiver). The number of
+packets received by the receiver drastically drop past a certain threshold of
+the transmission rate despite the fact that the threshold is less than the
+capacity.
+Transmission Rate (packets/sec)
+Rate of ActualTransmision (packets/sec)
+Onset of
+congestion
+Capacity
+The effect of the increase in transmission rate on useful traf}c
+The following graph shows that the end-to-end delay in the delivery of the
+packets increases exponentially when the packet transmission rate increases
+beyond a certain threshold. Furthermore, the delay can never be infinite, so
+the packets are simply dropped instead after a certain point.
+Transmission Rate (packets/sec)
+Delay (seconds)
+Onset of
+congestion
+Capacity
+The effect of the increase in transmission rate on delay
+📝 Note: congestion collapse occurs when all end-systems are sending
+a lot of traffic but nothing is being received, for example, when all or
+most packets are dropped. There a few causes for this, including but not
+limited to Spurious retransmissions. Spurious retransmissions occur
+
+---PAGE 2---
+when a retransmission timer times out for packets that are not lost but
+have not yet reached the destination. So, much of the network’s
+bandwidth ends up being consumed by a small number of packets.
+To sum up, congestion occurs before the maximum capacity of the network is
+reached and congestion collapse occurs as it’s approached.
+Lastly, according to Kleinrock’s 1979 paper, the optimal transmission rate is
+such that power, given by the following equation, is maximized:
+Power = Transmission Rate
+Delay
+Note that after a certain threshold, increase in transmission rate will cause a
+very high increase in delay decreasing the overall power.
+Quick Quiz! #
+1
+If the applications increase sending rate, the throughput ______ at
+first, then ______.
+A) increases, keeps increasing
+B) increases, drops
+C) drops, increases
+COMPLETED 0%
+1 of 3
+D) decreases, keeps decreasing.
+We’ve now learned the first principle of congestion control: the entire
+bandwidth of a network should not be allocated. Let’s continue with the next
+two in the next lesson!
+More on Principles of Congestion Control
+Let's look at a couple of more key principles that congestion control algorithms adhere to!
+We'll cover the following
+• Max-min Fairness
+• Convergence
+• Quick Quiz!
+What we know so far is that congestion control schemes must avoid
+congestion. In practice, this means that the bottleneck link (the link with the
+lowest bandwidth) cannot be overloaded. This means on average, the sum of
+the transmission rate allocated to all hosts at any given time should be less
+than or equal to the bottleneck link’s bandwidth.
+Additionally, the congestion control scheme must be efficient. The bottleneck
+link is usually both a shared and an expensive resource. Usually, bottleneck
+links are wide-area links that are much more expensive to upgrade than the
+local area networks. The congestion control scheme should, therefore, ensure
+that such links are efficiently used. Mathematically, the control scheme
+should ensure that the sum of the transmission rate allocated to all hosts at
+any given time should be approximately equal to the bottleneck link’s
+bandwidth.
+Max-min Fairness #
+Furthermore, the congestion control scheme should be fair. Most congestion
+schemes aim at achieving max-min fairness. An allocation of transmission
+rates to sources is said to be max-min fair if:
+1. No link in the network is congested
+2. The rate allocated to a source j cannot be increased without decreasing
+the rate allocated to another source i, whose allocation is smaller than
+the rate allocated to the source j.
+the rate allocated to the source j.
+In other words, this principle postulates that increasing the transmission
+rate of one end-system necessarily decreases the transmission rate
+allocated to another end-system with an equal or smaller allocation.
+To visualize the different rate allocations, it’s useful to consider the graph
+shown below. Consider hosts A and B that share a bottleneck link.
+Congested
+Region
+Efficiency Line
+2 Mbps
+2 Mbps
+Host B rate
+Host A rate
+Fairness Line
+Fair but not efficient
+Fair and efficient
+Not fair but efficient
+Nor fair nor efficient
+Possible allocated transmission rates
+In this graph, we plot the rate allocated to host B on the x-axis and we plot
+the rate allocated to host A on the y-axis . A point in the graph (r , r )
+corresponds to a possible allocation of the transmission rates. Since there is a 
+2 Mbps bottleneck link in this network, the graph can be divided into
+regions:
+1. The white-colored part of the graph contains all allocations (r , r ) such
+that the bottleneck link is not congested (r + r
+< 2).
+2. The right border of this region is the efficiency line or the set of
+allocations that completely utilize the bottleneck link (r + r
+= 2).
+3. Finally, the fairness line is the set of fair allocations.
+B
+A
+B
+A
+A
+B
+A
+B
+
+---PAGE 3---
+Depending on the network, a max-min fair allocation may not always exist. In
+practice, max-min fairness is an ideal objective that cannot necessarily be
+achieved. When there is a single bottleneck link as in the example above,
+max-min fairness implies that each source should be allocated the same
+transmission rate.
+Ideally, the allocation should be both fair and efficient. Unfortunately,
+maintaining such an allocation with fluctuations in the number of flows that
+use the network is a challenging problem. Furthermore, there might be
+several thousands of TCP connections or more that pass through the same
+link.
+Convergence #
+Additionally, bandwidth should be allocated such that it converges to a fair (a
+host does not hog all of it), and efficient value. This means it should not
+oscillate and most of it will be used. Furthermore, it should also change in
+response to changes in the demands of the network over time. Here are some
+slides that demonstrate this convergence.
+100
+0
+50
+Bandwidth Allocated (percentage)
+Time (sec)
+Flow #1
+Flow #2
+Flow #3
+2
+4
+8
+12
+6
+10
+0
+Flow #1 starts and continues for 2 seconds. Flow #1 is using all of the bandwidth.
+1 of 7
+📝 Note These values (for example, ‘half’ the bandwidth) are just for
+demonstration purposes. In real life, as discussed previously, all of the
+available bandwidth can never be used. Furthermore, bandwidth
+allocation works based on a protocol in the network layer which we will
+discuss in the next chapter. Let’s just assume that this is how it works for
+now
+Quick Quiz! #
+1
+In the context of congestion control, an efficient rate allocation is
+desirable because ______.
+COMPLETED 0%
+1 of 3
+A) Regulators mandate it
+B) It uses network resources efficiently
+C) It’s also fair
+We now understand some basics of congestion control and bandwidth
+allocation. Now that we have an in-depth understanding of how UDP works,
+let’s move on to perhaps one of the most important protocols of this entire
+course: TCP.
+Principles of Reliable Data Transfer
+We'll cover the following
+• Network Layer Imperfections
+• Checksums
+• Retransmission Timers
+• Limitations of Retransmission Timers
+• Sequence Numbers
+• Quick Quiz!
+Network Layer Imperfections #
+The transport layer must deal with the imperfections of the network layer
+service. There are three types of imperfections that must be considered by the
+transport layer:
+1. Segments can be corrupted by transmission errors
+2. Segments can be lost
+3. Segments can be reordered or duplicated
+Let’s look at some workarounds for these problems that the transport layer
+employs.
+Checksums #
+The first imperfection of the network layer is that segments may be
+corrupted by transmission errors. The simplest error detection scheme is
+the checksum.
+A checksum can be based on a number of schemes. One possible scheme is an
+arithmetic sum of all the bytes of a segment. Checksums are computed by the
+sender and attached with the segment. The receiver verifies it upon reception
+d
+h
+h
+d
+i
+i i
+lid Q i
+f
+h
+and can choose what to do in case it is not valid. Quite often, the segments
+received with an invalid checksum are discarded.
+Data
+checksum
+Calculates
+checksum and
+appends to data
+Calculates checksum from received
+message and compares against
+appended checksum. If they are
+equal, the data is okay. Otherwise,
+the entity knows that it is corrupted
+Retransmission Timers #
+The second imperfection of the network layer is that segments may be lost.
+Since the receiver sends an acknowledgment segment after having received
+each data segment, the simplest solution to deal with losses is to use a
+retransmission timer.
+A retransmission timer starts when the sender sends a segment. The value of
+this retransmission timer should be greater than the round-trip-time, for
+example, the delay between the transmission of a data segment and the
+reception of the corresponding acknowledgment. Note that TCP sends an
+acknowledgment for almost every segment! We’ll look at this in more detail in
+later lessons. When the retransmission timer expires, the sender assumes that
+the data segment has been lost and retransmits it.
+This is illustrated in the figure below:
+
+---PAGE 4---
+A
+B
+send segment 1
+Using retransmission timers to recover from segment losses
+1 of 7
+Limitations of Retransmission Timers #
+Unfortunately, retransmission timers alone are not sufficient to recover from
+segment losses. Let us consider the situation depicted below where an
+acknowledgment is lost. In this case, the sender retransmits a data segment
+that has been received correctly, but not properly acknowledged.
+Unfortunately, as illustrated in the figure below, the receiver considers the
+retransmission as a new segment effectively and the segment is duplicated.
+A
+B
+send segment 1
+Using retransmission timers to recover from segment losses
+1 of 7
+Sequence Numbers #
+To identify duplicates, transport protocols associate an identification number
+with each segment called the sequence number. This sequence number is
+prepended to the segments and sent. This way, the end entity can identify
+duplicates.
+Quick Quiz! #
+1
+Checksums address which imperfection of the network layer?
+COMPLETED 0%
+1 of 5
+A) Packet drops
+B) Packet errors
+C) Packet reordering
+Let’s continue our discussion of reliable transfer data in the next lesson!
+Reliable Data Transfer: Sliding Window
+In this lesson, we'll study sliding windows
+We'll cover the following
+• Pipelining
+• Sliding Window
+• Quick Quiz!
+Pipelining #
+Applications may generate data at a rate much higher than the network can
+transport it. Processor speed is generally much higher than the speed of
+writing out and reading data to/from the network (I/O).
+Furthermore, reliable message communication is a multi-step process:
+1. The processor emits the message to be sent, the network carries the
+message to the destination.
+2. The receiver processor receives and emits an acknowledgment message.
+3. The network carries the acknowledgment to the sender. So, instead of
+waiting for an acknowledgment of every packet before transmitting the
+next one, it’s more efficient to pipeline the multi-step process. In other
+words, instead of waiting for the acknowledgment of a message before
+transmitting the next one, the sender keeps transmitting messages
+without waiting for an acknowledgment. This makes more efficient use of
+the processor’s time.
+While pipelining allows the sender to transmit segments at a higher rate, it
+may cause the receiver to become overloaded because the receiver may be
+running on a slower machine than the sender, or the receiving machine may
+be busy executing other processes.
+
+---PAGE 5---
+📝 Note: “stop and wait” is the term used in literature for when the
+sending entity waits for the acknowledgment of every transmitted
+message before sending the next one. That is also a means to recover
+from lost messages. It retransmits.
+Sliding Window #
+The sliding window is the set of consecutive sequence numbers that the
+sender can use when transmitting segments without being forced to wait for
+an acknowledgment. At the beginning of a session, the sender and receiver
+agree on a sliding window size.
+The figure below illustrates the operation of the sliding window. The sliding
+window shown contains three segments. The sender can thus transmit three
+segments before being forced to wait for an acknowledgment. The sliding
+window moves to the higher sequence numbers upon reception of
+acknowledgments. When the first acknowledgment (of segment 0) is received,
+it allows the sender to move its sliding window to the right, and sequence
+number 3 becomes available.
+In practice, as the segment header encodes the sequence number in a n bits
+string, only the sequence numbers between 0 and 2  − 1 can be used. There’s
+a problem here. What happens when an application has transmitted 2 −1
+messages and still has more data to send? Well, the same sequence number
+can be used for different segments and that the sliding window can wrap. This
+is illustrated in the figure below assuming that 2 bits are used to encode the
+sequence number in the segment header. Note that upon reception of the
+acknowledgment for the first segment, the sender slides its window and can
+use sequence number 0 again.
+n
+n
+3
+A
+B
+0
+1
+2
+Sending Window
+Unsent
+Unacknowledged
+Acknowledged
+A sending sliding window of size 3 is initiated
+The sliding window
+1 of 11
+Unfortunately, segment losses do not disappear because a transport protocol is
+using a sliding window. To recover from segment losses, a sliding window
+protocol must define:
+A heuristic to detect segment losses.
+A retransmission strategy to retransmit the lost segments.
+Quick Quiz! #
+1
+Pipelining and congestion control are competing objectives.
+COMPLETED 0%
+1 of 2
+A) True
+B) False
+Let’s look at both in the next lesson.
+Reliable Data Transfer: Go-back-n
+In this lesson, we'll study go-back-n: a simple protocol to ensure detection and
+retransmission of lost packets.
+We'll cover the following
+• Go-back-n
+• Go-back-n Receiver
+• Cumulative Acknowledgements
+• Go-back-n Sender
+• Retransmission Timer
+• Advantages of Go-back-n
+• Selective Repeat
+• Comparing to go-back-n
+• Quick Quiz!
+In the last lesson, we discovered that a sending sliding window alone is not
+enough to ensure detection and retransmission of lost packets. In order to
+do that, we will look at two protocols:
+1. Go-back-n
+2. Selective Repeat
+Go-back-n #
+The simplest sliding window protocol uses go-back-n recovery.
+Go-back-n Receiver #
+Intuitively, go-back-n receiver operates as follows:
+1. It only accepts the segments that arrive in-sequence.
+2. It discards any out-of-sequence segment that it receives.
+3. When it receives a data segment, it always returns an acknowledgment
+
+---PAGE 6---
+g
+,
+y
+g
+containing the sequence number of the last in-sequence segment that it
+has received.
+Cumulative Acknowledgements #
+This acknowledgment is said to be cumulative. When a go-back-receiver
+sends an acknowledgment for sequence number x, it implicitly acknowledges
+the reception of all segments whose sequence number is smaller than or equal
+to x.
+A key advantage of these cumulative acknowledgments is that it’s easy to
+recover from the loss of an acknowledgment.
+Consider for example a go-back-n receiver that received segments 1, 2 and 3.
+1. It sent acknowledgments for all three segments.
+2. Unfortunately, acknowledgments of the first two were lost.
+3. Thanks to the cumulative acknowledgments, the receiver receives the
+acknowledgment for the last segment and so it knows that all three have
+been correctly received.
+go-back-n sender
+go-back-n receiver
+1
+The sender transmits 3 segments
+Go-back-n cumulative acknowledgements
+1 of 7
+Go-back-n Sender #
+A go-back-n sender uses a sending buffer that can store an entire sliding
+window of segments.
+The segments are sent with a sending sliding window that we looked at in
+the last lesson.
+The sender must wait for an acknowledgment once its sending buffer is
+full.
+When a go-back-n sender receives an acknowledgment, it removes all the
+acknowledged segments from the sending buffer.
+Retransmission Timer #
+A go-back-n sender uses a retransmission timer to detect segment losses. It
+maintains one retransmission timer per connection. Here’s how it works:
+1. This timer is started when the first segment is sent.
+2. When the go-back-n sender receives an acknowledgment, it restarts the
+retransmission timer, but only if any unacknowledged segments exist in
+its sending window.
+3. When the retransmission timer expires, the go-back-n sender assumes
+that all of the unacknowledged segments currently stored in its sending
+buffer have been lost. It thus retransmits all the unacknowledged
+segments in the buffer and restarts its retransmission timer.
+The general operation of go-back-n is illustrated in the figure below.
+3
+A
+B
+0
+1
+2
+Sending Window
+Unsent
+Unacknowledged
+Acknowledged
+A sending sliding window of size 3 is initiated
+Go-back-n: example
+1 of 7
+Advantages of Go-back-n #
+The main advantage of go-back-n is that it can be easily implemented, and it
+can also provide good performance when only a few segments are lost. But
+when there are many losses, the performance of go-back-n quickly drops for
+two reasons:
+The go back n receiver does not accept out of sequence segments
+The go-back-n receiver does not accept out-of-sequence segments.
+The go-back-n sender retransmits all unacknowledged segments once it
+has detected a loss.
+Since the go-back-n protocol does not accept out of order segments, it can
+waste a lot of bandwidth if segments are frequently lost.
+The Selective Repeat protocol attempts to remedy this by accepting out of
+order packets and only retransmitting packets that are corrupted or lost in the
+network.
+Selective Repeat #
+Uses a sliding window protocol just like go-back-n.
+The window size should be less than or equal to half the sequence
+numbers available. This avoids packets being identified incorrectly.
+Here’s an example: suppose the window size is greater than half the
+buffer size.
+Segment ‘1’ is lost, hence the receiver expects a segment with
+sequence number 1 to be retransmitted.
+Meanwhile, the window wraps around back to sequence number ‘1.’
+The sender sends a new packet with sequence number 1 and the
+receiver perceives it to be the original one that it was expecting.
+Senders retransmit unacknowledged packets after a timeout or if a NAK
+(negative acknowledgment/not acknowledged) is received.
+The receiver acknowledges all correct packets.
+The receiver stores correct packets until they can be delivered in order to
+the upper application layer.
+📝 Note: NAKS Negative acknowledgements can be realized using
+positive acknowledgements (ACKs) of the last correctly received
+segment!
+
+---PAGE 7---
+Comparing to go-back-n #
+In comparison to the go-back-n protocol, selective repeat conserves
+bandwidth, which is, the rate of data transfer across a path.
+Quick Quiz! #
+1
+A cumulative acknowledgement for sequence number n
+acknowledges the receipt of all sequences numbers upto and
+including ______.
+COMPLETED 0%
+1 of 5
+A) n −1
+B) n
+In the next lesson, we’ll start with UDP, a transport layer protocol.
+The User Datagram Protocol
+This lesson gives an introduction to one of the protocols at the heart of the transport
+layer: UDP!
+We'll cover the following
+• What is UDP?
+• How It Works
+• Structure of A UDP Datagram
+• Header
+• Data
+• Quick Quiz!
+What is UDP? #
+UDP, or User Datagram Protocol, is a transport layer protocol that works
+over the network layer’s famous Internet protocol (which we’ll look at indepth in the next chapter). RFC 768 is the official RFC for UDP.
+How It Works #
+UDP does not involve any initial handshaking like TCP does, and is hence
+called a connectionless protocol. This means that there are no established
+‘connections’ between hosts.
+UDP prepends the source and destination ports to messages from the
+application layer and hands them off to the network layer. The Internet
+Protocol of the network layer is a best-effort attempt to deliver the message.
+This means that the message-
+1. May or may not get delivered.
+2. May get delivered with changes in it.
+3. May get delivered out of order.
+UDP only adds the absolute bare minimum functionality over the network
+layer. So it…
+Does not ensure that messages get sent.
+It does check, however, if a message got ‘corrupted’ yet does not take any
+measures to correct the errors by default.
+Structure of A UDP Datagram #
+Header #
+UDP prepends four 2-byte header fields to the data it receives from the
+application layer. So in total, a UDP header is 8 bytes long. The fields are:
+1. Source port number
+2. Destination port number
+3. Length of the datagram (header and data in bytes)
+4. Checksum to detect if errors have been introduced into the message.
+We’ll study this in detail in the next lesson!
+Data #
+Other than the headers, a UDP datagram contains a body of data which can be
+up to 65,527 bytes long. Since the maximum possible length of a UDP
+datagram is 65,535 bytes which includes the 8-byte header, we are left with
+65,527 bytes available. The nature of the data depends on the overlying
+application. So if the application is querying a DNS server, it would contain
+bytes of a zone file.
+Here’s what a UDP message looks like:
+Source Port Number
+(2 bytes)
+Destination Port
+Number
+(2 bytes)
+Length
+(2 bytes)
+Checksum
+(2 bytes)
+Data
+A UDP Datagram. The header is a total of 8 bytes or 64 bits long.
+Quick Quiz! #
+1
+An application layer hands down 10 bytes to be sent in a UDP
+datagram. The value in the length field in the datagram will be
+______.
+COMPLETED 0%
+1 of 4
+A) 0x000A
+B) 0x0012
+C) 0x0018
+D) None of the above
+Let’s go on to look at how UDP does error detection, why UDP is used, and
+what well-known protocols are built on top of it in the next lesson!
+
+---PAGE 8---
+UDP Checksum Calculation & Why UDP?
+Let's look at how the UDP checksum is calculated in-depth, why UDP would ever get
+used, and applications that use UDP.
+We'll cover the following
+• Checksum Calculation
+• What if the checksum }eld gets corrupted?
+• Why UDP?
+• Well-Known Applications That Use UDP
+• Xbox Live
+• Name Translation
+• Network Management
+• Quick Quiz!
+UDP detects if any changes were introduced into a message while it traveled
+over the network. To do so, it appends a ‘checksum’ to the packet as a field
+that can be checked against the message itself to see if it was corrupted. It’s
+calculated the same way as in TCP. Here’s a refresher with some extra
+information:
+Checksum Calculation #
+1. The payload and some of the headers (including some IP headers) are all
+divided into 16-bit words.
+2. These words are then added together, wrapping any overflow around.
+3. Lastly, the one’s complement of the resultant sum is taken and appended
+to the message as the checksum.
+📝 Note Also, note that if a message cannot be perfectly divided into 16-
+bit chunks, then the last word is padded to the right with zeros. This is
+only for checksum calculation though! The actual message does not have
+only for checksum calculation though! The actual message does not have
+these zeros.
+Here’s a visual of how the checksum for a datagram is calculated:
+1110011001100110
+0101010101010101
+1100010000100010
+Assume a message can be divided into these 3 16-bit words
+1 of 24
+At the receiving end, UDP sums the message in 16-bit words and adds the sum
+to the sent checksum. If the result is 1111111111111111, the message was not
+corrupted. If the result is otherwise, it was.
+What if the checksum }eld gets corrupted? #
+If the checksum itself gets corrupted, UDP will assume that the message has an
+error.
+Why UDP? #
+You might be wondering why would anyone use UDP when it has so many
+apparent drawbacks and doesn’t really do anything? Well, there are actually a
+number of reasons why UDP would be a good choice for certain applications.
+1. UDP can be faster. Some applications cannot tolerate the load of the
+retransmission mechanism of TCP, the other transport layer protocol.
+2. Reliability can be built on top of UDP. TCP ensures that every message is
+sent by resending it if necessary. However, this reliability can be built in
+the application itself.
+3. UDP gives finer control over what message is sent and when it is sent.
+This can allow the application developer to decide what messages are
+important and which do not need concrete reliability.
+4. Going on points 3 and 4, UDP allows custom protocols to be built on
+top of it.
+In fact, Google’s transport layer protocol, Quick UDP Internet
+Connections (QUIC), pronounced quick, is an experimental
+transport layer network protocol built on top of UDP and designed
+by Google. The overall goal is to reduce latency compared to that of
+TCP. It’s used by most connections from the Chrome web browser to
+Google’s servers!
+5. With the significantly smaller header gives UDP an edge over TCP in
+terms of reduced transmission overhead and quicker transmission times.
+Well-Known Applications That Use UDP #
+Xbox Live #
+Xbox live is built on UDP.
+Yes, Xbox live runs on UDP!
+Name Translation #
+Name Translation #
+Yes, DNS uses UDP! In the case of failed message delivery, DNS either:
+1. Resends the message.
+2. Sends the message to some other server.
+3. Gives a failure message.
+Using UDP instead of TCP makes DNS and consequently, web browsing
+significantly faster.
+Network Management #
+Network management and network monitoring is done using a protocol called
+Simple Network Management Protocol and it runs on UDP as well.
+Quick Quiz! #
+1
+An application implements its own mechanisms of checksums and
+retransmissions. UDP is the ideal choice of transport layer
+protocol for this application.
+COMPLETED 0%
+1 of 4
+A) True
+B) False
+Let’s look at some actual live UDP packets in the next lesson with TCPDUMP!
+
+---PAGE 9---
+Exercise: Capturing UDP Packets
+We'll now look at a command-line tool that allows us to capture UDP packets.
+We'll cover the following
+• What is tcpdump ?
+• Sample Output
+• Counting Packets with -c
+• Printing PCAP Files With -r
+• Looking at Real UDP Packet Headers
+• Try it Yourself!
+Let’s get into viewing real packets.
+What is tcpdump? #
+tcpdump  is a command-line tool that can be used to view packets being sent
+and received on a computer. The simplest way to run it is to simply type the
+following command into a terminal and hit enter. You can try this on the
+terminal provided at the end of this lesson!
+tcpdump
+Packets will start getting printed rapidly to give a comprehensive view of the
+traffic.
+Sample Output #
+However, some might not find it to be very helpful because it does not allow
+for a more zoomed-in and fine-grained dissection of the packets, which is
+the main purpose of tcpdump  (it’s technically a packet analyzer). So you might
+want to consider using some flags to filter relevant packets out.
+... what??
+Useful tcpdump Flags
+Here are some flags that you might
+find useful in your exploration of this
+tool. You can find more details about
+each on tcpdump’s Manpage
+Saving tcpdump  Output to a
+File with -w
+Instead of having all the output print
+to the console, we can save it to view
+at a later date or to feed into another
+program to analyze.
+Let's zoom into the traf}c a bit
+tcpdump -w filename.ext
+Try using this tool in the following code executable.
+tcpdump -w output.pcap # Saving output to a file called 'output.pcap'
+The file output.pcap  will have all the packets saved to it. Try running this
+command in the terminal below. Note that the process does not exit without a
+keyboard interrupt. The next flag will help us stop packet capture in a
+predetermined fashion.
+📝 Note .pcap files are used to store the packet data of a network.
+Packet analysis programs such as Wireshark (think of it like tcpdump
+with a GUI) export and import packet captures in pcap files.
+Counting Packets with -c  #
+This flag makes tcpdump  capture a defined number of packets. Here’s how it’s
+used.
+tcpdump -w output.pcap -c 10 # Capturing 10 packets
+You can’t view the file just yet. Let’s do it next.
+Printing PCAP Files With -r  #
+Great! Let’s actually read .pcap  files now. Here’s how to do it.
+tcpdump -w output.pcap -c 10 # Capturing 10 packets 
+tcpdump -r output.pcap # Printing the captured packets in a PCAP file
+We’ve gotten pretty far with this. There are plenty of other flags and
+arguments you could give to tcpdump  to make it capture packets precisely as
+per your requirements.
+Looking at Real UDP Packet Headers #
+Here’s a script to capture and print one UDP packet.
+Note that the code may time out before it actually captures a packet. We
+would suggest running this one on the terminal.
+tcpdump udp -X -c 1 # Capturing 1 UDP packet
+The -X  flag just prints the payload of the packet (the data) in both hex and
+ASCII.
+Here’s what the output is depicting.
+The command that starts tcpdump is on the }rst line
+1 of 11
+Try it Yourself! #
+You can try all the commands in this terminal. Click here to go back
+Terminal
+Click to Connect...
+
+---PAGE 10---
+In the next lesson, we’ll learn about the transmission control protocol!
+The Transmission Control Protocol
+In this lesson, we'll look at a quick overview of TCP and some famous applications that
+use it.
+We'll cover the following
+• Introduction to TCP
+• An Analogy: Talking on a Cell Phone
+• What TCP Does
+• Well-Known Applications That Use TCP
+• File Transfer
+• Secure Shell SSH
+• Email
+• Web Browsing
+• Quick Quiz!
+Introduction to TCP #
+TCP, or the transmission control protocol, is one of the two key protocols of
+the transport layer. TCP is what makes most modern applications as enjoyable
+and reliable as they are. HTTP’s implementation, for example, would be very
+complex, if it weren’t for TCP.
+TCP is a robust protocol meant to adapt to a diverse range of network
+topologies, bandwidths, delays, message sizes, and other varying factors that
+exist in the network layer.
+An Analogy: Talking on a Cell Phone #
+TCP is a connection-oriented protocol unlike UDP. The connection
+orientedness is like a phone call because a connection is established before
+communication takes place, and then we hang up. Some scenarios that might
+occur on a phone call with a friend are relevant to connection-oriented
+occu o
+a p o e ca
+t
+a
+e d a e e e a t to co
+ect o
+o e ted
+protocols in the Internet, too. For example,
+What if you can’t understand what your friend is saying?
+Should you ask them to repeat what they said?
+What if you haven’t heard them speak for a while?
+Does your friend simply not have anything to say?
+Has the phone lost reception and disconnected?
+Should you keep talking? If so, for how long?
+Should both you and your friend periodically say “mhmm” to
+indicate that you are present and listening?
+TCP, being THE connection-oriented transport layer protocol for the Internet,
+has mechanisms to solves these problems.
+What TCP Does #
+Here are some key responsibilities of the protocol.
+1. Send data at an appropriate transmission rate. It should be a fast enough
+rate to make full use of the available capacity but it shouldn’t be so fast as
+to cause congestion.
+2. Segment data. The application layer sends the transport layer a
+continuous and unsegmented stream of data so that there’s no limit to
+how much data the application layer can give to the transport layer at
+once. Hence, the transport layer divides it into appropriately sized
+segments. Note that a segment is a collection of bytes. Furthermore,
+when a TCP segment is too big, the network layer may break it into
+multiple network layer messages, so the receiving TCP entity would have
+to re-assemble the network layer messages.
+3. End to end flow control. Flow control means not overwhelming the
+receiver. It’s not the same as congestion control. Congestion control tries
+not to choke the network. However, if the receiving machine is slow, it
+might drown in data even if the network is not choked. Avoiding
+drowning the receiver in data is end to end flow control. There is also
+hop by hop flow control, which is done at the data link layer.
+Application Layer
+The application layer sends data in an unfragmented stream
+1 of 5
+3. Identify and retransmit messages that do not get delivered. The
+network layer cannot be relied upon to deliver messages.
+4. Identify when messages are received out of order and reassemble
+them. The network layer can also not be relied upon to transmit messages
+in order.
+Well-Known Applications That Use TCP #
+File Transfer #
+FTP or File Transfer Protocol is built on top of TCP. It uses ports 20 and 21.
+When transferring files, we wouldn’t want some bytes of the file completely
+missing, or some chunks in the file re-ordered or some byte values changed
+during transfer. That’s why TCP is a natural choice for FTP. In other words, it
+uses TCP for its reliability, which is a key part of file transfer.
+
+---PAGE 11---
+Secure Shell SSH  #
+SSH or Secure Shell is a protocol to allow a secure connection to a remote
+host over an unsecured network. It’s widely popular and most programmers
+use it to date to execute operating system shell commands on remote servers.
+The reasons that this application uses TCP is similar to FTP, and that’s reliable
+delivery.
+Email #
+All email protocols, SMTP, IMAP, and POP use TCP to ensure complete and
+reliable message delivery similar to the reasons that FTP uses TCP.
+Web Browsing #
+Web browsing on both HTTP and HTTPS is done on TCP as well for the same
+reasons as FTP.
+Quick Quiz! #
+1
+The fact that TCP is connection oriented guarantees in-order
+delivery of application messages.
+COMPLETED 0%
+1 of 4
+A) True
+B) False
+Now that we have an overview of what TCP is and what it does, let’s look at
+some of its key properties in the next lesson!
+Key Features of the Transmission Control Protocol
+Here are some key properties of TCP. These are important to know to understand the
+design of the protocol.
+We'll cover the following
+• Connection Oriented
+• Full Duplex
+• Point-to-point Transmission
+Connection Oriented #
+TCP itself is connection-oriented and creates a long term connection between
+hosts. The connection remains until a certain termination procedure is
+followed.
+Full Duplex #
+Furthermore, TCP is full-duplex, which means that both hosts on a TCP
+connection can send messages to each other simultaneously.
+A
+B
+Suppose two hosts are connected to each other over TCP
+1 of 12
+Point-to-point Transmission #
+TCP connections have exactly two endpoints! This means that broadcasting
+or multicasting is not possible with TCP.
+Error Control
+TCP can detect errors in segments and make
+corrections to them.
+Flow Control
+TCP on the sending side controls the amount of data
+being sent at once based on the receiver’s specified
+capacity to accept and process it. The sender adjusts
+the sending rate accordingly.
+Congestion Control
+As specified in a previous lesson, TCP has in-built
+mechanisms to control the amount of congestion on
+the network.
+TCP detects and handles
+errors!
+Now we understand what TCP is and its general design principles. Let’s study
+TCP headers in the next lesson!
+
+---PAGE 12---
+TCP Segment Header
+We'll now study TCP headers. They're are far more complex than UDP headers and really
+are what allow for TCP to work properly!
+We'll cover the following
+• Introduction
+• Source and Destination Ports
+• Sequence Number
+• Acknowledgement Number
+• Example
+• Header Length
+• Reserved Field
+• Quick Quiz!
+Introduction #
+TCP headers play a crucial role in the implementation of the protocol. In fact,
+TCP segments without actual data and with headers are completely valid.
+They’re actually used quite often!
+The size of the headers range from 20 - 60 bytes. Let’s discuss the header field
+by field.
+Source and Destination Ports #
+8 flags (8
+bits)
+Reserved
+(4 bits)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(4 bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+The source and destination ports are the }rst }elds of the TCP header.
+The source and destination port numbers are self-explanatory. They are
+exactly like the source and destination ports in UDP. Just for a refresher
+though, the source port is the port of the socket of the application that is
+sending the segment and the destination port is the port of the socket of the
+receiving application. The size of each field is two bytes.
+Sequence Number #
+8 flags (8
+bits)
+Header
+Length
+(4 bits)
+Reserved
+(4 bits)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+The sequence number is the second }eld of the TCP header. It represents the }rst byte of data in the TCP segment.
+Every byte of the TCP segment’s data is labeled with a number called a
+sequence number. The sequence number field in the header has the
+sequence number of the first byte of data in the segment.
+sequence number of the first byte of data in the segment.
+Header
+42894
+42895
+42896
+42897
+42898
+42901
+42899
+42900
+42902
+42905
+42903
+42904
+42906
+42907
+42908
+The sequence
+number of the first
+byte of data is sent
+in the header
+Each byte of a TCP segment is labeled with a sequence number.
+📝 Note The initial sequence number is a randomly generated number
+between 0 and 2
+−1.
+Acknowledgement Number #
+32
+Reserved
+(4 bits)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(4 bits)
+8 flags (8
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+The third }eld in the TCP header is the acknlowledgement number
+The acknowledgment number is a 4-byte field that represents the sequence
+number of the next expected segment that the sender will receive.
+Example #
+So if a segment’s sequence number was 42849 and its data field had 59 bytes
+of data, the sequence number of the next expected segment or the
+acknowledgment number would be 42908. This helps TCP to identify if a
+segment was missing or out of order.
+Header Length #
+8 flags (8
+bits)
+Reserved
+(4 bits)
+Header
+Length
+(4 bits)
+Window Size
+(2 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+The length of the TCP header is specified here. This helps the receiving end to
+identify where the header ends and the data starts from.
+📝 Note The header length is represented by 4 bits, i.e., the numbers 
+0000 →1111 or 0 →15 in decimal which is not enough to represent
+the potential 60 bytes of the header. Hence, this number is multiplied
+by 4 upon receiving. So 1111 would represent 60. In other words, the
+way the 4-bit header length field is used to represent a maximum header
+length of 60, is that this field represents the number of 4-byte words in
+the header
+Reserved Field #
+
+---PAGE 13---
+8 flags (8
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(4 bits)
+Reserved
+(4 bits)
+The reserved bits serve as an offset and are left for potential future use
+The header has a 4-bit field that is reserved and is always set to 0. This field
+aligns the total header size to be in multiples of 4 (as we saw was necessary
+for the header length to be processed).
+Quick Quiz! #
+1
+Given an initial sequence number of 255 and 50 bytes sent in a
+TCP segment, what will be the value of the sequence number field
+in the next TCP packet header?
+A) The sequence number of the last byte in the previous
+segment i.e., 254
+B) The number of bytes in the first segment, i.e., 50
+C) The sequence number of the next expected byte to be sent
+i.e., 255
+COMPLETED 0%
+1 of 4
+D) The sequence number of the next expected byte to be sent
+i.e., 305
+We’ll continue dissecting the TCP headers in the next lesson!
+TCP Header Flags
+In the last lesson, we discussed eight }elds of the TCP header. Let's now discuss the last
+few!
+We'll cover the following
+• Flags
+• ACK
+• RST
+• SYN
+• FIN
+• TCP Connection Establishment & Termination
+• CWR & ECN
+• PSH
+• URG
+• Quick Quiz!
+TCP headers have eight 1-bit flags that are imperative to signaling in the
+protocol.
+8 flags (8
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(4 bits)
+Reserved
+(4 bits)
+Each 1-bit ~ag is crucial to make the protocol work.
+Flags #
+Let’s have a quick look at what each flag is meant for.
+A
+C
+K
+P
+S
+H
+R
+S
+T
+U
+R
+G
+S
+Y
+N
+F
+I
+N
+C
+W
+R
+E
+C
+N
+The eight ~ags used in TCP headers.
+The first four discussed below, namely ACK, RST, SYN, and FIN are used in
+the establishment, maintenance, and tear-down of a TCP connection.
+ACK #
+This flag is set to 1 in a segment to acknowledge a segment that was received
+previously. This is an important part of the protocol. In other words, when a
+receiver wants to acknowledge some received data, it sends a TCP segment
+with the ACK flag and the acknowledgment number field appropriately set.
+This flag is also used in connection establishment and termination as we will
+see in more detail later.
+📝 Note that these acknowledgment messages can and often do contain
+data as well!
+RST #
+The reset flag immediately terminates a connection. This is sent due to the
+result of some confusion, such as if the host doesn’t recognize the connection,
+if the host has crashed, or if the host refuses an attempt to open a connection.
+SYN #
+The synchronization flag initiates a connection establishment with a new
+host. The details will be covered later in the lesson on connection
+establishment.
+FIN #
+
+---PAGE 14---
+This flag is used to terminate or finish a connection with a host.
+TCP Connection Establishment & Termination #
+The slides below give a very high level overview of how these flags are used to
+establish and terminate a TCP connection.
+A
+B
+SYN
+Host A wants to establish a connection with host B and so sends a segment with the SYN ~ag set
+1 of 8
+The rest of the flags, given below, are not very well-known. However, it
+doesn’t hurt to know about them.
+CWR & ECN #
+These flags, Congestion Window Reduced and Explicit Congestion
+Notification are used to handle congestion. To put it very simply, the ECN flag
+is set by the receiver, so that the sender knows that congestion is occurring.
+The sender sets the CWR flag in response to this so that the receiver knows
+that the receiver has reduced its congestion window to compensate for
+congestion and the sender is sending data at a slower rate.
+PSH #
+The default behavior of TCP is in the interest of efficiency; if multiple small
+TCP segments were received, the receiving TCP will combine them before
+handing them over to the application layer. However, when the Push (PSH)
+flag is set, the receiving end immediately flushes the data from its buffer to
+the application instead of waiting for the rest of it to arrive.
+This is usually used for applications like Telnet, where every keystroke is a
+command. It would not make sense to say, buffer 50 keystrokes and send them
+to the application layer at once, so, every keystroke is pushed.
+A
+B
+Host A has a buffer for the data it receives from host B
+1 of 9
+URG #
+The Urgent flag marks some data within a message as urgent. Upon receipt of
+an urgent segment, the receiving host forwards the urgent data to the
+application with an indication that the data is marked as urgent by the sender.
+The rest of the data in the segment is processed normally.
+This would be used when suppose a large file is being transferred but the
+sender realizes that it’s the wrong file and sends a command to stop transfer.
+It wouldn’t make sense to have the file finish transferring first, hence the
+command to stop transfer is marked as urgent and is executed before the file
+i d
+f
+i
+is done transferring.
+Quick Quiz! #
+1
+What functionality does the urgent flag allow that the push flag
+does not?
+COMPLETED 0%
+1 of 3
+A) URG is more important and has higher priority
+B) URG marks out which part of the data is urgent
+C) PSH pushes out data immediately while URG ensures that
+it’s sent up to the application immediately only
+Let’s finish off looking at the rest of the headers in the next lesson!
+TCP Headers: Window Size, Checksum & More
+We'll continue our discussion of TCP headers in this lesson
+We'll cover the following
+• Window Size
+• Checksum
+• Urgent Pointer
+• Options & Padding
+• Common Options
+• Quick Quiz!
+Window Size #
+Remember the ‘buffer’ we discussed in the last lesson? Well, the window size
+is essentially the amount of available space in that buffer. TCP at the receiving
+end buffers incoming data that has not been processed yet by the overlaying
+application. The amount of available space in this buffer is specified by the
+window size.
+6 flags (6
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(2 bytes)
+Reserved
+(6 bits)
+The window size is a critical element of TCP
+
+---PAGE 15---
+The window size can be up to 2 bytes in size hence, the numerical range of
+the window size is from 2 →2
+−1 or 0 →65535.
+The window size is communicated to the sender by the receiver in every TCP
+message and gets updated as the buffer fills and empties. If the window size
+reduces after a bit, the sender will know that it needs to reduce the amount of
+data being sent, or give the receiver time to clear the buffer.
+To put it another way, the window size is at first equal to as much data as the
+receiving entity is willing and able to receive. As it receives some more data,
+the window size will decrease and as it hands over some of the received data
+to the application layer, the window size will increase. This is useful to
+implement flow control.
+0
+16
+6 flags (6
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(2 bytes)
+Reserved
+(6 bits)
+The checksum allows TCP to be reliable, and the urgent pointer identi}es the range of bytes in the packet that are
+urgent.
+Checksum #
+The checksum is calculated exactly like in UDP except that the checksum
+calculation is mandatory in TCP!
+Urgent Pointer #
+The urgent pointer defines the byte to the point of which the urgent data
+exists. This is because a single segment can contain both parts of urgent and
+regular data. This field is only used in conjunction with the urgent flag.
+6 flags (6
+bits)
+Window Size
+(2 bytes)
+Checksum (2 bytes)
+Urgent Pointer (2 bytes)
+Options and Padding (40 bytes)
+Source Port Number (2 bytes)
+Destination Port Number (2 bytes)
+Sequence Number (4 bytes)
+Acknowledgment Number (4 bytes)
+Header
+Length
+(2 bytes)
+Reserved
+(6 bits)
+The options }eld allows to build in extra functionality that the regular header does not cover
+Options & Padding #
+The options and padding field provides up to an extra 40 bytes to build extra
+facilities that are not covered by the regular header. The options can vary in
+length and exist in multiples of 32 bytes using zeros to pad in any extra bits.
+Common Options #
+Some options are commonly used and are well-defined. Here’s a table that
+discusses each.
+Option
+Explanation
+MSS
+Defines the maximum-sized payload a
+host can handle at one time. Larger
+payload sizes are preferable because the
+header would be slightly different in
+certain fields for each segment. The
+redundancy will be significant and
+overhead will therefore be high. If this
+option is not used, the 536-byte payload is
+used as default.
+Ti
+t
+All
+d
+t ti
+t
+t
+Timestamp
+Allows senders to timestamp segments.
+This is a logical extension of sequence
+numbers. We'll have a closer look at this
+one in upcoming lessons!
+Window Scale
+Allows the host to 'scale up' its window
+size by a factor in situations where
+sending data to the sender from the
+receiver takes longer than sending to the
+receiver. This, for example, allows the
+sender to keep sending data without
+having to wait long periods of time to
+hear back for acknowledgments. This
+option essentially allows the
+communicating parties to use larger than
+default buffers - larger by a multiple
+factor (power of 2 using shift operations).
+So, if the scale factor is 4 and the window
+size otherwise specified is 20 kB, the
+actual window size is 80 kB.
+Quick Quiz! #
+1
+The window size represents the amount of buffer available at the
+receiver. This should be constant and only communicated in the
+first TCP segment sent from the receiver to the sender. What do
+you think?
+A) That is an excellent idea
+B) The amount of buffer dynamically changes, so this field is
+needed
+COMPLETED 0%
+1 of 2
+C) This must be due to some politics during TCP
+standardization
+We’re finally done with the TCP header! Let’s learn more about the protocol
+itself starting from the next lesson.
+
+---PAGE 16---
+TCP Connection Establishment: Three-way
+Handshake
+In this lesson, we'll discuss how a TCP connection is established!
+We'll cover the following
+• Initiating a Connection
+• Responding to an Initial Connection Message
+• Acknowledging The Response
+• Quick Quiz!
+A TCP connection is established by using a three-way handshake, which we
+briefly touched upon in a previous lesson. The connection establishment
+phase uses the sequence number, the acknowledgment number, and the
+SYN flag.
+Initiating a Connection #
+When a client host wants to open a TCP connection with a server host, it
+creates and sends a TCP segment with:
+The SYN flag set
+The sequence number set to a random initial value. So the sequence
+numbers do not start with 0! Can you guess why?
+Why sequence numbers are set to random values
+Responding to an Initial Connection Message #
+Upon reception of this segment (which is often called a SYN segment), the
+server host replies with a segment containing:
+the SYN flag set
+the sequence number set to a random number.
+The ACK flag set
+The acknowledgment number set to the sequence number of the
+received SYN segment incremented by 1 mod 2
+, because the SYN
+segment consumes one byte. This new number may exceed 2
+, which is
+the limit of the ACK header field, so the modulus by 2
+ of this number is
+taken. This allows the number to cycle back and start from 0.
+📝 Note When a TCP entity sends a segment with x + 1 as the
+acknowledgment number, it means that it has received all the segments
+up to and including the segments with the sequence number x, and that
+it’s expecting data having sequence number x + 1.
+This segment is often called a SYN+ACK segment. The acknowledgment
+confirms to the client that the server has correctly received the SYN segment.
+The random sequence number of the SYN+ACK segment is used by the server
+host to verify that the client has received the segment.
+Acknowledging The Response #
+Upon reception of the SYN+ACK segment, the client host replies with a
+segment containing:
+The ACK flag set
+The acknowledgment number set to the sequence number of the
+received SYN+ACK segment incremented by 1. The modulus of the
+number by 2
+ is obviously taken. At this point, the TCP connection is
+open and both the client and the server are allowed to send TCP segments
+containing data. This is illustrated in the figure below:
+32
+32
+32
+32
+Client
+Server
+Sequence Number
+x
+Acknowledgment Number 
+SYN
+ACK
+Connection Request
+Initiating a Connection
+1 of 4
+In the figure above, the connection is considered to be established by the
+client once it has received the SYN+ACK segment, while the server considers
+the connection to be established upon reception of the ACK segment.
+Quick Quiz! #
+1
+A client is establishing a connection with a server. The first
+segment sent from the client to the server contains ______ in the
+flags field
+flags field.
+COMPLETED 0%
+1 of 3
+A) 00 01 00 10
+B) 00 00 00 10
+C) 00 01 00 00
+A server could, of course, refuse to open a TCP connection upon reception of a
+SYN segment. This refusal may be due to various reasons. Let’s discuss the
+details in the next lesson.
+
+---PAGE 17---
+Other TCP Connection Establishment Methods
+In this lesson, we'll look at some unconventional ways that connection establishment
+may occur.
+We'll cover the following
+• A TCP Three-way Handshake FSM
+• Client-Side
+• Server-Side
+• Simultaneous Connection Establishment
+• Quick Quiz!
+In the last lesson, we looked at the most common way that TCP connection
+establishment could occur. Now, let’s look at some other ways it can
+successfully occur.
+A TCP Three-way Handshake FSM #
+TCP connection establishment can be described with a four-state Finite State
+Machine (FSM) as shown below. In this FSM, X/Y  indicates that segment X
+was transmitted and segment Y  was received. Init is the initial state
+Init
+Established
+SYN Sent
+SYN RCVD
+SYN
+ACK
+ACK/SYN+ACK
+SYN+ACK/SYN
+X/Y: X is transmitted &Y is received
+Init: initial state
+TCP FSM for connection establishment
+Client-Side #
+Let’s carve out the paths in this FSM. Here’s the three-way handshake path.
+1. A client host starts in the Init state.
+2. It then sends a SYN segment and enters the SYN Sent state where it waits
+for a SYN+ACK segment.
+3. When a SYN+ACK is recieved in the SYN SENT state, it replies with an
+ACK segment and enters the Established state where data can be
+exchanged.
+Server-Side #
+1. On the other hand, a server host starts in the Init state.
+2. When a server process starts to listen to a destination port, the
+underlying TCP entity creates a TCP control block and a queue to process
+incoming SYN segments. Upon reception of a SYN segment, the server’s
+TCP entity replies with a SYN+ACK and enters the SYN RCVD state.
+3. It remains in this state until it receives an ACK segment that
+acknowledges its SYN+ACK segment, and with this it then enters the
+Established state.
+Simultaneous Connection Establishment #
+Apart from these two paths in the TCP connection establishment, shown in the
+above FSM, there is a third way that a connection can be established: when
+both the client and the server send a SYN segment to open a TCP connection.
+Client
+Server
+Sequence Number
+y
+SYN
+ACK
+Connection Request
+Connection Request
+Sequence Number
+x
+SYN
+ACK
+Simultaneous TCP Connection Opening
+1 of 2
+Both sides must know the port number for each other in this case. It doesn’t
+have to be a well-known port number or the same on both sides.
+Quick Quiz! #
+1
+Simultaneous connection may result in more segments being
+exchanged than a regular three-way handshake.
+COMPLETED 0%
+1 of 2
+A) True
+B) False
+Coming up, we’ll look at a few scenarios in which connection establishment
+can go wrong and how TCP handles it.
+
+---PAGE 18---
+When Connection Establishment Fails: Syn Floods &
+Retransmission
+In this lesson, we'll look at a couple of loopholes in TCP's implementation and how
+modern }xes took care of them.
+We'll cover the following
+• Hosts Can Refuse Connection Requests
+• Syn Flood Attacks
+• Syn Cookies
+• Retransmitting Lost Segments
+• Quick Quiz!
+Hosts Can Refuse Connection Requests #
+A host could refuse to open a TCP connection upon reception of a SYN
+segment. This refusal may be due to various reasons, for example:
+1. There may be no server process that’s listening on the destination port
+of the SYN segment.
+2. The server could always refuse connection establishments from a
+particular client (e.g., due to security reasons).
+3. The server may not have enough resources to accept a new TCP
+connection at that time.
+There are other scenarios in which a connection may be refused but these are
+the common ones. If a process is listening on a port, but the connection is to
+be refused, the server sends a SYN segment with the following properties:
+Has its RST flag set
+Contains the sequence number of the received SYN segment as its
+acknowledgment number.
+Thi i ill
+t
+t d i
+th
+lid
+b l
+W
+ill di
+th
+th
+tili
+ti
+f
+This is illustrated in the slides below. We will discuss the other utilizations of
+the TCP RST flag later in the TCP connection release lesson.
+Client
+Server
+Sequence Number
+x
+Acknowledgment Number 
+SYN
+ACK
+Connection Request
+Initiating a Connection
+1 of 3
+Syn Flood Attacks #
+When a TCP entity opens a TCP connection, it creates a Transmission Control
+Block (TCB) that contains the entire state of the connection, including the
+local sequence number and sequence number sent by the remote client. Until
+the mid-1990s, TCP implementations had a limit on the number of ‘half-open’
+TCP connections (TCP connections in the SYN RCVD state) which was most
+commonly at 100. So a machine could only have a 100 ‘half-open’ TCP
+connections. This was meant to avoid overflowing the entity’s memory with
+TCBs. When the limit was reached, the TCP entity would stop accepting any
+new SYN segments.
+📝 Note: The Transmission Control Block: For each established TCP
+connection, a TCP implementation must maintain a Transmission
+Control Block (TCB). A TCB contains all the information required to send
+and receive segments. This includes:
+the local IP address
+the remote IP address
+the local TCP port number
+the remote TCP port number
+the current state of the TCP FSM
+the maximum segment size (MSS)
+Here’s an illustration of what should happen.
+Client
+Server
+Assuming that
+the TCB limit is 6
+Assuming that
+the TCB limit is 6
+Normal behavior with TCBs
+1 of 5
+Syn Cookies #
+However, this allowed attackers to carry out an attack where they could
+render a resource unavailable in the network by sending it valid messages.
+Such attacks are called Denial of Service (DoS) attacks because they deny the
+user(s) a service. Here’s how this one was carried out:
+1. The attacker would send a few 100 SYN segments every second to a
+server
+2. The attacker would not reply to any received SYN+ACK segments
+3. To avoid being caught, the attacker would send these SYN segments with
+a different IP address from their own IP address.
+4. Once a server entered the SYN RCVD state, it would remain in that state
+for several seconds, waiting for an ACK and not accepting any new,
+possibly genuine connections, thus being rendered unavailable.
+Here are some slides depicting a SYN flood attack:
+
+---PAGE 19---
+Client
+Server
+Connection Request + Create TCB
+Assuming that
+the TCB limit is 6
+Assuming that
+the TCB limit is 6
+syn ~ood attack
+1 of 8
+To avoid these SYN flood attacks, newer TCP implementations reply directly
+with SYN+ACK segments and wait until the reception of a valid ACK to create a
+TCB.
+The goal is to not store connection state on the server immediately upon
+reception of a SYN packet. But, without this information, the server cannot tell
+if a subsequent ACK it receives is from a legitimate client that had sent a
+benign SYN packet. One way to do it is to verify that if the acknowledgement
+number contained in the ACK packet is y then the server had sent a sequence
+number contained in the ACK packet is y, then the server had sent a sequence
+number y −1 in the SYN+ACK packet. But, again, if we are remembering the
+initial sequence number for each SYN packet, we are back to square one -
+remembering connection state. The way SYN Cookie solves this problem is to
+use a function that uses some information from the client’s SYN packet and
+some information from the server side to calculate a random initial sequence
+number. This number, say, y −1 is sent to the client in a SYN + ACK message.
+If an ACK packet is later received with a sequence number y, using some
+packet header fields and some server side information, a reverse function can
+verify that the acknowledgement number is valid. If not, the connection is
+refused, otherwise a TCB is created and a connection is established.
+The advantage of SYN cookies is that the server would not need to create and
+store a TCB upon reception of the SYN segment.
+Retransmitting Lost Segments #
+Since the underlying Internet protocol provides an unreliable service, the SYN
+and SYN+ACK segments sent to open a TCP connection could be lost. Current
+TCP implementations start a retransmission timer when the first SYN
+segment is sent. This timer is often set to three seconds for the first
+retransmission, and then doubles after each retransmission (RFC 2988). When
+the timer expires, the segment is retransmitted. TCP implementations also
+enforce a maximum number of retransmissions for the initial SYN segment.
+Note that the same technique is used for all TCP segments, not just connection
+establishment segments.
+We’ll look at this in detail when we study TCP reliability in an upcoming
+lesson!
+Quick Quiz! #
+1
+A TCP connection establishment request may be refused due to
+which of the following reasons?
+A) The server already has one other open connection and
+COMPLETED 0%
+1 of 3
+hence cannot deal with another.
+B) The server does not have enough resources to open another
+connection.
+C) The server has one other half-open connection.
+That is it for TCP connection establishment. What we’ll cover next is how TCP
+releases a connection.
+TCP Connection Release
+In this lesson, we'll discuss how TCP terminates established connections.
+We'll cover the following
+• Abrupt Connection Release
+• Graceful Connection Release
+• FSM
+• Receiving a FIN
+• Tracing through the FSM
+• Sending a FIN
+• Slides of Path 1A
+• Quick Quiz!
+TCP, like most connection-oriented transport protocols, supports two types of
+connection releases:
+1. Graceful connection release, where the connection is not closed until
+both parties have closed their sides of the connection.
+2. Abrupt connection release, where either one user closes both directions
+of data transfer or one TCP entity is forced to close the connection.
+Abrupt Connection Release #
+We’ve already had a brief overview of abrupt connection release with RST
+segments in a previous lesson. Let’s have a closer look.
+An abrupt release is executed when a RST segment is sent. A RST can be sent
+for the following reasons:
+A non-SYN segment was received for a non-existing TCP connection
+(RFC 793).
+Some implementations send a RST segment when a segment with an
+
+---PAGE 20---
+Some implementations send a RST segment when a segment with an
+invalid header is received on an open connection (RFC 3360). This
+causes the corresponding connection to be closed and has prevented
+attacks (RFC 4953).
+Some implementations send an RST segment when they need to close an
+existing TCP connection for any reason such as:
+There are not enough resources to support this connection
+The remote host has stopped responding and is now unreachable.
+When a RST segment is sent by a TCP entity, it should contain the current
+value of the sequence number for the connection (or 0 if it does not belong to
+any existing connection), and the acknowledgment number should be set to
+the next expected in-sequence sequence number on this connection.
+Graceful Connection Release #
+The normal way of terminating a TCP connection is by using the FIN flag of
+the TCP header. This ‘graceful mechanism’ allows each host to release its own
+side of the connection individually. The utilization of the FIN flag in the TCP
+header consumes one sequence number.
+FSM #
+The following figure shows an FSM that depicts the various ‘graceful’ ways
+that a TCP connection can be released.
+Don’t feel overwhelmed if you don’t understand it yet, we’ll study each
+possible path individually.
+Connection Release FSM
+Starting from the Established state, there are two main paths through this
+FSM.
+Receiving a FIN #
+Throughout the rest of this lesson we’ll refer to the two hosts as client and
+server. In the case of this path, the client receives a FIN segment. Let’s trace it.
+1. The client receives a segment with sequence number x and the FIN flag
+set. The utilization of the FIN flag indicates that the byte before sequence
+number x was the last byte of the byte stream sent by the server. The FIN
+segment is subject to the same retransmission mechanisms as a normal
+TCP segment. In particular, its transmission is protected by the
+retransmission timer that we’ll look at in the next few lessons.
+2. Once all of the data has been delivered to the application layer entity, the
+TCP entity sends an ACK segment to acknowledge the FIN segment it
+received in step (1), whose acknowledgment number field is set to 
+p
+g
+(x + 1) mod 2
+.
+3. At this point, the TCP connection enters the CLOSE_WAIT state. In this
+state, the client can still send data to the server.
+4. Once the client has sent all the data that it was supposed to, it sends a FIN
+segment and enters the LAST_ACK state. In this state, the client waits for
+the acknowledgment of its FIN segment. It may still retransmit
+unacknowledged data segments, e.g. if the retransmission timer expires.
+5. Upon reception of the acknowledgment for the FIN segment, the TCP
+connection is completely closed and its TCB can be discarded.
+Tracing through the FSM #
+Here are some slides tracing this path through the FSM.
+32
+Established
+SYN RCVD
+FIN Wait1
+CLOSE Wait
+Fin Wait2
+Closing
+LAST-ACK
+TIME Wait
+Closed
+FIN
+FIN
+FIN/ACK
+FIN/ACK
+ACK
+ACK
+FIN/ACK
+TImeout [2MSL]
+FIN
+ACK
+Starting from an established connection
+Connection Release FSM
+1 of 6
+Sending a FIN #
+The second path is when the client decides first to send a FIN segment.
+1. Upon sending the FIN, the connection enters the FIN_WAIT1 state. In this
+state, the client can retransmit unacknowledged segments, but cannot
+send new data segments. There are two paths that this one can split into
+after this:
+A. The client receives an ACK segment in response to its FIN. The TCP
+connection enters the FIN_WAIT2 state in which new data segments
+from the server are still accepted until the reception of a FIN
+segment. The acknowledgment for this segment is sent once all the
+data before the FIN segment has been delivered to the client. After
+this, the connection enters the TIME_WAIT state.
+B. In the second case, a FIN segment is received from the server. The
+connection enters the Closing state once all the data from the server
+has been delivered to the client. In this state, no new data segments
+can be sent and the client waits for an acknowledgment of its FIN
+segment before entering the TIME_WAIT state.
+2. A TCP connection enters the TIME_WAIT state after the client sends the
+last ACK segment to a server. This segment indicates to the server that all
+the data that it’s sent has been correctly received and that it can safely
+release the TCP connection and discard the corresponding TCB.
+3. The connection remains in the TIME_WAIT state for 2 × a certain length
+of time called the maximum segment lifetime (MSL) seconds. The TCP
+standard defines MSL as 120 seconds (2 minutes). Although, this value is
+flexible in modern implementations. During the 2 ×MSL period, the TCB
+of the connection is maintained on both ends to:
+allow retransmission of the sent ACK segments if any are lost.
+handle duplicate segments on the connection correctly without
+causing the transmission of a RST segment
+Slides of Path 1A #
+
+---PAGE 21---
+Established
+SYN RCVD
+FIN Wait1
+CLOSE Wait
+Fin Wait2
+Closing
+LAST-ACK
+TIME Wait
+Closed
+FIN
+FIN
+FIN/ACK
+FIN/ACK
+ACK
+ACK
+FIN/ACK
+TImeout [2MSL]
+FIN
+ACK
+Starting from an established connection
+X/Y: X is transmitted & Y is received
+Init: initial state
+Connection Release FSM
+1 of 8
+Quick Quiz! #
+1
+What are some reasons why a connection may get abruptly
+terminated?
+A) The server has sent all the data that was requested
+B) The server does not have enough resources to sustain the
+COMPLETED 0%
+1 of 3
+) The server does not have enough resources to sustain the
+connection
+C) The client has received all the data that it needed and the
+connection is now redundant
+Now that we’re done with what connection release looks like in TCP, let’s move
+on to efficient data transmission with TCP using Nagle’s algorithm in the next
+lesson!
+Efficient data transmission with TCP
+In this lesson, we'll study the main data transfer mechanisms used by TCP.
+We'll cover the following
+• Segment Transmission Strategies
+• Nagle’s Algorithm
+• Algorithm
+• Limitations
+• Quick Quiz!
+Segment Transmission Strategies #
+In a transport protocol such as TCP that offers a byte stream, a practical issue
+that was left as an implementation choice in RFC 793 was when a new TCP
+segment should be sent.
+There are two simple and extreme implementation choices:
+1. Send a TCP segment as soon as the application has requested the
+transmission of some data.
+Advantage: This allows TCP to provide a low delay service.
+Disadvantage: If the application is writing data one byte at a time,
+TCP would place each byte in a segment containing 20 bytes of the
+TCP header. This is a huge overhead that is not acceptable in wide
+area networks.
+2. Transmit a new TCP segment once the application has produced MSS
+bytes of data. Recall MSS from this lesson on TCP Headers.
+Advantage: Reduced overhead
+Disadvantage: Potentially at the cost of a very high delay, which
+may be unacceptable for interactive applications.
+Nagle’s Algorithm #
+g
+g
+An elegant solution to this problem was proposed by John Nagle in RFC 896
+called Nagle’s Algorithm.
+In essence, as long as there are unacknowledged packets, Nagle’s algorithm
+keeps collecting application layer data up to maximum segment size, to be
+sent together in a single packet. This helps reduce the packetization overhead
+by reducing small packets.
+Algorithm #
+if window size >= MSS and available data >= MSS:
+    send one MSS-sized segment
+else:
+    if there is unacknowledged data:
+        place data in buffer until acknowledgement is received 
+    else:
+        send one TCP segment containing all buffered data
+Nagle's Algorithm
+The algorithm takes up 2-3 lines in a TCP implementation. Nagle’s algorithm
+‘executes’ every time new data comes in from the remote host. Here’s how it
+works: it sends data if it is at least the size of one MSS and the window size is
+appropriate. Otherwise, it checks if any unacknowledged segments exist. If so,
+it buffers the data and doesn’t send it. There is no timer on this condition,
+and it will keep buffering data until previous segments are acknowledged. If
+an ACK segment comes in, it sends the data.
+Limitations #
+Nagle’s has a few limitations:
+1. Nagle’s algorithm is only supported by TCP and no other protocols like
+UDP.
+2. TCP applications that require low latency and fast response times such
+as internet phone calls or real-time online video games, do not work well
+when Nagle’s is enabled. The delay caused by the algorithm triggers a
+noticeable lag. These applications usually disable Nagle’s with an
+interface called the TCP_NODELAY  option.
+
+---PAGE 22---
+3. The algorithm was originally developed at a time when computer
+networks supported much less bandwidth than they do today. It saved
+bandwidth and made a lot of sense at the time, however, the algorithm is
+much less frequently used today.
+4. The algorithm also works poorly with delayed ACKS, a TCP feature that
+is used now. With both algorithms enabled, applications experience a
+consistent delay because Nagle’s algorithm doesn’t send data until an ACK
+is received and delayed ACKs feature doesn’t send an ACK until after a
+certain delay.
+Quick Quiz! #
+1
+Consider the following scenario:
+The last segment received by a TCP entity had an ACK value
+of 10.
+The MSS value is 536.
+There are 50 bytes in the buffer waiting for transmission.
+The window size is 500.
+The application sends a 500 byte message.
+All the data sent so far has been acknowledged.
+Will the data be buffered or sent on if Nagle’s was active?
+COMPLETED 0%
+1 of 3
+A) It will be buffered
+B) One TCP segment with all the buffered data will be sent
+C) One MSS sized segment will be sent
+For now, that’s all on Nagle’s. Let’s move on to TCP window-scaling
+mechanisms.
+TCP Window Scaling
+In this lesson, we'll discuss TCP window scaling!
+We'll cover the following
+• Problem: Small Windows Result in Inef}cient Use of Bandwidth
+• Round Trip Time vs. Bandwidth vs. Throughput
+• Transmission and Propagation Delays: Example
+• Solution: Larger Windows
+• Scaling Factor
+• Deciding a Scaling Factor
+• Improvement
+• Quick Quiz!
+Problem: Small Windows Result in Inef}cient Use
+of Bandwidth #
+From a performance point of view, one of the main limitations of the original
+TCP design is that the 16-bit window size header limits the TCP receive
+window size to 2
+ bytes i.e., 65, 535 bytes. That means the sender can send at
+most 65, 535 bytes before it has to wait for an acknowledgment.
+Round Trip Time vs. Bandwidth vs. Throughput #
+Round Trip Time is the amount of time it takes to send a packet and
+receive its acknowledgment.
+Bandwidth is the rate at which the network can transport the bits.
+Throughput is the amount of data that is actually transferred from one
+end-system to another.
+So what if the round trip time is short enough to accommodate sending more
+data without having to wait for acknowledgments? The table below shows the
+rough maximum throughput that can be achieved by a TCP connection with a
+6
+i d
+f
+i
+f h
+i
+d
+i
+i
+16
+64 KBytes window as a function of the connection’s round-trip-time:
+RTT
+Maximum Throughput
+1 msec
+524 Mbps
+10 msec
+52.4 Mbps
+100 msec
+5.24 Mbps
+500 msec
+1.05 Mbps
+This limitation was not a severe problem when TCP was designed, because at
+the time the available bandwidth was 56 kbps at best. However, in today’s
+networks where the bandwidth can be in order gigabytes, this limitation is not
+acceptable.
+Transmission and Propagation Delays: Example #
+Consider a 1.544 Mbps link from one end host to another over a satellite
+link that is 36000 km above the surface of the earth.
+It takes 
+ = 480 ms to get to the end host and then for the
+acknowledgement to return (ignoring the transmission time of the ack).
+This is the total distance to be covered by two segments divided by the
+speed of light.
+In the same amount of time, the sender could put 
+ = 741120
+bits = 92640 bytes = 90.5 kB on the network.
+Now, even if the sliding window is at its maximum of 64 kB, the sender
+will only transmit 64 kB and then wait, sitting idle until an
+acknowledgement is received from the other side.
+That is a network utilization of 
+ = 70.71%. If we factor in the
+overheads of headers from various layers, the utilization drops further.
+Note that we don’t use satellite links much these days, but effectively,
+whenever the product of bandwidth and delay is high which is common with
+3×108
+2×72000×1000
+1000
+480×1544000
+64
+90.5
+
+---PAGE 23---
+whenever the product of bandwidth and delay is high, which is common with
+today’s high speed networks, we face the same problem. So, if the delay is
+small, but the bandwidth is high, the sender can still put out a lot of bytes
+really quickly on the wire and still have to wait for an ACK sitting idle.
+Solution: Larger Windows #
+To solve this problem, a backward-compatible extension that allows TCP to
+use larger receive windows was proposed in RFC 1323.
+Basic idea: instead of storing the size of the sending window and receiving
+window as 16-bit integers in the TCB, we keep the 16-bit window size, but
+introduce a multiplicative scaling factor.
+Scaling Factor #
+As the TCP segment header only contains 16 bits to place the window field, it
+is impossible to copy the size of the sending window in each sent TCP
+segment. Instead, the header contains:
+sending window << S
+where S is the scaling factor (0≤S≤14) negotiated during connection
+establishment and is specified in the header options field. ‘<<’ is the bitwise
+shift operator. This operation pads zeros at the right and discards the bits on
+the left essentially multiplying by 2 for each shift.
+Deciding a Scaling Factor #
+The client adds its proposed scaling factor as a TCP option in the SYN segment.
+If the server supports scaling windows, it sends the scaling factor in the
+SYN+ACK segment when advertising its own receive window. The local and
+remote scaling factors are included in the TCB. If the server does not support
+scaling windows, it ignores the received option and no scaling is applied. So
+scaling only applies when both parties support it.
+Note that the protection mechanism of not maintaining state from the SYN
+packet via SYN cookies has the disadvantage that the server wouldn’t
+remember the proposed scaling factor.
+Improvement #
+p
+By using the window scaling extensions defined in RFC 1323, TCP
+implementations can use a receive buffer of up to 1 GByte. With such a
+receive buffer, the maximum throughput that can be achieved by a single TCP
+entity is delineated in the following table:
+RTT
+Maximum Throughput
+1 msec
+8590 Gbps
+10 msec
+859 Gbps
+100 msec
+86 Gbps
+500 msec
+17 Gbps
+These throughputs are acceptable in today’s networks as there are already
+servers with 10 Gbps interfaces.
+Quick Quiz! #
+1
+Given the window scaling factor of 6 and window size of 3125,
+how many bytes can the sender send without waiting for an
+acknowledgement?
+A) 100000
+B) 200000
+C) 2000000
+COMPLETED 0%
+1 of 2
+Did you know that you can measure the round trip time on your network?
+Yes, it’s true. Let’s see how in the next lesson.
+Exercise: Measuring RTT with Ping
+We'll cover the following
+• Round-trip-time
+• Pinging Google
+• Dissecting The Output
+Round-trip-time #
+Just to recap the last lesson, the Round Trip Time of a connection is the
+amount of time it takes to send a packet and receive its acknowledgment.
+The ping  command can be used to measure the round-trip-time to send and
+receive packets from a remote host. We’re just pinging google from here
+because the location of the server that actually runs these commands from
+our website may change over time. However, if you try this locally, chose a
+remote destination which is far from your current location, e.g., a small web
+server in a distant country.
+Checkout ping’s manpage for more details!
+Pinging Google #
+Terminal
+Click to Connect...
+
+---PAGE 24---
+Dissecting The Output #
+Round trip time
+Size of the
+packet
+IP address of
+domain that
+was looked up
+Sequence
+number and
+TTL of the
+packet
+Note that the Time To Live (TTL) is the number of routers a packet can hop.
+So a ttl of 53 means it can jump 53 more ‘hops’ before being discarded. Each
+router or intermediary forwarding device decreases the TTL by one. This was
+a rather simplified definition of the term. We will study it in detail in the next
+chapter.
+Now that we know some quirks and alterations added to optimize TCP over
+time, let’s get into TCP congestion control algorithms!

@@ -1,5 +1,48 @@
 # Network Layer — IPv4, Addressing, Routing
 
+## Table of Contents
+
+- [Overview](#overview)
+- [1. Network Layer Functions](#1-network-layer-functions)
+- [2. IPv4 Design Principles](#2-ipv4-design-principles)
+  - [Design Assumptions](#design-assumptions)
+- [3. IPv4 Header](#3-ipv4-header)
+  - [Key Fields](#key-fields)
+- [4. IPv4 Addresses](#4-ipv4-addresses)
+  - [Dotted-Decimal Notation](#dotted-decimal-notation)
+  - [Multihoming](#multihoming)
+- [5. Address Classes (Historical)](#5-address-classes-historical)
+  - [Class Summary](#class-summary)
+  - [Problems with Classful Addressing](#problems-with-classful-addressing)
+- [6. Subnetting](#6-subnetting)
+  - [Structure of an IPv4 Address](#structure-of-an-ipv4-address)
+  - [Network Address and Broadcast Address](#network-address-and-broadcast-address)
+  - [CIDR Notation](#cidr-notation)
+  - [Variable-Length Subnet Reference Table](#variable-length-subnet-reference-table)
+  - [Subnetting Example: Splitting a /16 into /24s](#subnetting-example-splitting-a-16-into-24s)
+  - [Subnetting Calculation Example](#subnetting-calculation-example)
+- [7. CIDR — Classless Interdomain Routing](#7-cidr-classless-interdomain-routing)
+  - [Why CIDR Replaced Classful Addressing](#why-cidr-replaced-classful-addressing)
+  - [CIDR Allocation Hierarchy](#cidr-allocation-hierarchy)
+  - [Route Aggregation (Supernetting)](#route-aggregation-supernetting)
+  - [Longest-Prefix Match](#longest-prefix-match)
+  - [Forwarding Table Example](#forwarding-table-example)
+  - [CIDR vs. Variable-Length Subnets](#cidr-vs-variable-length-subnets)
+- [8. Special IPv4 Addresses](#8-special-ipv4-addresses)
+- [9. DHCP — Dynamic Host Configuration Protocol](#9-dhcp-dynamic-host-configuration-protocol)
+  - [What DHCP Assigns](#what-dhcp-assigns)
+  - [DORA Process](#dora-process)
+  - [DHCP Relay Agents](#dhcp-relay-agents)
+  - [Key Operational Details](#key-operational-details)
+- [10. Routing — Dijkstra's Shortest Path Algorithm](#10-routing-dijkstras-shortest-path-algorithm)
+  - [Dijkstra's Algorithm](#dijkstras-algorithm)
+  - [Step-by-Step Example](#step-by-step-example)
+  - [Dijkstra Walk-Through (Detailed)](#dijkstra-walk-through-detailed)
+  - [Python Implementation (Reference)](#python-implementation-reference)
+- [Summary](#summary)
+
+---
+
 ## Overview
 
 The network layer is the backbone of the Internet. It is responsible for **logical end-to-end delivery of packets** between hosts across arbitrarily many intermediate routers. Where the transport layer connects two processes on two endpoints, the network layer connects the endpoints themselves — it does not care which process on the destination host receives the packet.

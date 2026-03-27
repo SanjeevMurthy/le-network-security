@@ -1,5 +1,32 @@
 # AWS Security
 
+## Table of Contents
+
+- [Overview](#overview)
+- [IAM and Networking: The Two-Layer Access Model](#iam-and-networking-the-two-layer-access-model)
+  - [Resource-Based Policies](#resource-based-policies)
+- [VPC Endpoints: Keeping Traffic Off the Internet](#vpc-endpoints-keeping-traffic-off-the-internet)
+  - [Gateway Endpoints (S3 and DynamoDB)](#gateway-endpoints-s3-and-dynamodb)
+  - [Interface Endpoints (PrivateLink)](#interface-endpoints-privatelink)
+- [Security Groups: Stateful Network Enforcement](#security-groups-stateful-network-enforcement)
+- [AWS GuardDuty: Threat Detection](#aws-guardduty-threat-detection)
+- [AWS Security Hub: CSPM Aggregation](#aws-security-hub-cspm-aggregation)
+- [AWS Inspector: Vulnerability Scanning](#aws-inspector-vulnerability-scanning)
+- [AWS Config: Compliance Rules](#aws-config-compliance-rules)
+- [AWS CloudTrail: API Audit Logging](#aws-cloudtrail-api-audit-logging)
+- [IAM Access Analyzer](#iam-access-analyzer)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [S3 Bucket Data Exfiltration: CloudTrail Investigation Workflow](#s3-bucket-data-exfiltration-cloudtrail-investigation-workflow)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 AWS security is a layered discipline where IAM controls *who can call which APIs*, Security Groups control *which network traffic flows*, and a set of native detection and compliance services (GuardDuty, Security Hub, Inspector, Config, CloudTrail) continuously monitor for threats and drift. The Shared Responsibility Model defines the boundary: AWS secures the cloud infrastructure; you secure everything you deploy in the cloud. A common mistake is treating these layers as independent. In practice, a complete attack requires both IAM control (to assume a role or access secrets) and network access (to reach the service endpoint) — securing both layers forces attackers to chain multiple vulnerabilities.

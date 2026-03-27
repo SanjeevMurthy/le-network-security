@@ -1,5 +1,33 @@
 # Service Mesh
 
+## Table of Contents
+
+- [Overview](#overview)
+- [The Sidecar Model](#the-sidecar-model)
+- [Istio Architecture](#istio-architecture)
+  - [Control Plane: Istiod](#control-plane-istiod)
+  - [Data Plane: Envoy](#data-plane-envoy)
+- [Istio Traffic Management](#istio-traffic-management)
+  - [VirtualService](#virtualservice)
+  - [DestinationRule](#destinationrule)
+  - [ServiceEntry](#serviceentry)
+- [Istio Security](#istio-security)
+  - [PeerAuthentication (mTLS)](#peerauthentication-mtls)
+  - [AuthorizationPolicy](#authorizationpolicy)
+- [Istio Ambient Mode: Sidecarless](#istio-ambient-mode-sidecarless)
+- [Linkerd](#linkerd)
+- [SPIFFE / SPIRE](#spiffe-spire)
+- [Production Scenario: Istio AuthorizationPolicy Blocking Legitimate Traffic](#production-scenario-istio-authorizationpolicy-blocking-legitimate-traffic)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 A service mesh solves a specific problem: as organizations decompose monoliths into microservices, the cross-cutting concerns that were once handled by a single runtime (retries, timeouts, circuit breaking, encryption, distributed tracing) become distributed across dozens or hundreds of services. Embedding this logic in every service via language-specific libraries creates versioning hell and language lock-in.

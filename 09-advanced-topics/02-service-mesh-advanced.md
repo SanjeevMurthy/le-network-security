@@ -1,5 +1,35 @@
 # Service Mesh: Advanced Internals
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Envoy Internals](#envoy-internals)
+  - [Listener → Filter Chain → Cluster → Endpoint Pipeline](#listener-filter-chain-cluster-endpoint-pipeline)
+  - [Connection Pool Internals](#connection-pool-internals)
+- [Istio Ambient Mode Architecture](#istio-ambient-mode-architecture)
+  - [ztunnel: Layer 4 mTLS Plane](#ztunnel-layer-4-mtls-plane)
+  - [Waypoint Proxy: Layer 7 Policy Plane](#waypoint-proxy-layer-7-policy-plane)
+  - [Performance Comparison](#performance-comparison)
+- [SPIFFE/SPIRE Internals](#spiffespire-internals)
+  - [SVID Lifecycle and Attestation](#svid-lifecycle-and-attestation)
+  - [Trust Domain Federation](#trust-domain-federation)
+- [Multi-Cluster Mesh](#multi-cluster-mesh)
+  - [Istio Multi-Primary](#istio-multi-primary)
+  - [Cilium ClusterMesh](#cilium-clustermesh)
+- [Debugging](#debugging)
+  - [Envoy Admin API](#envoy-admin-api)
+  - [istioctl Diagnostics](#istioctl-diagnostics)
+  - [Kiali Service Graph](#kiali-service-graph)
+- [Anti-Patterns](#anti-patterns)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Istio Upgrade Causing 5xx Spike — Canary Upgrade and Rollback](#istio-upgrade-causing-5xx-spike-canary-upgrade-and-rollback)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 A service mesh is no longer just a "sidecar that does mTLS." At the staff and principal level, the conversation shifts to data plane internals (Envoy's filter chain pipeline, connection pool state machines), the architectural transition from sidecar to Ambient mode and what that means for security boundary placement, multi-cluster identity federation, and the production failure modes that are invisible until they bite. Engineers who can diagnose Envoy's config from `/config_dump` and design a safe Istio upgrade procedure are operating at a different level than those who can only configure VirtualService YAML.

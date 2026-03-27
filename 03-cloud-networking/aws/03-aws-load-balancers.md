@@ -4,6 +4,47 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [ALB vs NLB vs GLB: Feature Matrix](#alb-vs-nlb-vs-glb-feature-matrix)
+- [Application Load Balancer (ALB)](#application-load-balancer-alb)
+  - [Content-Based Routing with Listener Rules](#content-based-routing-with-listener-rules)
+  - [Rule Match Conditions](#rule-match-conditions)
+  - [Target Groups](#target-groups)
+  - [Weighted Target Groups for Canary Deployments](#weighted-target-groups-for-canary-deployments)
+  - [ALB Idle Timeout](#alb-idle-timeout)
+- [Network Load Balancer (NLB)](#network-load-balancer-nlb)
+  - [Source IP Preservation](#source-ip-preservation)
+  - [Static IPs Per AZ](#static-ips-per-az)
+  - [TLS Passthrough Mode](#tls-passthrough-mode)
+  - [Performance](#performance)
+- [Gateway Load Balancer (GLB)](#gateway-load-balancer-glb)
+  - [Bump-in-the-Wire Pattern](#bump-in-the-wire-pattern)
+  - [GENEVE Protocol](#geneve-protocol)
+  - [Use Cases](#use-cases)
+- [Connection Draining (Deregistration Delay)](#connection-draining-deregistration-delay)
+  - [The Trade-Off](#the-trade-off)
+- [WAF Integration with ALB](#waf-integration-with-alb)
+  - [Attaching a WAF ACL](#attaching-a-waf-acl)
+  - [WAF Rule Types](#waf-rule-types)
+  - [Rate Limiting Example](#rate-limiting-example)
+- [ALB Access Logs](#alb-access-logs)
+  - [Enabling Access Logs](#enabling-access-logs)
+  - [Key Fields in Access Logs](#key-fields-in-access-logs)
+  - [Querying with Athena](#querying-with-athena)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Debugging Walkthrough](#debugging-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 AWS Elastic Load Balancing (ELB) provides three managed load balancer types: ALB (Application), NLB (Network), and GLB (Gateway). Each operates at a different layer with fundamentally different performance characteristics, feature sets, and use cases.

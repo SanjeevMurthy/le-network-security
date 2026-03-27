@@ -1,5 +1,38 @@
 # CDN and Edge Architecture for High-Traffic Media Platform
 
+## Table of Contents
+
+- [Design Requirements](#design-requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Architecture Overview](#architecture-overview)
+- [Component Design](#component-design)
+  - [CloudFront Distribution Configuration](#cloudfront-distribution-configuration)
+  - [Origin Protection: Custom Header + ALB](#origin-protection-custom-header-alb)
+  - [TLS Configuration](#tls-configuration)
+  - [Video Streaming: HLS/DASH Architecture](#video-streaming-hlsdash-architecture)
+  - [Edge Compute: CloudFront Functions vs Lambda@Edge](#edge-compute-cloudfront-functions-vs-lambdaedge)
+  - [Cache Invalidation Strategy](#cache-invalidation-strategy)
+  - [DDoS Protection Architecture](#ddos-protection-architecture)
+- [Trade-offs and Alternatives](#trade-offs-and-alternatives)
+  - [CDN Provider Comparison](#cdn-provider-comparison)
+- [Failure Modes and Mitigations](#failure-modes-and-mitigations)
+- [Scaling Considerations](#scaling-considerations)
+  - [Current Design Handles](#current-design-handles)
+  - [At 10x Scale (100TB/day, global live streaming)](#at-10x-scale-100tbday-global-live-streaming)
+- [Security Design](#security-design)
+  - [Content Security](#content-security)
+  - [Security Headers (added via CloudFront Function)](#security-headers-added-via-cloudfront-function)
+- [Cost Considerations](#cost-considerations)
+  - [Cost Model (10TB/day)](#cost-model-10tbday)
+  - [Optimization Opportunities](#optimization-opportunities)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Design Requirements
 
 ### Functional Requirements

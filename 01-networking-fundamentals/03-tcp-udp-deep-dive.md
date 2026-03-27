@@ -1,5 +1,38 @@
 # TCP and UDP Deep Dive — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [TCP Header Deep Dive](#tcp-header-deep-dive)
+  - [TCP Flag Reference](#tcp-flag-reference)
+- [TCP State Machine](#tcp-state-machine)
+  - [State Descriptions and Production Implications](#state-descriptions-and-production-implications)
+- [TCP Three-Way Handshake with Sequence Numbers](#tcp-three-way-handshake-with-sequence-numbers)
+- [TCP Congestion Control: CUBIC vs BBR](#tcp-congestion-control-cubic-vs-bbr)
+  - [Why Congestion Control Matters](#why-congestion-control-matters)
+- [Retransmission: RTO, Backoff, and Spurious Retransmits](#retransmission-rto-backoff-and-spurious-retransmits)
+  - [RTO Calculation (RFC 6298)](#rto-calculation-rfc-6298)
+  - [Exponential Backoff](#exponential-backoff)
+  - [Spurious Retransmits](#spurious-retransmits)
+- [CLOSE_WAIT and TIME_WAIT: Production Incidents](#close_wait-and-time_wait-production-incidents)
+  - [CLOSE_WAIT Accumulation](#close_wait-accumulation)
+  - [TIME_WAIT Accumulation](#time_wait-accumulation)
+- [Production Scenario: High Latency Spike from TCP Retransmissions](#production-scenario-high-latency-spike-from-tcp-retransmissions)
+  - [Step 1: Confirm retransmits are happening](#step-1-confirm-retransmits-are-happening)
+  - [Step 2: Identify which connections are retransmitting](#step-2-identify-which-connections-are-retransmitting)
+  - [Step 3: Capture the packet evidence](#step-3-capture-the-packet-evidence)
+  - [Step 4: Identify the root cause from evidence](#step-4-identify-the-root-cause-from-evidence)
+- [UDP: When to Use It](#udp-when-to-use-it)
+  - [Head-of-Line Blocking: Why TCP Fails for Multiplexed Streams](#head-of-line-blocking-why-tcp-fails-for-multiplexed-streams)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 TCP is the most debuggable protocol in the stack — its state machine is observable, its headers contain sequence numbers, and every interesting event (retransmit, window shrink, RST) is visible in a packet capture. Understanding TCP internals separates engineers who can resolve "intermittent connection issues" from those who file tickets. This guide covers the complete TCP lifecycle, the failure modes that appear in production at scale, and the exact debugging workflow.

@@ -1,5 +1,20 @@
 # Cross-Domain Scenarios — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: A Kubernetes pod on Node A cannot reach a pod on Node B. Both have IPs from Calico BGP mode. Walk through every failure point.](#q-a-kubernetes-pod-on-node-a-cannot-reach-a-pod-on-node-b-both-have-ips-from-calico-bgp-mode-walk-through-every-failure-point)
+- [Q: Docker containers are experiencing intermittent DNS SERVFAIL. The host DNS works fine. Explain the Docker DNS architecture and debug path.](#q-docker-containers-are-experiencing-intermittent-dns-servfail-the-host-dns-works-fine-explain-the-docker-dns-architecture-and-debug-path)
+- [Q: Your AWS VPC (10.0.0.0/16) needs to peer with an on-premises network that also uses 10.0.0.0/16. How do you solve overlapping CIDRs?](#q-your-aws-vpc-1000016-needs-to-peer-with-an-on-premises-network-that-also-uses-1000016-how-do-you-solve-overlapping-cidrs)
+- [Q: After an Istio upgrade, services have 5x higher latency on the first request after a period of inactivity. Subsequent requests are fast. What's causing this?](#q-after-an-istio-upgrade-services-have-5x-higher-latency-on-the-first-request-after-a-period-of-inactivity-subsequent-requests-are-fast-whats-causing-this)
+- [Q: A MetalLB LoadBalancer service is unreachable from outside the cluster. Pods can reach the service internally. Debug this.](#q-a-metallb-loadbalancer-service-is-unreachable-from-outside-the-cluster-pods-can-reach-the-service-internally-debug-this)
+- [Q: An EKS pod can't reach RDS. Walk through every layer that could be causing this.](#q-an-eks-pod-cant-reach-rds-walk-through-every-layer-that-could-be-causing-this)
+- [Q: Kubernetes cluster is experiencing high DNS latency (500ms+ for external domains). What are all possible root causes?](#q-kubernetes-cluster-is-experiencing-high-dns-latency-500ms-for-external-domains-what-are-all-possible-root-causes)
+- [Q: Service mesh mTLS is blocking traffic after certificate rotation. How do you diagnose and fix this without restarting all pods?](#q-service-mesh-mtls-is-blocking-traffic-after-certificate-rotation-how-do-you-diagnose-and-fix-this-without-restarting-all-pods)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 Cross-domain scenarios test whether you can reason across the full stack: Linux kernel → container runtime → Kubernetes → cloud networking → security policy. Real production incidents don't stay in one domain — a Kubernetes pod can't reach RDS because of a combination of NACL, Security Group, DNS, and certificate issues. These scenarios require a systematic layer-by-layer approach. Source material: `06_Cross_Domain_Integration.md` (extended). See all sections 01-09 for depth on individual layers.

@@ -1,5 +1,35 @@
 # CNI Plugin Comparison
 
+## Table of Contents
+
+- [Overview](#overview)
+- [CNI Specification](#cni-specification)
+- [Flannel](#flannel)
+  - [How it Works](#how-it-works)
+- [Calico](#calico)
+  - [BGP Mode (Recommended)](#bgp-mode-recommended)
+  - [IPIP / VXLAN Mode](#ipip-vxlan-mode)
+  - [Calico eBPF Data Plane](#calico-ebpf-data-plane)
+  - [Felix and BIRD Components](#felix-and-bird-components)
+- [Cilium](#cilium)
+  - [Architecture](#architecture)
+- [Weave](#weave)
+- [AWS VPC CNI](#aws-vpc-cni)
+  - [How it Works](#how-it-works)
+- [Feature Matrix](#feature-matrix)
+- [CNI Packet Path Comparison](#cni-packet-path-comparison)
+- [Migration: Flannel to Calico (Zero-Downtime)](#migration-flannel-to-calico-zero-downtime)
+- [Production Scenario: Migrating from Flannel to Calico](#production-scenario-migrating-from-flannel-to-calico)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 The Container Network Interface (CNI) is the plugin system that Kubernetes delegates all pod networking to. CNI plugins are responsible for: assigning IP addresses to pods, creating virtual interfaces, programming routes between pods on different nodes, and (for capable plugins) enforcing NetworkPolicy. The CNI choice is the single most consequential networking decision in a cluster — it is nearly impossible to change in production without full cluster drain.

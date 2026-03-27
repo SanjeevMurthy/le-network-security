@@ -1,5 +1,31 @@
 # Routing Protocols — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Static vs Dynamic Routing](#static-vs-dynamic-routing)
+- [BGP: Border Gateway Protocol](#bgp-border-gateway-protocol)
+  - [eBGP vs iBGP](#ebgp-vs-ibgp)
+  - [BGP Session Messages](#bgp-session-messages)
+  - [BGP Path Selection Algorithm](#bgp-path-selection-algorithm)
+  - [BGP in AWS](#bgp-in-aws)
+  - [BGP Communities](#bgp-communities)
+  - [BGP Route Leaks: Cloudflare 2019 Incident](#bgp-route-leaks-cloudflare-2019-incident)
+- [OSPF: Open Shortest Path First](#ospf-open-shortest-path-first)
+  - [OSPF Key Concepts](#ospf-key-concepts)
+- [ECMP: Equal Cost Multi-Path](#ecmp-equal-cost-multi-path)
+  - [ECMP Hash Problems](#ecmp-hash-problems)
+- [Production Scenario: BGP Route Withdrawal Causes Partial Connectivity Loss](#production-scenario-bgp-route-withdrawal-causes-partial-connectivity-loss)
+  - [Diagnosis Walkthrough](#diagnosis-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Routing is how packets find their way across networks. For SREs, routing failures are some of the most impactful and hardest-to-diagnose problems: a BGP route withdrawal can make an entire cloud region unreachable in seconds, and routing loops cause traffic to spin until TTL=0. Understanding BGP path selection, OSPF convergence, and ECMP behavior is essential for diagnosing cloud networking failures and designing resilient multi-region architectures.

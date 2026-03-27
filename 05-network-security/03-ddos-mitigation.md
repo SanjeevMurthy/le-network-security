@@ -1,5 +1,29 @@
 # DDoS Mitigation
 
+## Table of Contents
+
+- [Overview](#overview)
+- [DDoS Taxonomy](#ddos-taxonomy)
+  - [Volumetric Attacks (Exhaust Bandwidth)](#volumetric-attacks-exhaust-bandwidth)
+  - [Protocol Attacks (Exhaust Connection State)](#protocol-attacks-exhaust-connection-state)
+  - [Application-Layer Attacks (Exhaust App Resources)](#application-layer-attacks-exhaust-app-resources)
+- [Mitigation Layers](#mitigation-layers)
+  - [ISP / Upstream: BGP Blackhole (RTBH)](#isp-upstream-bgp-blackhole-rtbh)
+  - [CDN / Scrubbing: Anycast Distribution](#cdn-scrubbing-anycast-distribution)
+  - [AWS Shield](#aws-shield)
+  - [On-Host: eBPF/XDP for DDoS Mitigation](#on-host-ebpfxdp-for-ddos-mitigation)
+- [Rate Limiting Algorithms](#rate-limiting-algorithms)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Distributed Denial of Service (DDoS) attacks attempt to exhaust a resource — bandwidth, connection state, application threads, or CPU — to make a service unavailable to legitimate users. Modern DDoS attacks are multi-vector, combining volumetric bandwidth saturation with application-layer exhaustion.

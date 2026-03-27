@@ -4,6 +4,45 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [VPC Peering](#vpc-peering)
+  - [Hard Constraints](#hard-constraints)
+  - [Route Table Requirement](#route-table-requirement)
+  - [When to Use Peering](#when-to-use-peering)
+- [Transit Gateway (TGW)](#transit-gateway-tgw)
+  - [TGW Route Tables](#tgw-route-tables)
+  - [TGW Inter-Region Peering](#tgw-inter-region-peering)
+  - [TGW Limits](#tgw-limits)
+  - [Centralized Egress Pattern](#centralized-egress-pattern)
+- [AWS PrivateLink](#aws-privatelink)
+  - [How It Works](#how-it-works)
+  - [PrivateLink Properties](#privatelink-properties)
+  - [When to Use PrivateLink](#when-to-use-privatelink)
+- [Site-to-Site VPN](#site-to-site-vpn)
+  - [Architecture](#architecture)
+  - [Key Technical Properties](#key-technical-properties)
+  - [BGP vs Static Routing](#bgp-vs-static-routing)
+  - [Common VPN Issues](#common-vpn-issues)
+- [AWS Direct Connect](#aws-direct-connect)
+  - [Connection Types](#connection-types)
+  - [Virtual Interfaces (VIFs)](#virtual-interfaces-vifs)
+  - [Link Aggregation Group (LAG)](#link-aggregation-group-lag)
+  - [Direct Connect Gateway](#direct-connect-gateway)
+  - [DX + VPN for Encryption](#dx-vpn-for-encryption)
+- [Decision Matrix](#decision-matrix)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Debugging Walkthrough](#debugging-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Connecting VPCs to each other, to on-premises networks, and to the internet is the core challenge of AWS networking at scale. The options — VPC Peering, Transit Gateway, PrivateLink, Site-to-Site VPN, and Direct Connect — each have hard constraints that make the wrong choice expensive or impossible to fix after deployment.

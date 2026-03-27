@@ -1,5 +1,20 @@
 # 00: Debugging Methodology — The Senior SRE Framework
 
+## Table of Contents
+
+- [When to Use This Document](#when-to-use-this-document)
+- [The 5-Layer Diagnostic Model](#the-5-layer-diagnostic-model)
+- [Hypothesis-Driven Debugging](#hypothesis-driven-debugging)
+- [Observe Before Acting](#observe-before-acting)
+- [The 60-Second Triage Sequence](#the-60-second-triage-sequence)
+- [Information Radiators: What to Check First](#information-radiators-what-to-check-first)
+- [Escalation Criteria](#escalation-criteria)
+- [Common Mistakes That Kill Incident Response](#common-mistakes-that-kill-incident-response)
+- [Decision Flowchart](#decision-flowchart)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## When to Use This Document
 
 Use this before starting any network incident. This is the meta-playbook: the mental framework that all other playbooks in this directory apply. If you are randomly running commands, stop and read this first.

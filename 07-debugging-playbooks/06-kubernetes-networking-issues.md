@@ -1,5 +1,34 @@
 # 06: Kubernetes Networking Issues
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [K8s Networking Layers (What Can Break)](#k8s-networking-layers-what-can-break)
+- [Decision Tree](#decision-tree)
+- [Section 1: Pod-to-Pod Debugging](#section-1-pod-to-pod-debugging)
+  - [Step 1: Confirm Pod IPs and Node Placement](#step-1-confirm-pod-ips-and-node-placement)
+  - [Step 2: Test Basic Connectivity](#step-2-test-basic-connectivity)
+  - [Step 3: Check CNI Assignment](#step-3-check-cni-assignment)
+  - [Step 4: Check Node-Level Routing](#step-4-check-node-level-routing)
+  - [Step 5: MTU Issues (Overlay-Specific)](#step-5-mtu-issues-overlay-specific)
+  - [Step 6: CNI Logs](#step-6-cni-logs)
+- [Section 2: Pod-to-Service Debugging](#section-2-pod-to-service-debugging)
+  - [Step 1: Verify Service and Selector](#step-1-verify-service-and-selector)
+  - [Step 2: Check Endpoints](#step-2-check-endpoints)
+  - [Step 3: Test ClusterIP Directly](#step-3-test-clusterip-directly)
+  - [Step 4: Check kube-proxy Rules](#step-4-check-kube-proxy-rules)
+- [Section 3: External Traffic Debugging](#section-3-external-traffic-debugging)
+  - [LoadBalancer Service](#loadbalancer-service)
+  - [Ingress](#ingress)
+- [Section 4: NetworkPolicy Blocking](#section-4-networkpolicy-blocking)
+  - [Check Policies](#check-policies)
+  - [Test by Isolating NetworkPolicy](#test-by-isolating-networkpolicy)
+- [Section 5: CoreDNS Debugging](#section-5-coredns-debugging)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: pods cannot communicate with each other, pods cannot reach services, external traffic is not reaching pods, DNS resolution fails inside pods, or you have unexplained connectivity failures in a K8s cluster. This playbook covers the K8s-specific networking stack layered on top of the Linux networking primitives in other playbooks.

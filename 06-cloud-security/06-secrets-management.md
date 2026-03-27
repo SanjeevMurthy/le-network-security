@@ -1,5 +1,35 @@
 # Secrets Management
 
+## Table of Contents
+
+- [Overview](#overview)
+- [The Secret Sprawl Problem](#the-secret-sprawl-problem)
+  - [Kubernetes Secrets: base64 is NOT Encryption](#kubernetes-secrets-base64-is-not-encryption)
+  - [Detecting Secret Sprawl](#detecting-secret-sprawl)
+- [Kubernetes Secrets Encryption at Rest](#kubernetes-secrets-encryption-at-rest)
+  - [EncryptionConfiguration](#encryptionconfiguration)
+  - [KMS Provider: Envelope Encryption](#kms-provider-envelope-encryption)
+- [External Secrets Operator (ESO)](#external-secrets-operator-eso)
+- [HashiCorp Vault: Dynamic Secrets](#hashicorp-vault-dynamic-secrets)
+- [AWS Secrets Manager: Automatic Rotation](#aws-secrets-manager-automatic-rotation)
+- [CSI Driver: Mount Secrets as Files](#csi-driver-mount-secrets-as-files)
+- [Secret Rotation Patterns](#secret-rotation-patterns)
+  - [Pattern 1: Provider Rotation + ESO Refresh + Reloader](#pattern-1-provider-rotation-eso-refresh-reloader)
+  - [Pattern 2: Dual Credentials (Zero-Downtime)](#pattern-2-dual-credentials-zero-downtime)
+  - [Pattern 3: File Watcher (No Restart Required)](#pattern-3-file-watcher-no-restart-required)
+- [GitOps + Secrets](#gitops-secrets)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Database Password Rotation Caused Outage: ESO + Reloader Solution](#database-password-rotation-caused-outage-eso-reloader-solution)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Secret sprawl is the uncontrolled proliferation of credentials across an organization's systems — hardcoded in source code, stored as plaintext environment variables, embedded in container images, and exposed as base64-encoded Kubernetes Secrets in etcd. The consequences: a single git repository breach exposes production database passwords, a misconfigured S3 bucket leaks API keys, an etcd backup contains every secret in the cluster. The solution is centralized secrets management with automated rotation, least-privilege access, and audit logging — implemented in a way that does not require application changes every time a credential rotates.

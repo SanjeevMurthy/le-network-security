@@ -1,5 +1,33 @@
 # Supply Chain Security
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Attack Vector Deep Dives](#attack-vector-deep-dives)
+  - [Dependency Confusion](#dependency-confusion)
+  - [Typosquatting](#typosquatting)
+  - [xz Utils Backdoor (CVE-2024-3094) — Detailed Analysis](#xz-utils-backdoor-cve-2024-3094-detailed-analysis)
+- [SLSA Framework (v1.1)](#slsa-framework-v11)
+- [Sigstore Ecosystem: Keyless Signing](#sigstore-ecosystem-keyless-signing)
+- [SBOM: Software Bill of Materials](#sbom-software-bill-of-materials)
+  - [CycloneDX vs SPDX](#cyclonedx-vs-spdx)
+  - [VEX: Vulnerability Exploitability Exchange](#vex-vulnerability-exploitability-exchange)
+- [In-toto: Cryptographic Supply Chain Attestation](#in-toto-cryptographic-supply-chain-attestation)
+- [Kyverno verifyImages: Enforce Signatures at Admission](#kyverno-verifyimages-enforce-signatures-at-admission)
+- [Dependency Management: Renovate vs Dependabot](#dependency-management-renovate-vs-dependabot)
+- [Secure CI/CD Pipeline: End-to-End](#secure-cicd-pipeline-end-to-end)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [xz Utils Backdoor: How SLSA L3 Would Have Changed the Outcome](#xz-utils-backdoor-how-slsa-l3-would-have-changed-the-outcome)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Software supply chain security addresses a fundamental shift in the attack surface: adversaries increasingly target the build process, dependencies, and tools used to produce software rather than attacking the software directly in production. When a build pipeline is compromised (SolarWinds), a dependency is backdoored (xz Utils 2024), or a package registry is poisoned (dependency confusion), the attack is injected before the software ever reaches your defenses. The response requires cryptographic provenance at every stage: sign the commit, attest the build, verify at deployment.

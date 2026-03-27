@@ -1,5 +1,42 @@
 # CoreDNS and ExternalDNS
 
+## Table of Contents
+
+- [Overview](#overview)
+- [CoreDNS Architecture](#coredns-architecture)
+  - [Corefile Plugin Chain](#corefile-plugin-chain)
+- [Service DNS Naming](#service-dns-naming)
+  - [ClusterIP Services](#clusterip-services)
+  - [Pod DNS](#pod-dns)
+  - [Headless Service DNS (StatefulSets)](#headless-service-dns-statefulsets)
+- [The ndots:5 Problem](#the-ndots5-problem)
+  - [How ndots Works](#how-ndots-works)
+  - [Mitigation 1: Use FQDNs (Trailing Dot)](#mitigation-1-use-fqdns-trailing-dot)
+  - [Mitigation 2: Pod dnsConfig](#mitigation-2-pod-dnsconfig)
+  - [Mitigation 3: autopath Plugin](#mitigation-3-autopath-plugin)
+- [Corefile Plugins Reference](#corefile-plugins-reference)
+- [CoreDNS Tuning](#coredns-tuning)
+  - [Scaling CoreDNS](#scaling-coredns)
+  - [Forward Plugin Concurrency](#forward-plugin-concurrency)
+  - [Cache Tuning](#cache-tuning)
+  - [NodeLocal DNSCache](#nodelocal-dnscache)
+  - [The UDP Conntrack Race Condition](#the-udp-conntrack-race-condition)
+- [ExternalDNS](#externaldns)
+  - [Architecture](#architecture)
+  - [Configuration](#configuration)
+  - [Annotation-Based DNS](#annotation-based-dns)
+  - [Policy Modes](#policy-modes)
+- [Production Scenario: 5-Second DNS Latency in Pods](#production-scenario-5-second-dns-latency-in-pods)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 DNS is the nervous system of a Kubernetes cluster. Every service discovery call, every pod-to-pod connection, every external API request starts with a DNS lookup. CoreDNS replaced kube-dns as the default cluster DNS in Kubernetes 1.13 and has become the standard. A misbehaving CoreDNS causes cascading failures across the entire cluster — understanding its architecture is not optional for production SREs.

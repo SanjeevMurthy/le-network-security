@@ -4,6 +4,40 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Hosted Zones](#hosted-zones)
+  - [Public Hosted Zones](#public-hosted-zones)
+  - [Private Hosted Zones](#private-hosted-zones)
+  - [Split-Horizon DNS](#split-horizon-dns)
+- [Routing Policies](#routing-policies)
+  - [Policy Comparison](#policy-comparison)
+  - [Weighted Routing](#weighted-routing)
+  - [Failover Routing](#failover-routing)
+  - [Geolocation vs Geoproximity](#geolocation-vs-geoproximity)
+- [Health Checks](#health-checks)
+  - [Health Check Types](#health-check-types)
+  - [Health Check Configuration](#health-check-configuration)
+- [Route 53 Resolver](#route-53-resolver)
+  - [Inbound Endpoints (On-Premises → AWS)](#inbound-endpoints-on-premises-aws)
+  - [Outbound Endpoints (AWS → On-Premises)](#outbound-endpoints-aws-on-premises)
+  - [Resolver DNS Firewall](#resolver-dns-firewall)
+- [DNSSEC in Route 53](#dnssec-in-route-53)
+  - [Enabling DNSSEC](#enabling-dnssec)
+- [TTL Strategy](#ttl-strategy)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Debugging Walkthrough](#debugging-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Route 53 is AWS's managed authoritative DNS service, domain registrar, and health checking system. Beyond basic DNS, it provides intelligent routing, hybrid DNS resolution for on-premises connectivity, and DNSSEC for cryptographic integrity.

@@ -1,5 +1,23 @@
 # 03: DNS Failures
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [DNS Failure Types: Classify First](#dns-failure-types-classify-first)
+- [Decision Tree](#decision-tree)
+- [Step-by-Step Procedure](#step-by-step-procedure)
+  - [Step 1: Test from the Affected Host](#step-1-test-from-the-affected-host)
+  - [Step 2: Test the Authoritative Name Server Directly](#step-2-test-the-authoritative-name-server-directly)
+  - [Step 3: Test Public Recursive Resolver](#step-3-test-public-recursive-resolver)
+  - [Step 4: Check TTL and Caching](#step-4-check-ttl-and-caching)
+  - [Step 5: Kubernetes DNS Checks](#step-5-kubernetes-dns-checks)
+  - [Step 6: The ndots:5 Problem](#step-6-the-ndots5-problem)
+  - [Step 7: DNSSEC Validation Failures](#step-7-dnssec-validation-failures)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: services cannot resolve hostnames, you see NXDOMAIN or SERVFAIL errors in logs, DNS resolution is intermittent or very slow, or `curl` fails with "Name or service not known." DNS is the most common single point of failure in distributed systems.

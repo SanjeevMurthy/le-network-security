@@ -1,5 +1,34 @@
 # WAF, IDS, and IPS
 
+## Table of Contents
+
+- [Overview](#overview)
+- [WAF (Web Application Firewall)](#waf-web-application-firewall)
+  - [WAF Modes](#waf-modes)
+- [Rule Sets](#rule-sets)
+  - [OWASP ModSecurity Core Rule Set (CRS)](#owasp-modsecurity-core-rule-set-crs)
+  - [AWS WAF Rule Groups](#aws-waf-rule-groups)
+- [AWS WAF Configuration](#aws-waf-configuration)
+  - [Web ACL with Rate Limiting](#web-acl-with-rate-limiting)
+  - [WAF Rate Limiting](#waf-rate-limiting)
+- [WAF Request Evaluation Flow](#waf-request-evaluation-flow)
+- [False Positive Management](#false-positive-management)
+- [WAF Bypass Techniques](#waf-bypass-techniques)
+- [IDS (Intrusion Detection System)](#ids-intrusion-detection-system)
+- [IPS (Intrusion Prevention System)](#ips-intrusion-prevention-system)
+- [WAF + IDS/IPS Integration](#waf-idsips-integration)
+  - [CloudWatch + Lambda Auto-Response](#cloudwatch-lambda-auto-response)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Web Application Firewalls (WAF), Intrusion Detection Systems (IDS), and Intrusion Prevention Systems (IPS) operate at Layer 7 to defend against application-level attacks that network firewalls cannot see. While firewalls control which traffic reaches your application, WAF/IDS/IPS controls what that traffic is allowed to do once it arrives.

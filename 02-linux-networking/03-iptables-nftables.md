@@ -1,5 +1,36 @@
 # iptables and nftables: Packet Filtering Deep Dive
 
+## Table of Contents
+
+- [Overview](#overview)
+- [iptables Architecture](#iptables-architecture)
+  - [Five Tables, Five Purposes](#five-tables-five-purposes)
+  - [Complete Packet Traversal Path](#complete-packet-traversal-path)
+  - [First-Match-Wins and Performance Implications](#first-match-wins-and-performance-implications)
+- [kube-proxy iptables Mode](#kube-proxy-iptables-mode)
+  - [How kube-proxy Creates Service Routing](#how-kube-proxy-creates-service-routing)
+  - [Why kube-proxy iptables Scales Poorly](#why-kube-proxy-iptables-scales-poorly)
+- [nftables: Modern Alternative](#nftables-modern-alternative)
+  - [Key Advantages over iptables](#key-advantages-over-iptables)
+  - [nftables Core Concepts](#nftables-core-concepts)
+  - [nftables vs iptables Comparison](#nftables-vs-iptables-comparison)
+- [iptables-to-nftables Migration](#iptables-to-nftables-migration)
+  - [The iptables-nft Compatibility Shim](#the-iptables-nft-compatibility-shim)
+  - [Migration Strategy](#migration-strategy)
+- [Debugging: iptables and nftables](#debugging-iptables-and-nftables)
+  - [iptables: LOG and TRACE Targets](#iptables-log-and-trace-targets)
+  - [nftables: nft monitor trace](#nftables-nft-monitor-trace)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Service Traffic Mysteriously Dropped — iptables Rule Conflict](#scenario-service-traffic-mysteriously-dropped-iptables-rule-conflict)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 iptables underpins almost every Linux firewall, NAT implementation, and Kubernetes service proxy in existence. nftables is the successor — faster, atomic, and increasingly the default. A Senior SRE who can't walk through the iptables traversal order, explain why kube-proxy's rule chains scale poorly, and debug silent drops with TRACE is missing critical operational knowledge. This file covers both tools at production depth.

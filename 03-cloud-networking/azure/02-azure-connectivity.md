@@ -1,5 +1,48 @@
 # Azure Connectivity: VNet Peering, VPN, ExpressRoute, and vWAN
 
+## Table of Contents
+
+- [Overview](#overview)
+- [VNet Peering](#vnet-peering)
+  - [Critical Property: Non-Transitive Routing](#critical-property-non-transitive-routing)
+  - [Gateway Transit](#gateway-transit)
+  - [Global VNet Peering](#global-vnet-peering)
+  - [Peering State Issues](#peering-state-issues)
+- [Azure Virtual WAN (vWAN)](#azure-virtual-wan-vwan)
+  - [Standard vs Basic Tier](#standard-vs-basic-tier)
+  - [How vWAN Transit Routing Works](#how-vwan-transit-routing-works)
+  - [vWAN Routing Intent](#vwan-routing-intent)
+- [VPN Gateway](#vpn-gateway)
+  - [Policy-Based vs Route-Based](#policy-based-vs-route-based)
+  - [Gateway SKUs and Performance](#gateway-skus-and-performance)
+  - [Active-Active Configuration](#active-active-configuration)
+  - [BGP with VPN Gateway](#bgp-with-vpn-gateway)
+- [ExpressRoute](#expressroute)
+  - [Circuit Characteristics](#circuit-characteristics)
+  - [Private Peering](#private-peering)
+  - [Microsoft Peering](#microsoft-peering)
+  - [ExpressRoute Global Reach](#expressroute-global-reach)
+  - [FastPath](#fastpath)
+- [Azure Route Server](#azure-route-server)
+- [Private Link Service](#private-link-service)
+- [Hub-Spoke with Azure Firewall](#hub-spoke-with-azure-firewall)
+  - [UDR Requirements in Hub-Spoke](#udr-requirements-in-hub-spoke)
+- [Decision Matrix: Connectivity Options](#decision-matrix-connectivity-options)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - ["ExpressRoute Failover to VPN Not Triggering Automatically"](#expressroute-failover-to-vpn-not-triggering-automatically)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+  - [Diagnose VNet Connectivity](#diagnose-vnet-connectivity)
+  - [ExpressRoute Diagnostics](#expressroute-diagnostics)
+  - [vWAN Route Troubleshooting](#vwan-route-troubleshooting)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Azure connectivity architecture is a layer of decisions that compound. Get VNet peering transitivity wrong and you need UDRs everywhere. Choose Basic VPN Gateway SKU and your failover doesn't support BGP. Pick ExpressRoute without Global Reach and regional failover requires a second circuit. Senior SREs who have managed production Azure environments have all hit these walls — this guide walks through each connectivity primitive, the failure modes, and the design decisions that separate functional from resilient.

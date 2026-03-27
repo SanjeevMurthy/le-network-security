@@ -1,5 +1,26 @@
 # IP Addressing and Subnetting — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [CIDR Notation and Subnetting Math](#cidr-notation-and-subnetting-math)
+- [Subnetting Cheat Sheet](#subnetting-cheat-sheet)
+  - [Special CIDR Cases](#special-cidr-cases)
+- [RFC1918 Private Address Ranges](#rfc1918-private-address-ranges)
+- [VPC CIDR Design Trade-offs](#vpc-cidr-design-trade-offs)
+- [IPv6 Addressing](#ipv6-addressing)
+- [Real-World Production Scenario: Overlapping CIDR Blocking VPC Peering](#real-world-production-scenario-overlapping-cidr-blocking-vpc-peering)
+- [Interview: Design Subnets for 3-Tier App Scaling to 10,000 Hosts](#interview-design-subnets-for-3-tier-app-scaling-to-10000-hosts)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Subnetting is one of those topics where a wrong decision costs months of migration work. Choosing a `/24` for a Kubernetes node subnet that eventually needs 300 nodes, or selecting overlapping RFC1918 ranges that prevent VPC peering with a partner — these are expensive mistakes made at design time. This guide covers the math, the cloud-specific trade-offs, and the real failure modes that appear in production.

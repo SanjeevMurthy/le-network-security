@@ -1,5 +1,30 @@
 # 08: DDoS Incident Response
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [Attack Classification](#attack-classification)
+- [Response Timeline](#response-timeline)
+- [Phase 1: Detection (0-5 Minutes)](#phase-1-detection-0-5-minutes)
+  - [Confirm the Attack](#confirm-the-attack)
+  - [Distinguish Attack from Legitimate Load Surge](#distinguish-attack-from-legitimate-load-surge)
+- [Phase 2: Immediate Mitigation (5-15 Minutes)](#phase-2-immediate-mitigation-5-15-minutes)
+  - [Volumetric Attack (Bandwidth Saturation)](#volumetric-attack-bandwidth-saturation)
+  - [Protocol Attack (SYN Flood)](#protocol-attack-syn-flood)
+  - [Application Layer Attack (HTTP Flood)](#application-layer-attack-http-flood)
+- [Phase 3: Investigation (15-60 Minutes)](#phase-3-investigation-15-60-minutes)
+  - [Traffic Pattern Analysis](#traffic-pattern-analysis)
+  - [Automate Blocklist with Lambda](#automate-blocklist-with-lambda)
+- [Phase 4: Post-Incident](#phase-4-post-incident)
+  - [Immediate Actions (Within 24 Hours)](#immediate-actions-within-24-hours)
+  - [Post-Mortem Questions](#post-mortem-questions)
+  - [Architectural Improvements](#architectural-improvements)
+- [AWS Shield Advanced vs Standard](#aws-shield-advanced-vs-standard)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: CloudWatch shows a traffic spike 5-10x above normal, ALB shows a surge in 5xx errors or request count, GuardDuty fires a DDoS finding, upstream bandwidth is saturated, or on-call receives "site is down" during unusually high traffic.

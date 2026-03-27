@@ -1,5 +1,38 @@
 # AKS Networking: CNI Models, Policies, and Production Patterns
 
+## Table of Contents
+
+- [Overview](#overview)
+- [AKS Networking Models](#aks-networking-models)
+  - [kubenet](#kubenet)
+  - [Azure CNI](#azure-cni)
+  - [Azure CNI Overlay](#azure-cni-overlay)
+- [Network Policy Engines on AKS](#network-policy-engines-on-aks)
+  - [Azure Network Policy (Native)](#azure-network-policy-native)
+  - [Calico on AKS](#calico-on-aks)
+  - [Azure CNI Powered by Cilium](#azure-cni-powered-by-cilium)
+- [AGIC (Application Gateway Ingress Controller)](#agic-application-gateway-ingress-controller)
+- [Azure Load Balancer Integration with AKS](#azure-load-balancer-integration-with-aks)
+- [Private AKS Clusters](#private-aks-clusters)
+- [NAT Gateway for AKS Outbound](#nat-gateway-for-aks-outbound)
+- [AKS Networking Architecture Diagram](#aks-networking-architecture-diagram)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - ["AKS Pods Running Out of VNet IPs — Migrating from Azure CNI to Azure CNI Overlay"](#aks-pods-running-out-of-vnet-ips-migrating-from-azure-cni-to-azure-cni-overlay)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+  - [Pod Network Connectivity Debugging](#pod-network-connectivity-debugging)
+  - [Azure CNI IP Allocation Check](#azure-cni-ip-allocation-check)
+  - [Network Policy Debugging with Calico](#network-policy-debugging-with-calico)
+  - [Cilium Observability with Hubble](#cilium-observability-with-hubble)
+  - [Private Cluster Access Debugging](#private-cluster-access-debugging)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 AKS networking is one of the most operationally complex areas in Azure. The choice of CNI plugin has cascading effects on VNet IP consumption, network policy capabilities, pod-to-pod latency, and your ability to scale node pools. Getting this wrong early in a cluster's life means a disruptive migration — potentially requiring workload downtime. This guide covers the real trade-offs, production failure patterns, and what a Staff SRE needs to know about AKS networking internals.

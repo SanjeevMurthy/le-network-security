@@ -1,5 +1,39 @@
 # Linux Network Stack Internals
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Complete Packet Ingress Path](#complete-packet-ingress-path)
+  - [NIC → Socket: The Full Journey](#nic-socket-the-full-journey)
+  - [Stage-by-Stage Failure Modes](#stage-by-stage-failure-modes)
+- [sk_buff: The Kernel's Packet Representation](#sk_buff-the-kernels-packet-representation)
+  - [Buffer Layout](#buffer-layout)
+  - [Key Fields Beyond Pointers](#key-fields-beyond-pointers)
+  - [Clone vs Copy: Why It Matters](#clone-vs-copy-why-it-matters)
+  - [Headroom: The Encapsulation Budget](#headroom-the-encapsulation-budget)
+- [NAPI: New API for High-Performance RX](#napi-new-api-for-high-performance-rx)
+  - [The Pre-NAPI Problem](#the-pre-napi-problem)
+  - [NAPI Hybrid Model](#napi-hybrid-model)
+  - [Budget Parameters](#budget-parameters)
+  - [Tuning Strategy](#tuning-strategy)
+- [Ring Buffer: DMA and Sizing](#ring-buffer-dma-and-sizing)
+  - [How the RX Ring Works](#how-the-rx-ring-works)
+  - [Sizing the Ring Buffer](#sizing-the-ring-buffer)
+  - [Ring Buffer Size Trade-offs](#ring-buffer-size-trade-offs)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Node Experiencing Silent Packet Drops After Traffic Spike](#scenario-node-experiencing-silent-packet-drops-after-traffic-spike)
+- [Failure Modes Reference](#failure-modes-reference)
+- [Debugging Guide](#debugging-guide)
+  - [Systematic Drop Investigation (Bottom-Up)](#systematic-drop-investigation-bottom-up)
+  - [Packet Tracing with ftrace/perf](#packet-tracing-with-ftraceperf)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Every Senior SRE should be able to answer: "A customer reports intermittent packet loss — where do you start?" The answer is a systematic walk from NIC hardware through the kernel to userspace. Jumping straight to "check the firewall" reveals a dangerous knowledge gap. This file covers the complete ingress path, the sk_buff data structure, NAPI polling, ring buffers, and every failure mode along the way.

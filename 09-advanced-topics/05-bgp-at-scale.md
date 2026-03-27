@@ -1,5 +1,38 @@
 # BGP at Scale
 
+## Table of Contents
+
+- [Overview](#overview)
+- [BGP Finite State Machine](#bgp-finite-state-machine)
+- [BGP Message Types](#bgp-message-types)
+  - [UPDATE Message Structure](#update-message-structure)
+- [Path Attributes](#path-attributes)
+  - [Standard Path Attributes](#standard-path-attributes)
+  - [Community Attributes](#community-attributes)
+- [BGP Route Selection: 9-Step Algorithm](#bgp-route-selection-9-step-algorithm)
+- [RPKI: Resource Public Key Infrastructure](#rpki-resource-public-key-infrastructure)
+  - [Route Origin Authorization (ROA)](#route-origin-authorization-roa)
+  - [ROV: Route Origin Validation](#rov-route-origin-validation)
+- [BGP in Datacenter Clos Fabric](#bgp-in-datacenter-clos-fabric)
+  - [BGP Unnumbered](#bgp-unnumbered)
+  - [4-Byte ASNs](#4-byte-asns)
+- [BGP in Kubernetes](#bgp-in-kubernetes)
+  - [Calico BGP Mode](#calico-bgp-mode)
+  - [MetalLB BGP Mode](#metallb-bgp-mode)
+- [BFD: Bidirectional Forwarding Detection](#bfd-bidirectional-forwarding-detection)
+- [Route Leak Analysis](#route-leak-analysis)
+  - [2019 Cloudflare Route Leak (Verizon/Allegheny Technologies)](#2019-cloudflare-route-leak-verizonallegheny-technologies)
+  - [2010 China Telecom Prefix Hijack](#2010-china-telecom-prefix-hijack)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [BGP Route Leak Causing Traffic Through Unexpected ASN](#bgp-route-leak-causing-traffic-through-unexpected-asn)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Debugging Guide](#debugging-guide)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 BGP (Border Gateway Protocol) is the routing protocol that holds the internet together and, increasingly, the fabric that holds large-scale datacenters together. At the staff and principal level, BGP is not just "how routing works" — it is the mechanism for datacenter fabric design (Clos networks, eBGP everywhere, 64-way ECMP), Kubernetes pod network advertisement (Calico BGP, MetalLB), and internet security (RPKI, route leak mitigation). Engineers who have debugged a BGP route leak in production, or designed a datacenter BGP fabric that survives spine failures, operate at a meaningfully different level from those who can only recite the 9-step path selection algorithm.

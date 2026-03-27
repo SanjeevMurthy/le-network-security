@@ -1,5 +1,21 @@
 # Linux Networking — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Your proxy server shows "nf_conntrack: table full, dropping packet" in dmesg. The table is set to 262,144 entries. Walk through full diagnosis and remediation. Why is simply increasing nf_conntrack_max insufficient?](#q-your-proxy-server-shows-nf_conntrack-table-full-dropping-packet-in-dmesg-the-table-is-set-to-262144-entries-walk-through-full-diagnosis-and-remediation-why-is-simply-increasing-nf_conntrack_max-insufficient)
+- [Q: A server has thousands of sockets in CLOSE_WAIT. The application team says the network dropped the connection. Prove this is an application bug and explain the TCP state machine.](#q-a-server-has-thousands-of-sockets-in-close_wait-the-application-team-says-the-network-dropped-the-connection-prove-this-is-an-application-bug-and-explain-the-tcp-state-machine)
+- [Q: A service has 2% of requests timing out. You discover ICMP is blocked on the path and the path MTU is 1400. Explain the MTU black hole and all three ways to fix it.](#q-a-service-has-2-of-requests-timing-out-you-discover-icmp-is-blocked-on-the-path-and-the-path-mtu-is-1400-explain-the-mtu-black-hole-and-all-three-ways-to-fix-it)
+- [Q: Your production iptables firewall has 15,000 rules. A newly added ACCEPT rule for port 8443 is not working. How does rule ordering cause this and how do you fix it structurally?](#q-your-production-iptables-firewall-has-15000-rules-a-newly-added-accept-rule-for-port-8443-is-not-working-how-does-rule-ordering-cause-this-and-how-do-you-fix-it-structurally)
+- [Q: During a DDoS attack, SYN floods are overwhelming a public-facing service. How does the attack work and what are the three layers of defense?](#q-during-a-ddos-attack-syn-floods-are-overwhelming-a-public-facing-service-how-does-the-attack-work-and-what-are-the-three-layers-of-defense)
+- [Q: A server has 50,000 sockets in TIME_WAIT. Is this a problem? What causes it and how do you reduce it without breaking things?](#q-a-server-has-50000-sockets-in-time_wait-is-this-a-problem-what-causes-it-and-how-do-you-reduce-it-without-breaking-things)
+- [Q: How does kube-proxy iptables mode scale? When does it break?](#q-how-does-kube-proxy-iptables-mode-scale-when-does-it-break)
+- [Q: eBPF vs iptables for Kubernetes networking — what's the trade-off?](#q-ebpf-vs-iptables-for-kubernetes-networking-whats-the-trade-off)
+- [Q: Describe the complete path of a packet from NIC to a userspace socket buffer.](#q-describe-the-complete-path-of-a-packet-from-nic-to-a-userspace-socket-buffer)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 This section tests your mastery of the Linux kernel networking stack — the actual implementation layer where everything from Kubernetes networking to cloud VPCs bottoms out. Interviewers at Staff level expect you to reason from symptoms to kernel subsystems: "this error appears in CLOSE_WAIT" maps to a specific TCP state machine transition and a specific bug class. Every Q&A here maps to a production incident pattern. The source material for this section is `05_Advanced_Interview_QA.md` — extended with Kubernetes-specific scenarios. See `02-linux-networking/` for deeper reading.

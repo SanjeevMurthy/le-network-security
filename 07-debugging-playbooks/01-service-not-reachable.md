@@ -1,5 +1,28 @@
 # 01: Service Not Reachable
 
+## Table of Contents
+
+- [Trigger](#trigger)
+- [Connection Refused vs Timeout: Critical Distinction](#connection-refused-vs-timeout-critical-distinction)
+- [Decision Tree](#decision-tree)
+- [Step-by-Step Procedure](#step-by-step-procedure)
+  - [Step 1: Get the Exact Error](#step-1-get-the-exact-error)
+  - [Step 2: Check DNS](#step-2-check-dns)
+  - [Step 3: Is the Process Running?](#step-3-is-the-process-running)
+  - [Step 4: Is It Listening?](#step-4-is-it-listening)
+  - [Step 5: Firewall Check](#step-5-firewall-check)
+  - [Step 6: Routing Check](#step-6-routing-check)
+  - [Step 7: Application Health](#step-7-application-health)
+- [Kubernetes-Specific Checks](#kubernetes-specific-checks)
+  - [From Client Pod](#from-client-pod)
+  - [Check Endpoints](#check-endpoints)
+  - [Check kube-proxy Rules](#check-kube-proxy-rules)
+  - [Check NetworkPolicy](#check-networkpolicy)
+- [Common Mistakes](#common-mistakes)
+- [Related Playbooks](#related-playbooks)
+
+---
+
 ## Trigger
 
 Use this playbook when: clients report they cannot reach a service, you receive an alert for failed health checks, or a dependent service returns connection errors. The first thing you must determine is the **error type** — "connection refused" and "connection timed out" are completely different failure modes.

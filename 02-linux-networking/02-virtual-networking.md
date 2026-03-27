@@ -1,5 +1,37 @@
 # Virtual Networking: veth, Bridge, tun/tap, macvlan, ipvlan, OVS
 
+## Table of Contents
+
+- [Overview](#overview)
+- [veth Pairs](#veth-pairs)
+  - [How veth Works](#how-veth-works)
+  - [Creating and Inspecting veth Pairs](#creating-and-inspecting-veth-pairs)
+  - [veth Performance Characteristics](#veth-performance-characteristics)
+- [Linux Bridge](#linux-bridge)
+  - [MAC Learning and Forwarding](#mac-learning-and-forwarding)
+  - [Bridge Internals](#bridge-internals)
+- [tun/tap: L3 and L2 Tunnels](#tuntap-l3-and-l2-tunnels)
+  - [tun (L3) vs tap (L2)](#tun-l3-vs-tap-l2)
+- [macvlan: 4 Modes](#macvlan-4-modes)
+  - [macvlan Modes](#macvlan-modes)
+- [ipvlan: Shares the Host MAC](#ipvlan-shares-the-host-mac)
+- [OVS (Open vSwitch): Brief Overview](#ovs-open-vswitch-brief-overview)
+- [Docker Networking Deep Dive](#docker-networking-deep-dive)
+  - [Bridge Network Topology](#bridge-network-topology)
+- [Kubernetes Pod Networking](#kubernetes-pod-networking)
+  - [veth + Bridge Model (Flannel, Calico iptables)](#veth-bridge-model-flannel-calico-iptables)
+  - [eBPF Bypass (Cilium)](#ebpf-bypass-cilium)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Pod Can't Reach External Internet](#scenario-pod-cant-reach-external-internet)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Virtual networking devices are the foundation of every container and VM deployment. When a Kubernetes pod can't reach the internet, the first suspect isn't a cloud firewall rule — it's the chain of virtual devices between the pod's network namespace and the physical NIC. This file covers how each virtual device type works at the kernel level, their production use cases, and how Docker and Kubernetes use them.

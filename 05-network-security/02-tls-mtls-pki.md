@@ -1,5 +1,28 @@
 # TLS, mTLS, and PKI
 
+## Table of Contents
+
+- [Overview](#overview)
+- [TLS 1.3 Handshake (1-RTT)](#tls-13-handshake-1-rtt)
+  - [TLS 1.3 0-RTT (Session Resumption with PSK)](#tls-13-0-rtt-session-resumption-with-psk)
+- [Cipher Suite Anatomy](#cipher-suite-anatomy)
+- [Certificate Chain Validation](#certificate-chain-validation)
+- [mTLS (Mutual TLS)](#mtls-mutual-tls)
+- [PKI Hierarchy](#pki-hierarchy)
+- [cert-manager in Kubernetes](#cert-manager-in-kubernetes)
+- [Certificate Transparency (CT)](#certificate-transparency-ct)
+- [Common TLS Failures](#common-tls-failures)
+- [Real-World Production Scenario](#real-world-production-scenario)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 TLS (Transport Layer Security) is the protocol that provides encrypted, authenticated, and integrity-protected communication. It is the foundation of HTTPS, mTLS service mesh communication, VPN tunnels, and certificate-based authentication.

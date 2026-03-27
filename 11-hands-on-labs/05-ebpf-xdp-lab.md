@@ -1,5 +1,46 @@
 # Lab 05: eBPF and XDP
 
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [Prerequisites](#prerequisites)
+- [Debugging Methodology Alignment](#debugging-methodology-alignment)
+- [Lab 5A: Write a Minimal XDP Packet Counter](#lab-5a-write-a-minimal-xdp-packet-counter)
+  - [The XDP Program (C source)](#the-xdp-program-c-source)
+  - [Compile the XDP Program](#compile-the-xdp-program)
+  - [Setup: Create a veth Interface for Testing](#setup-create-a-veth-interface-for-testing)
+  - [Load the XDP Program](#load-the-xdp-program)
+  - [Generate Test Traffic](#generate-test-traffic)
+  - [Read the BPF Map (Packet Counts)](#read-the-bpf-map-packet-counts)
+  - [Cleanup Lab 5A](#cleanup-lab-5a)
+- [Lab 5B: XDP Packet Drop (DDoS Simulation)](#lab-5b-xdp-packet-drop-ddos-simulation)
+  - [The XDP Drop Program (C source)](#the-xdp-drop-program-c-source)
+  - [Setup: Load Program and Populate Blocklist](#setup-load-program-and-populate-blocklist)
+  - [Simulate Attack Traffic](#simulate-attack-traffic)
+  - [Inspect Loaded Programs](#inspect-loaded-programs)
+  - [Performance Comparison: XDP Drop vs iptables DROP](#performance-comparison-xdp-drop-vs-iptables-drop)
+  - [Cleanup Lab 5B](#cleanup-lab-5b)
+- [Lab 5C: bpftrace TCP Connection Tracing](#lab-5c-bpftrace-tcp-connection-tracing)
+  - [Background](#background)
+  - [One-Liner 1: Trace New TCP Connections](#one-liner-1-trace-new-tcp-connections)
+  - [One-Liner 2: Count TCP Retransmits by Process](#one-liner-2-count-tcp-retransmits-by-process)
+  - [One-Liner 3: DNS Query Tracer](#one-liner-3-dns-query-tracer)
+  - [One-Liner 4: TCP Connection Latency Histogram](#one-liner-4-tcp-connection-latency-histogram)
+  - [One-Liner 5: Short-Lived TCP Connections](#one-liner-5-short-lived-tcp-connections)
+  - [Summary: bpftrace Quick Reference](#summary-bpftrace-quick-reference)
+- [Lab 5D: Observe Kubernetes Traffic with Hubble](#lab-5d-observe-kubernetes-traffic-with-hubble)
+  - [Prerequisites: Install Cilium + Hubble](#prerequisites-install-cilium-hubble)
+  - [Setup: Deploy Test Pods](#setup-deploy-test-pods)
+  - [Observe Live Flows](#observe-live-flows)
+  - [Apply a NetworkPolicy and Observe Drops](#apply-a-networkpolicy-and-observe-drops)
+  - [Hubble CLI Reference](#hubble-cli-reference)
+  - [Cleanup](#cleanup)
+- [Summary: eBPF/XDP Lab Checklist](#summary-ebpfxdp-lab-checklist)
+- [Interview Discussion Points](#interview-discussion-points)
+- [eBPF Architecture Reference](#ebpf-architecture-reference)
+
+---
+
 ## Learning Objectives
 
 - Write, compile, and load a working XDP program from scratch in C

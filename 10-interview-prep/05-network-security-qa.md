@@ -1,5 +1,19 @@
 # Network Security — Interview Q&A
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: Walk me through a TLS 1.3 handshake with sequence numbers. Where is the key improvement over TLS 1.2?](#q-walk-me-through-a-tls-13-handshake-with-sequence-numbers-where-is-the-key-improvement-over-tls-12)
+- [Q: mTLS vs TLS — what's different, and when is mTLS required?](#q-mtls-vs-tls-whats-different-and-when-is-mtls-required)
+- [Q: How does a SYN flood work and how do SYN cookies mitigate it? What does SYN cookies cost you?](#q-how-does-a-syn-flood-work-and-how-do-syn-cookies-mitigate-it-what-does-syn-cookies-cost-you)
+- [Q: PKI hierarchy — why is the root CA offline? What is the attack if it's compromised?](#q-pki-hierarchy-why-is-the-root-ca-offline-what-is-the-attack-if-its-compromised)
+- [Q: DDoS mitigation layers — what stops a 1 Tbps volumetric attack?](#q-ddos-mitigation-layers-what-stops-a-1-tbps-volumetric-attack)
+- [Q: Certificate expiry in production — how do you prevent it and detect it before it causes an outage?](#q-certificate-expiry-in-production-how-do-you-prevent-it-and-detect-it-before-it-causes-an-outage)
+- [Q: Network segmentation for PCI-DSS compliance — what does the auditor check?](#q-network-segmentation-for-pci-dss-compliance-what-does-the-auditor-check)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 Network security interviews at Senior/Staff SRE level test whether you understand security mechanisms as systems, not checkbox compliance. Every answer should include: how the mechanism works at the protocol or kernel level, what breaks it, how you detect a failure, and the threat model it's addressing. The most common failure pattern is describing security controls without knowing their failure modes — "we use TLS" without knowing what TLS 1.2 vs 1.3 means operationally, or "we have a WAF" without knowing what it misses. See `05-network-security/` and `06-cloud-security/` for deeper reading.

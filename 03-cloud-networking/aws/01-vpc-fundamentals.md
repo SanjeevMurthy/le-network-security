@@ -4,6 +4,36 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [VPC Components](#vpc-components)
+  - [CIDR Blocks](#cidr-blocks)
+  - [The 5 Reserved IPs Per Subnet](#the-5-reserved-ips-per-subnet)
+  - [Internet Gateway (IGW)](#internet-gateway-igw)
+  - [NAT Gateway](#nat-gateway)
+  - [VPC Endpoints](#vpc-endpoints)
+- [Default VPC vs Custom VPC](#default-vpc-vs-custom-vpc)
+  - [Why Never Use the Default VPC in Production](#why-never-use-the-default-vpc-in-production)
+- [Subnet Design Patterns](#subnet-design-patterns)
+  - [Subnet Tier Responsibilities](#subnet-tier-responsibilities)
+- [Route Table Design](#route-table-design)
+- [Security Groups vs NACLs](#security-groups-vs-nacls)
+  - [Security Groups](#security-groups)
+  - [NACLs (Network Access Control Lists)](#nacls-network-access-control-lists)
+- [VPC Flow Logs](#vpc-flow-logs)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Debugging Walkthrough](#debugging-walkthrough)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 A Virtual Private Cloud (VPC) is a logically isolated section of AWS where you define a virtual network. Every production application on AWS lives inside a VPC — understanding how it routes packets, enforces security, and fails is foundational knowledge for any Senior SRE.

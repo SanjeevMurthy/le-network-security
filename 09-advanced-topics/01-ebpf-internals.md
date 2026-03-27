@@ -1,5 +1,45 @@
 # eBPF Internals
 
+## Table of Contents
+
+- [Overview](#overview)
+- [BPF Instruction Set Architecture](#bpf-instruction-set-architecture)
+  - [Registers](#registers)
+  - [Instruction Classes](#instruction-classes)
+  - [Encoding Example](#encoding-example)
+- [BPF Verifier](#bpf-verifier)
+  - [What the Verifier Checks](#what-the-verifier-checks)
+  - [Symbolic Execution and Register State](#symbolic-execution-and-register-state)
+  - [Bounded Loops (Kernel 5.3+)](#bounded-loops-kernel-53)
+  - [Proof-Carrying Code](#proof-carrying-code)
+- [JIT Compilation](#jit-compilation)
+  - [x86-64 JIT Pipeline](#x86-64-jit-pipeline)
+  - [JIT Hardening (Constant Blinding)](#jit-hardening-constant-blinding)
+- [CO-RE: Compile Once, Run Everywhere](#co-re-compile-once-run-everywhere)
+  - [The Problem CO-RE Solves](#the-problem-co-re-solves)
+  - [BTF: BPF Type Format](#btf-bpf-type-format)
+  - [CO-RE Relocations](#co-re-relocations)
+- [BPF Map Internals](#bpf-map-internals)
+  - [Hash Map (`BPF_MAP_TYPE_HASH`)](#hash-map-bpf_map_type_hash)
+  - [LRU Map (`BPF_MAP_TYPE_LRU_HASH`)](#lru-map-bpf_map_type_lru_hash)
+  - [Ring Buffer (`BPF_MAP_TYPE_RINGBUF`) — Kernel 5.8+](#ring-buffer-bpf_map_type_ringbuf-kernel-58)
+  - [Map-in-Map (`BPF_MAP_TYPE_ARRAY_OF_MAPS`)](#map-in-map-bpf_map_type_array_of_maps)
+- [Advanced Program Types](#advanced-program-types)
+  - [fentry/fexit (Trampoline-Based)](#fentryfexit-trampoline-based)
+  - [LSM Hooks (`BPF_PROG_TYPE_LSM`)](#lsm-hooks-bpf_prog_type_lsm)
+  - [sk_msg and sk_skb (Socket Acceleration)](#sk_msg-and-sk_skb-socket-acceleration)
+- [BPF Program Lifecycle](#bpf-program-lifecycle)
+- [libbpf vs BCC](#libbpf-vs-bcc)
+- [Real-World Production Scenario](#real-world-production-scenario)
+  - [Scenario: Cloudflare XDP DDoS Mitigation at 6M pps/server](#scenario-cloudflare-xdp-ddos-mitigation-at-6m-ppsserver)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Debugging Guide](#debugging-guide)
+- [Interview Questions](#interview-questions)
+  - [Advanced / Staff Level](#advanced-staff-level)
+  - [Principal Level](#principal-level)
+
+---
+
 ## Overview
 
 eBPF (Extended Berkeley Packet Filter) is the defining technology separating senior engineers from staff and principal engineers in infrastructure. While most engineers know eBPF as a tool for observability or network policy, staff-level mastery requires understanding the verifier's symbolic execution, JIT compilation pipeline, CO-RE's BTF-based relocations, and the production architecture choices that made Cloudflare and Meta abandon traditional kernel modules in favor of BPF programs. This document treats eBPF as a runtime substrate, not a convenience tool.

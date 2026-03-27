@@ -1,0 +1,1913 @@
+# Extracted: Network 1.pdf (22 pages)
+
+
+---PAGE 1---
+Course Learning Outcomes
+An overview of what you'll learn and the structure of this course.
+We'll cover the following
+• Welcome to the Course
+• What Will I Be Able to Do by the End of the Course?
+• The Components
+• An Introduction to the Basics
+• The Layered Architecture
+• Socket Programming Basics
+Welcome to the Course #
+Welcome to Network Fundamentals! In this course, you’ll get an in-depth
+overview of the key concepts of computer networks. Here are a few key
+components that will help you get the most out of this course!
+What Will I Be Able to Do by the End of the
+Course? #
+Develop socket programs in Python.
+Trace networks metadata through the command line.
+Learn about tools that help debug network problems.
+Understand how applications such as browsers and mobile apps work
+from the perspective of the network.
+View and understand browser interactions with websites.
+The Components #
+An Introduction to the Basics #
+The course starts off by introducing some key concepts and networks lingo
+h
+ill b
+d h
+h
+h
+f h
+that will be used throughout the rest of the course.
+The Layered Architecture #
+Computer networks are organized into conceptual layers. This makes learning
+concepts easier and is a standard teaching method in most books and courses.
+You will learn about each layer in a separate chapter. Each chapter will start
+off by laying down the theoretical foundations and then will give some handson experience with bash shell  or python  playgrounds that you can run
+commands in.
+Socket Programming Basics #
+A chapter of this course teaches python socket programming through basic
+server and client programs in python. It builds up to the programs line-byline; each line is explained in detail before the next one is added on.
+Let’s dive right in!
+Learning Instruments
+Here's a short summary of some tools used throughout this course to maximize your
+learning.
+We'll cover the following
+• Coding Widgets
+• Fun Facts
+• Notes
+• Security Warnings
+• Quotes
+• Graphics
+• Quizzes
+• Links
+Coding Widgets #
+The course demonstrates the usage of some key command-line network
+tools. These will help you immensely in your career regardless of what area
+of computer science you work in. Additionally, you’ll learn the essentials of
+socket programming in Python.
+Fun Facts #
+🔎 Did You Know? This course is scattered with tidbits of information
+that will make you feel more involved with the field! These aren’t
+absolutely essential to learning the fundamentals of computer networks
+so you can skip them if you want. But they definitely keep things
+interesting.
+Notes #
+📝 Note This course is scattered with memos and ‘FYIs’ as well. These
+notes are important to read and generally cannot be skipped.
+Security Warnings #
+☠ Security Warning: we’ll broach the topic of some potential
+network security issues with the topics we’re discussing.
+Quotes #
+“Cool quotes from important people will be included in prompts such as
+this one.” 
+— The Author of This Course
+Graphics #
+We have several slides and drawings throughout this course that make
+learning easier.
+Quizzes #
+Last but not least, you’ll be taking a fair amount of quizzes to help solidify
+your knowledge!
+Links #
+We’ve given links to several external resources throughout this course if you
+are interested in further reading. Most of them can be skipped.
+Let’s begin!
+
+---PAGE 2---
+What is the Internet?
+Let's start with the big question.
+We'll cover the following
+• But First, What’s a Network?
+• The Internet: A Network of Networks
+The Internet permeates our very existence. Most of us cannot imagine life
+without it. We often depend on it for livelihoods, for routine commutes, and
+for entertainment. It has become almost like a utility. You’re accessing this
+course through the Internet.
+But how does it actually work? What goes on behind the scenes? Well, you’ve
+come to the right place to learn that! The Internet is a global network of
+computer networks.
+But First, What’s a Network? #
+A network is officially defined as
+a group or system of
+interconnected people or items.
+So, by this definition, train
+stations connected to each other
+with rail tracks make up a railway
+network. People who follow each
+other on Twitter make up an
+online social network.
+Similarly, computers connected to
+each other with cable or wireless
+radio make up a computer
+network
+A basic computer network
+network.
+Why Computer
+Networks?
+There are two main purposes of
+computer networks:
+Communication using computers
+and sharing of resources. An
+“internet” allows doing these two
+things across different computer
+networks.
+📝 Note: internet vs. Internet An internet with a lowercase “i” is any
+interconnection of computer networks. Whereas the global Internet is
+always spelled with a capital I.
+The Internet
+The Internet is essentially a network of
+computer networks.
+So your personal computer is connected to
+other computers at your house or workplace
+to create a small computer network, which is
+in turn connected to other computer
+networks. And so the global Internet
+encompasses a complex web of
+interconnected computer networks.
+This concept can be better visualized in the
+illustration below:
+A heat map of the usage of the internet
+over a 24-hour period
+The Internet: A Network of Networks #
+Your Computer
+The Internet: A Network of Networks
+1 of 5
+In the next lesson, we’ll take a look at a short history of the Internet and how
+it all began.
+
+---PAGE 3---
+A Quick History of The Internet
+Here's a short overview of how the Internet came to be.
+We'll cover the following
+• Why Learn History?
+• The '50s: The Cold War
+• The '60s-'70s: ARPANET
+• The '80s: Protocols
+• Search Engines
+• The 21st Century: The Age of the Internet
+• A Video
+• Quick Quiz!
+Why Learn History? #
+Learn about the mistakes made during the development of the Internet
+and avoid repeating them.
+Understand why some things are designed and work the way they do
+today.
+Lastly, it’s interesting!
+“Those who do not read history are doomed to repeat it.”
+– George Santayana
+Let’s get right into it.
+The '50s: The Cold War #
+The birth of the Internet can be
+traced back to the middle of the
+last century.
+The U.S. was in the midst of a
+cold war with The Soviet Union
+and both nations were trying to
+gain an advantage over the
+other.
+In 1957, the Soviets launched
+Sputnik, the world’s first
+satellite, propelling us into the
+space age.
+This caught the US off-guard, and
+in response the U.S. government
+created ARPA (Advanced
+Research Projects Agency) which
+was mandated with the
+responsibility of the
+technological and scientific
+advancement of the country.
+Replica of Sputnik I
+The '60s-'70s: ARPANET #
+ARPA was meant to facilitate research. But their computers could not
+talk to each other.
+ARPA sent out a request for the design of a network that would allow
+computers across the entire country to talk to each other.
+A network called the ARPANET was developed over the course of a year.
+In September 1969, the ARPANET was turned on. The first four nodes
+were at UCLA, Stanford, MIT, and the University of Utah. Over the '70s,
+other computer networks just like ARPANET sprang up.
+While the computers on one network could communicate via a default
+way to communicate set by the network administrator of each network
+way to communicate set by the network administrator of each network,
+the computers on different networks could not communicate since every
+network had its own language or - more formally – protocol, which we
+will introduce in a later lesson.
+Then, a standardized protocol called the Transmission Control Protocol
+was invented (RFC 675).
+It was also in RFC 675 that the term “Internet” was first used. Later RFCs
+continued the use.
+🔎 Did You Know? The Advanced Research Projects Agency (ARPA) is
+now known as Defense Advanced Research Projects Agency (DARPA) to
+emphasize the its focus on defense!
+The '80s: Protocols #
+ARPANET was fully migrated to TCP/IP.
+As we moved into the 1980s, computers were added to the Internet at an
+increasing rate. These computers were primarily from government,
+academic, and research organizations. Much to the surprise of the
+engineers, the early popularity of the Internet was driven by the use of
+electronic mail.
+The '90s: The World Wide
+Web
+During the 90’s, the researchers at the
+European Council for Nuclear
+Research (CERN) felt the need for
+automated sharing of their findings
+between their computers. CERN had
+documents that cross-referenced other
+documents. So, there were these
+(hyper) links between documents.
+In 1990 Tim Berners-Lee introduced his
+Tim Berners Lee at CERN. Taken from:
+https://www.~ickr.com/photos/itupictures/16662336315
+under CC BY 2.0
+World Wide Web project to store and
+retrieve these inter-connected
+documents.
+Check out a restored version of the first
+website ever!
+Later, educational, commercial and so
+many other applications were realized.
+The World Wide Web got even more popular with the advent of browsers
+such as Mosaic and Netscape which allowed combining graphics with
+web navigation!
+… Creating the web was really an act of desperation because the situation
+without it was very difficult when I was working at CERN later. Most of the
+technology involved in the web, like the hypertext, like the Internet, multi
+font text objects, had all been designed already. I just had to put them
+together. It was a step of generalizing, going to a higher level of
+abstraction, thinking about all the documentation systems out there as
+being possibly part of a larger imaginary documentation system." 
+– Tim Berners Lee
+Search Engines #
+Another fun fact that initially, there were no search engines.
+So how would you find a website? Well, you couldn’t. Either you knew it or
+you didn’t. Of course, you could land on a website by accident or by following
+a link from another website that you knew.
+Then, people started creating static indices of the web - a categorized listing of
+websites. People would sit and randomly click on links to find web pages and
+add links to their index. But this couldn’t scale. So, eventually, search engines
+were “invented.”
+
+---PAGE 4---
+Altavista and Yahoo! were among the earlier search engines. According to this
+Wikipedia article, the first automated web index was World Wide Web
+Wanderer. Soon afterward, the first web search engine, the W3Catalog was
+invented.
+The 21st Century: The Age of the Internet #
+ 
+And now here we are. In an age in which all our devices run on the Internet,
+even toasters for some – the era of the Internet of Things is here! Life without
+it seems almost inconceivable.
+A Video #
+Here’s the history of the Internet in a short video.
+ARPANET - The First Internet
+ARPANET - The First Internet
+Quick Quiz! #
+1
+Tim Berners Lee invented the Internet
+COMPLETED 0%
+1 of 7
+A) True
+B) False
+Now that we have an overview of where the Internet comes from, let’s discuss
+what it’s actually made of in the next lesson!
+Internet Standards Documents
+Let's look at what can be called the "of}cial documentation of the Internet" now! We'll
+refer to these standards documents throughout this course.
+We'll cover the following
+• Why Care About Internet Standards?
+• What Is an RFC?
+• Who Writes RFCs?
+• History
+• Contents of an RFC
+• Types of RFCs
+• Standards Track
+• Historic
+• Unknown
+• Quick Quiz!
+Why Care About Internet Standards? #
+Standardization has allowed us to achieve interoperability. Different
+organizations and vendors can develop hardware and software to be
+connected to the Internet. Unless they agree on a protocol, their hardware and
+software wouldn’t be able to talk to each other. Standardization is all
+interested stakeholders sitting together, debating and agreeing on a protocol
+or design.
+Also, it’s important to know what’s out there, who designed what and why.
+Also, you’d know where to submit your ideas in case you come up with a
+better design for any of the protocols we’re going to study.
+What Is an RFC? #
+
+---PAGE 5---
+An RFC or Request For Comments is a document that contains proposals
+for new protocols or systems.
+Today, RFCs are submitted to and handled by the Internet Society which
+has a sub-body called the Internet Engineering Task Force (IETF). This
+sub-body works on the standardization of Internet protocols and systems.
+An RFC is then deliberated on by experts, revised and then hopefully,
+eventually adopted as a standard.
+Who Writes RFCs? #
+RFCs are generally written by those who work at IETF, Internet
+researchers, and specialists. However, an RFC can be written by anyone!
+Yes, even you can write one. Just write up your findings and submit them
+to the Internet society’s Independent Submissions page!
+All Internet protocols, like the world wide web, are described by one or
+more RFCs.
+History #
+RFCs were started by Steve Crocker to document details of ARPANET
+while it was being created. These documents were called Requests For
+Comments to encourage discussion and not seem too assertive. They
+used to be written on a typewriter and distributed around ARPA’s office
+as physical copies with requests for comments.
+Contents of an RFC #
+RFC’s generally start off with a header that contains the category of the
+document, its identification number, the name(s) of the author(s), and the
+date.
+Then the document contains its title, a status, and an abstract.
+Then a table of contents after which the document starts.
+The document usually starts with an introduction.
+Here is an example of the first page RFC standards document, RFC 2046.
+An example of the }rst page of an RFC
+Types of RFCs #
+Standards Track #
+There are two kinds of standards documents: Proposed Standard, and
+Internet Standard.
+Proposed Standard documents are well reviewed and stable but not as mature
+as an Internet Standard document. Internet Standard documents are
+technically competent, practically applicable, and publicly recognized.
+Perhaps one of the most important standard documents that we know about
+from the Internet history lesson is the one on the Internet protocol, RFC 791.
+IETF has documented its internet standards process in RFC 2026 Have a look
+IETF has documented its internet standards process in RFC 2026. Have a look
+if you want to learn more about it.
+Historic #
+These RFCs are usually obsolete and contain details about technologies that
+are not in use anymore.
+Unknown #
+Some RFCs cannot be categorized or often do not specify any new standards
+or findings. These are categorized as unknown.
+You can browse all of these categories of RFCs on the RFC retrieve page.
+Quick Quiz! #
+1
+Standardization enables ______
+COMPLETED 0%
+1 of 2
+A) Interoperability
+B) The best design practices to be followed
+C) Optimization
+Now that we have a solid foundation to start learning all about computer
+networks, let’s get right into it from the next chapter!
+Communication Over the Internet
+Before we dive deeper into the course, let's study some key concepts to understand how
+communication over the Internet works
+We'll cover the following
+• What Is a Protocol?
+• An Analogy
+• TCP
+• UDP
+• HTTP
+• Packets
+• Addressing
+• IP Addresses
+• Ports
+• Quick Quiz!
+What Is a Protocol? #
+An Analogy #
+Let’s start with an analogy. Think of your routine conversations. They usually
+follow a general pattern dictated by predefined rules. For example, most
+conversations start with greetings and end with goodbyes. They probably go
+something like this:
+
+---PAGE 6---
+You: Hello
+Friend: Hey!
+...conversation ensues...
+You: Bye!
+Friend: Goodbye :)
+Turns out that end systems also follow such protocols to communicate with
+each other effectively on the network.
+Formally, according to the Oxford Dictionary, a protocol is “a set of rules
+governing the exchange or transmission of data between devices.” In the next
+few chapters, we’ll study several network protocols in detail.
+TCP #
+The Transmission Control Protocol (TCP) is one such protocol. It was
+created to allow end systems to communicate effectively. The distinguishing
+feature of TCP is that it ensures that data reaches the intended destination and
+is not corrupted along the way.
+UDP #
+The User Datagram Protocol (UDP) is also one such key protocol. However, it
+does not ensure that data reaches the destination and that it remains
+incorrupt.
+HTTP #
+HyperText Transfer Protocol (HTTP) is a web protocol that defines the
+format of messages to be exchanged between web clients, e.g., web browsers
+and web servers and what action is to be taken in response to the message.
+The World Wide Web uses this as its underlying protocol.
+y
+g p
+Packets #
+Now that we’ve established that end systems communicate with each other
+based on set protocols, let’s discuss how they actually communicate.
+Computers send messages to each other that are made up of ones and zeros
+(bits).
+However, instead of sending messages of possibly trillions of bits all in one go,
+they’re broken down into smaller units called packets to make transmission
+more manageable. These smaller sizes make transmission more manageable
+because most links are shared by a few end-systems. Sending smaller units in
+succession instead of one big file all in one go makes usage of the network
+fairer amongst end-systems.
+We’ll talk about the exact technical definition of a packet in a future chapter.
+Addressing #
+So, applications communicate with each other by sending messages based on
+protocols. However, packets have to be addressed to a certain application on a
+certain end system. How do you do that out of potentially millions of end
+systems and hundreds of applications on each of them? The answer lies in
+addressing.
+An address identifies a sending entity and a receiving entity.
+IP Addresses #
+Every device that is connected to the Internet has an address called an ‘IP
+Address’ which is much like a mailing address.
+IP addresses are 32 bit numbers (in IP version 4).
+The human readable way for looking at these numbers is the dotted
+decimal notation, whereby the number is considered one octet of bits (8
+bits) at a time. Those octets are read out in decimals, then separated by
+dots.
+Hence, each number can be from 0 to 255. For example, 1.2.3.4 .
+Some IP addresses are reserved for specific functions. We’ll discuss them
+in more depth in later lessons.
+Check yours by running the following command on a shell on your local
+setup.
+curl ifconfig.me -s
+All of the code on our platform is run on one of our servers, and the
+output is returned and printed on your screen. Hence, the IP address
+here belongs to an Educative server!
+Ports #
+Any host connected to the Internet could be running many network
+applications. In order to distinguish these applications, all bound to the same
+IP address, from one another, another form of addressing, known as port
+numbers, is used. Each endpoint in a communication session is identified
+with a unique IP address and port combination. This combination is also
+known as a socket. So in essence, ports help to address the packet to specific
+applications on hosts.
+IP addresses identify end systems but ports identify an application on the
+end system.
+Every application has a 16-bit port number. So the port number could
+range from 0 to 2
+= 65535.
+The ports 0 −1023 are reserved for specific applications and are called
+well-known ports.
+For instance, port 80 is reserved for HTTP traffic.
+The ports 1024 −49152 are known as registered ports and they are
+used by specific, potentially proprietary, applications that are known but
+not system defined.
+SQL server for example, uses port 1433
+16
+SQ
+se
+e
+o e a
+p e, uses po t
+33
+It is generally considered best practice not to use these ports for any
+user defined applications although there is no technical restriction
+on using them.
+The ports 49152–65535 can be used by user applications or for other
+purposes (dynamic port allocation for instance, but more on that later).
+Here is a visual of these ports.
+    
+Well-known   
+    
+Registered   
+    
+Dynamic   
+ 0  
+ 
+1,024  
+ 
+49,152  
+ 
+65,535 
+Quick Quiz! #
+1
+Which of the following is a valid IP version 4 address?
+COMPLETED 0%
+1 of 4
+A) 3.-1.33.67
+B) 3456.3.17.8
+C) a.e0.55.2
+D) 203.128.22.10
+
+---PAGE 7---
+In the next lesson, we’ll study some physical and hardware aspects of
+computer networks.
+The Edge of The Internet: End Systems
+Here's an introduction to the important physical components of the Internet that make it
+tick!
+We'll cover the following
+• End Systems
+• The Network Edge
+• Quick Quiz!
+So far, we know that the Internet is a network of networks. Each network is
+made up of devices, called end systems, connected to each other with
+communication links. Let’s look at each in more detail.
+End Systems #
+End systems are devices that are connected to the Internet. They include:
+Desktop computers
+Servers
+Mobile devices
+IoT devices.
+So, an end system can be anything from a rack server to an Internet-enabled
+toaster. These devices are often also called edge systems in networking
+jargon because they are technically situated at the ‘edge’ of the Internet since
+they don’t relay data from one device to another.
+The Network Edge #
+The network edge is simply the collection of end-systems that we use every
+day: smartphones, laptops, tablets, etc. However, note that devices that relay
+messages (such as routers) are not part of the edge of the Internet.
+Laptop
+Desktop
+Router
+Wireless router
+Desktop
+Desktop
+Server
+Router
+Tablet
+= End System
+= Intermediate networks that
+connect shown networks
+The end systems out of them -- they reside on the "edge of the network"
+Note that the two networks shown could be connected through any number
+of intermediate networks such as those for their Internet Service Providers.
+Since the actual path doesn’t matter, we obfuscate the interconnectivity by
+using the cloud symbol.
+Quick Quiz! #
+1
+Which of the following is NOT an end system?
+A) The mobile connection system
+COMPLETED 0%
+1 of 2
+e
+ob e co
+ect o
+syste
+B) A digital door bell
+C) A web server
+D) A router
+Now that we understand the basic structure of the Internet, let’s look into how
+end systems access the Internet in the next lesson!
+
+---PAGE 8---
+What Are Access Networks?
+Let's study how end systems access the Internet.
+We'll cover the following
+• Access Networks
+• Transmission Rates
+• Quick Quiz!
+Access Networks #
+Access networks, also known as the last mile, consist of the media through
+which end systems connect to the Internet. In other words, access networks
+are networks that physically connect end systems to the first router on a
+path which connects them to some other end systems.
+Laptop
+Desktop
+Router
+Wireless router
+Desktop
+Desktop
+Server
+Router
+Tablet
+= Edge Device
+= Intermediate networks that
+connect shown networks
+= Physical media part of the
+access network
+Access networks
+Network Interface
+Adapter
+The network interface adapter enables a
+computer to attach to a network. Since
+there are so many different types of
+networks, network adapters are used so
+that the user can install one to suit the
+network to which they want to attach.
+Network interfaces also usually have an
+address associated with them. One
+hi
+h
+lti l
+h
+A network card. Taken from:
+https://commons.wikimedia.org/wiki/File:Network_card.jpg#}lelinks
+Notice the port that the cable would go into.
+machine may have multiple such
+interfaces.
+These interfaces are essentially the
+physical gateways that connect devices
+to the Internet.
+Most machines then have external ports which network cables can be plugged
+into. The type of access network depends on the physical media involved.
+Here are some common access networks:
+1. Digital Subscriber Line (DSL)
+2. Cable Internet
+3. Fiber To The Home (FTTH)
+4. Dial-Up
+5. Satellite
+6. WiFi
+We’ll go through the what and how of most of these access network in the
+next few lessons.
+But first, how is the speed of a network measured? What exactly is the unit of
+speed of a network? Let’s have a look!
+Transmission Rates #
+The rate at which data is transmitted from one point to another in a network
+is called the transmission rate. In other words, the speed of the network is its
+transmission rate.
+The smallest unit that digital data can be divided into is a bit: a 1 or a 0.
+Transmission rates are measured in units of bits/sec. However, since bits/sec
+is a really small unit, multiples/prefixes are commonly used. Common
+prefixes and their interpretation is given below:
+1 kilobit/s = 1 kbps = 1000 bits/s = 10^3 bits/s
+1 megabit/s = 1 mbps = 1000000 bits/s = 10^6 bits/s
+1 gigabit/s = 1 gbps = 1000000000 bits/s = 10^9 bits/s
+Common bit rates
+For example, a speed of 240 Mbit/second means that 240, 000, 000 or 240
+million bits get transmitted every second!
+There are essentially two ways that data flows in a network: from an end
+system or to an end system. The outgoing transmission rate is called the
+upload rate, and the incoming transmission rate is called the download rate.
+Some networks have varying upload and download transmission rates, called
+asymmetric transmission rates. This is useful because traffic going out from
+end hosts generally consists of small requests which solicit comparatively
+much larger responses.
+📝 Note You can check the upload and download transmission rate of
+your Internet connection from https://www.speedtest.net!
+Quick Quiz! #
+1
+What does ‘asymmetric transmission rate’ mean?
+COMPLETED 0%
+1 of 2
+A) The speed of the Internet varies at different times of day
+B) The speed of the Internet remains the same throughout the
+day
+C) The upload speed and the download speed vary
+D) The upload speed and the download speed are the same
+
+---PAGE 9---
+Now that we’ve covered the basics, let’s move on to some detail about the
+physical media that actually make up these networks.
+Types of Access Networks: DSL
+There are a number of ways that your end system can access the Internet, let's look at
+each in detail!
+We'll cover the following
+• Digital Subscriber Line: DSL
+• Internet Service Providers
+• How DSL Works
+• Quick Quiz!
+Now that we know what access networks are, let’s look at some common
+types.
+Digital Subscriber Line: DSL #
+A Digital Subscriber Line or DSL uses the existing groundwork of telephone
+lines for an Internet connection. DSL connections are generally provided by
+the same company that provides local wired phone access.
+Internet Service Providers #
+An ISP is just the company that provides end users with an Internet
+connection. For instance, AT&T and Verizon are ISPs. So the telephone
+company or telco is the Internet Service Provider or ISP in the case of DSL!
+How DSL Works #
+A device on the home user’s end called a DSL modem modulates the
+digital signals that a computer outputs into high-frequency analog audio
+signals that are out of the human voice and hearing range.
+The telephone wire’s frequency spectrum is divided into 3 parts:
+1. A downstream channel (which is used to receive data), in the 50 kHz
+to 1 MHz frequency range or ‘band’
+to 1 MHz frequency range or band
+2. An upstream channel (used to send data) which takes up the 4 kHz
+to 50 kHz band
+3. A regular channel used for telephone conversations taking up the 0
+to 4kHz range
+🔎 Did You Know? Modulation - demodulation is where the name
+MoDem comes from.
+For reference, the human hearing range goes from 20 Hz to 20 kHz and the
+average human voice range goes from 85 Hz to 255 Hz.
+0 Hz
+1 MHz
+Let's see how many frequencies are alotted to what channel
+1 of 4
+These signals are then carried by telephone wires over to the ISP
+Then, these high-frequency analog signals are converted back to digital
+signals using a device at the ISP’s end called a Digital Subscriber Line
+Access Multiplexer (DSLAM).
+The signals are then forwarded to the end system that it was meant to
+reach
+Here are slides that depict this process:
+An end system
+1 of 5
+Due to the asymmetry between the width of the three channels, this type of
+DSL is termed as Asymmetric DSL (ADSL). Symmetric DSL, on the other
+hand, offers equal upstream and downstream bandwidth.
+🔎 Did You Know? Steve Jobs and
+Steve Wozniak, founders of Apple
+Inc., built a Blue Box in the 1970s
+that allowed them to make free
+international telephone calls. It
+worked by generating the same
+audio frequencies into telephone
+receivers that were generated by
+operators to make long distance
+calls essentially bypassing the
+telephone company’s toll collection
+Steve Wozniak (left) and Steve Jobs (right):
+https://www.~ickr.com/photos/mac_}lko/4309049355
+
+---PAGE 10---
+system. With a little bit of
+knowledge, they ended up rigging
+an international infrastructure!
+Quick Quiz! #
+Q
+What’s a DSLAM?
+COMPLETED 0%
+1 of 1
+A) A device that creates DSL signals
+B) A device that ISPs use to decode audio signals into digital
+signals
+C) A device that end users use to encode audio signals into
+digital signals
+Now that we have an overview of DSL, let’s look at a few other common access
+networks in the next lesson!
+Types of Access Networks: Cable, FTTH, Dial-Up, and
+Satellite
+Let's discuss a few other common access networks.
+We'll cover the following
+• Cable Internet
+• How It Works
+• Slower During Peak Hours
+• Hybrid Fiber Coax
+• Transmission Rate
+• Fiber To The Home: FTTH
+• Transmission Rate
+• Dial-Up
+• Transmission Rate
+• Satellite
+• Transmission Rate
+• Quick Quiz!
+Cable Internet #
+In the case of cable Internet, the TV cable company is the ISP and it relies
+on the preexisting infrastructure of cable TV to grant Internet access.
+It runs on coaxial cable. Coaxial cable has enough of a frequency range to
+carry TV channels and a stream of upstream and downstream Internet.
+How It Works #
+In essence, cable Internet works very similarly to DSL.
+A device on both the user’s end and the ISP’s end modulates the analog
+signals to digital and vice versa.
+Slower During Peak Hours #
+However, cable Internet can be slower during peak hours, when a majority of
+users are online at once. This is because cable Internet is a shared broadcast
+medium: every signal that comes from the ISP is sent to every single home
+regardless of which one it was meant for.
+Hybrid Fiber Coax #
+Usually, cable Internet works with a combination of coaxial cable and optic
+fiber (which we’ll discuss in the next chapter), where the fiber connects
+optical nodes that exist in every neighborhood to the ISP and coaxial cable
+further connects the nodes to the houses. This is sometimes referred to as a
+hybrid fiber coax (HFC). Have a look at the figure below to see how hybrid
+fiber coax works.
+... an entire
+neighborhood
+Optical Node
+ISP
+Fiber
+Coaxial Cable
+Hybrid Fiber Coax
+Transmission Rate #
+According to DOCSIS 4.0, cable Internet can now operate in symmetric speeds
+(where both upstream and downstream channels have the same speed) of up
+to 10 gbps.
+Fiber To The Home: FTTH #
+Although DSL and cable Internet are incredibly popular, Fiber To The Home
+or FTTH is another access method. Optic fiber cables are claimed to be the
+cleanest method to transmit data. We’ll discuss them in more depth in the
+next lesson.
+Transmission Rate #
+FTTH can be very fast – up to 2.5 gbps.
+ca
+be
+e y ast
+up to
+.5 gbps.
+Dial-Up #
+Dial-Up uses a modem over the telephone line, but does not fully utilize the
+spectrum of the transmission medium. It only uses the traditional voice
+channel frequencies. Hence, it is slower than DSL.
+Transmission Rate #
+Dial-up is non-broadband and very uncommon now. The speed is at most 56
+kbps.
+Satellite #
+The Internet can also be accessed via satellites. This can be beneficial in
+remote areas where other physical access networks are not available.
+Transmission Rate #
+This would depend on a number of factors including the kind of satellite.
+Some setups can provide incredibly fast downlink and uplink connections,
+however, on average, the download rate is at around 1 mbps and the average
+upload rate 256 kbps.
+Quick Quiz! #
+1
+Which access network utilizes telephony infrastructure on the last
+mile?
+A) Dial-up
+B) Fiber To The Home
+C) DSL
+
+---PAGE 11---
+COMPLETED 0%
+1 of 4
+D) Both A and C
+In the next chapter, we’ll start to look at types of computer networks.
+Types by Physical Medium: Guided Physical Media
+Now that we've discussed the infrastructure of the edge of the Internet let's discuss
+some actual hardware components.
+We'll cover the following
+• Communication Media
+• The Internet Is Under the Sea, Not in the Clouds!
+• Quick Quiz!
+Communication Media #
+Data needs to be transmitted from one end system to another over a medium.
+There are two kinds of media: guided and unguided. Each has its own
+advantages and disadvantages. Let’s discuss the common guided ones in more
+detail now.
+Guided Media
+A medium in which the signal is transported on a
+confined pathway is called guided. Some commonly
+used examples are given below.
+Twisted Pair Copper Wire
+This kind of wire is used in DSL and Dial-Up. It
+consists of pairs of copper wires that are twisted
+together to reduce electrical interference. Each wire
+is about a milimeter thick and is one
+communication link. Generally, several pairs are
+bundled together in a protective plastic or rubber
+wrapping.
+Twisted pair copper wire taken from
+https://commons.wikimedia.org/wiki/File:TwistedPair_S-
+FTP.jpg under GNU free documentation license
+Coaxial Cable
+Cable Internet runs on coaxial cables. A coaxial
+cable consists of one copper wire surrounded by an
+insulating material, followed by a mesh-like
+cylindrical metallic shield, followed by another
+insulating cover.
+Fiber Optics
+Fiber optic cables carry light instead of electrical
+signals.
+Metallic media suffer from electrical noise and
+interference from nearby electrical sources such as
+mains wiring. Since optical fiber carries signals in
+the form of light, it is not susceptible to the
+abundant electrical noise and interference.
+Coaxial Cable taken from
+https://en.wikipedia.org/wiki/File:Coaxial_cable_cutaway.svg
+under CC-BY-3.0
+Interference from other light sources is easily mitigated by opaque covering
+around the optic fiber. Hence, these cables can have incredibly fast
+transmission rates and can be stretched out over long distances, unlike the
+rest.
+Optical fibers are frequently used in public and
+enterprise networks when the distance between the
+communication devices is larger than one
+kilometer.
+There are two main types of optical fibers:
+multimode and single mode.
+Multimode
+Multimode uses LED send signals.
+Therefore it’s, significantly cheaper than
+counterpart.
+It can work over several tens of kilometers.
+Multiple light signals travel through the same
+}ber optic cable taken from
+https://commons.wikimedia.org/wiki/File:Optical_}ber_cable.jp
+under CC-BY-SA 3.0
+p
+g
+g
+g
+optic fiber while reflecting off the edges of the
+fiber at different angles.
+Monomode
+Monomode uses laser for transmission.
+It’s more expensive than multimode.
+Monomode fibers can only work over a few
+kilometers.
+However, fiber optic has not dominated over the rest, because of the high cost
+of optical devices. However, fiber to the home is becoming increasingly
+common.
+Also, check out the Optical Carrier transmission rates. They specify the
+transmission rates of fiber optic cable. At the time of writing, they range from
+to 51.84 Mbit/sec to 200 Gbit/sec!
+The Internet Is Under the Sea, Not in the Clouds! #
+Most cross country connections, in fact, are made over fiber optic cable under
+the sea. If you’re more interested in how underwater cables work, here is an
+interesting YouTube video by Vox called “Thin underwater cables hold the
+Internet. See a map of them all.”
+Thin underwater cables hold the internet. See a map of them all.
+Thin underwater cables hold the internet. See a map of them all.
+
+---PAGE 12---
+Quick Quiz! #
+1
+Why is fiber optic cable not as popular for commercial use as one
+would expect considering the advantages of high speed minimal
+loss transmission?
+COMPLETED 0%
+1 of 2
+A) Fiber optic cable is expensive
+B) Laying it down under the sea uses significant resources
+C) Optical devices are very expensive
+D) Coaxial cable and twisted pair copper wire work just as
+well for a fraction of the cost
+In the next lesson, we’ll look at unguided physical media!
+Types by Physical Medium: Unguided Physical Media
+In this lesson, we'll discuss unguided physical media.
+We'll cover the following
+• Unguided Media
+• Terrestrial Radio Channels
+• Long-Term Evolution (LTE)
+• Free-space optical communication
+• Quick Quiz!
+Unguided Media #
+Means of transmission that are not bound by a confined pathway are called
+unguided media, such as radio waves. Let’s discuss them in more detail.
+Terrestrial Radio Channels #
+Radio waves encompass a certain band of the electromagnetic spectrum. They
+provide many advantages, such as not needing to be physically wired through
+a building, the ability to cross physical barriers like walls and other objects,
+and allowing for end systems to be mobile. However, they also have some
+disadvantages: they’re considered to be less secure since interception is
+relatively easy.
+There are 3 kinds of terrestrial radio channels:
+1. The kind that operate over very short distances
+1-2 meters (Bluetooth)
+2. The kind that operate over a few 10s to a few
+hundreds of meters (WiFi)
+3. Those that operate over a range of kilometers
+3. Those that operate over a range of kilometers
+(3G, 4G, and LTE)
+The same infrastructure that provides access to
+cellphones provides access to the Internet. Users
+typically only need to be within a few kilometers of
+a base station to connect. Let’s look at a couple of
+examples.
+Third-Generation Wireless (3G)
+Third-generation wireless, or 3G, allows wireless–
+wide area Internet access that utilizes existing
+telephone networks. It can provide speeds of in
+order of 1 Mbps.
+the top of a cell tower taken from
+https://en.wikipedia.org/wiki/Cell_site#/media/File:Cell-
+Tower.jpg under CC-BY-SA 2.5
+Long-Term Evolution (LTE) #
+Long-Term Evolution or LTE is rooted in 3G technology, but is faster and can
+achieve transmission rates of 10s of Mbps. Don’t let the name confuse you, it is
+not technologically very different from 3G.
+Free-space optical communication #
+Free space optical communication is a medium that employs light to
+transmit data. Among the many uses are: communication in space and in
+remote controls.
+In free space optics, lasers can be used to achieve high data rates. However,
+free space optics suffers from interference by factors like fog, dust particles
+and smog. Recently, researchers have demonstrated the utility of free space
+optics for high speed communication in data centers.
+Quick Quiz! #
+Quick quiz on physical media!
+1
+Which of the following is not guided media?
+COMPLETED 0%
+1 of 2
+A) Coaxial cable
+B) Ethernet cable
+C) Radio waves
+D) Fiber Optic cable
+In the next lesson, we’ll study different types of networks.
+
+---PAGE 13---
+Types by Geographical Distance
+In this lesson, we'll discuss the types of networks based on geographical distance.
+We'll cover the following
+• Introduction
+• Local Area Networks (LANs)
+• Ethernet
+• WiFi
+• Metropolitan Area Network (MAN)
+• Wide Area Networks (WAN)
+• SONET/SDH
+• Frame Relay
+• Quick Quiz!
+Introduction #
+Computers or end systems are generally connected together to share
+resources and information such as an Internet connection and devices such as
+printers. These networks can be classified by the geographical distance that
+they span. Have a look.
+Local Area Networks (LANs) #
+A Local Area Network, or a LAN, is a computer network in a small area like a
+home, office, or school.
+📝 Note ‘small area’ does not imply anything about the number of end
+systems connected together – just the geographical area. A LAN can
+consist of hundreds or even thousands of systems.
+Let’s discuss some examples of LANs which also are access networks that we
+skipped previously.
+Ethernet #
+Most LANs consist of end hosts connected using Ethernet network adapters to
+Ethernet switches. Every Ethernet switch has a limited number of ports, and
+therefore can interconnect a limited number of end hosts. Larger networks
+within a building are built using multiple Ethernet switches interconnecting
+different sets of end hosts. These switches may then be connected to each
+other and the Internet
+WiFi #
+Increasingly, however, wireless Internet access has become very common. In
+Wireless LANs or WLANs, a wireless router interconnects different “subnets”
+and/or may have connectivity to the Internet, which it can extend to the hosts
+connected to it.
+Metropolitan Area Network (MAN) #
+A metropolitan area network (MAN) is a computer network that spans the
+geographical distance of a metropolitan area, such as a city. A MAN may also
+refer to a set of interconnected LANs via point-to-point links, for example, on
+a university network. Recently, wireless MANs have become increasingly
+common.
+Wide Area Networks (WAN) #
+Wide Area Networks or WANs refer to networks that allow interconnection
+across large distances. They may span over cities or even countries.
+WANs are typically optical fiber-based. Frame relay, ATM, and SONET/SDH
+are examples of technologies that may be in use.
+📝 Note The Internet itself is a whole lot of LANs, interconnected by
+means of MANs and WANs.
+SONET/SDH #
+Synchronous optical networking (SONET) and the international equivalent,
+Synchronous Digital Hierarchy (SDH) carries data as optical signals over
+optical fiber, which means that they can cover large distances. These
+technologies are incredibly prevalent today.
+Frame Relay #
+A frame relay was a popular way to connect your LAN to the Internet or to
+provide an interconnection between LANs at two or more company sites.
+Quick Quiz! #
+1
+A computer network that spans a large geographical area
+connecting several sites of an organization, such as a university or
+company, possibly across many countries is called a ______
+COMPLETED 0%
+1 of 2
+A) LAN
+B) WAN
+C) MAN
+D) WLAN
+In the next lesson, we’ll study some common network topologies!
+Types by Topology
+We'll study the types of computer networks based on topologies in this lesson.
+We'll cover the following
+• Bus
+• Limitations
+• Ring
+• Limitations
+• Star
+• Limitations
+• Tree
+• Mesh
+• Limitations
+• Quick Quiz!
+Computer networks can also be categorized in terms of network topologies
+that you might have studied about in a high school computer science class.
+These topologies include: bus, ring, star, tree, and mesh. Note that these
+topologies are strictly logical, i.e., they do not dictate how the wires would be
+connected physically, but they do dictate how the data flows in the network.
+Bus #
+Every end system will receive any signal that is sent on the main or backbone
+medium. The medium can be guided or unguided.
+Limitations #
+A break in the cable will disrupt the entire network.
+Only one system can transmit at a time.
+
+---PAGE 14---
+bus topology
+Ring #
+In this topology, end systems communicate with each other through each
+other. So the message travels along the ring passing each system until the
+target system itself is reached. Theoretically, n/2 systems can be transmitting
+to their adjacent neighbor at the same time.
+Limitations #
+The basic ring topology is unidirectional so n −1 end systems would
+have to transfer messages for end system #1 to talk to end system #n
+A break in the cable will disrupt the entire network.
+Ring Topology
+Star #
+All end systems talk to each other through one central device such as a router
+or switch. Routers and switches are discussed in-depth in the data link layer
+chapter!
+c apte !
+Limitations #
+Hosts can all be transmitting at the same time. However, if the central
+device fails, the network is completely down.
+Star topology
+Tree #
+This topology is also known as the star-bus topology. It essentially consists of
+a bunch of star networks connected together with a large bus.
+tree topology
+Mesh #
+In this topology, every end system is directly connected to every other end
+system
+system.
+Limitations #
+The mesh topology (if physically realized as a mesh):
+Is expensive
+Hard to scale
+Used in specialized applications only
+mesh topology
+Quick Quiz! #
+1
+A disadvantage of the bus topology is that if the backbone wire is
+broken, the network may get negatively impacted
+COMPLETED 0%
+1 of 2
+A) True
+B) False
+Starting in the next lesson, we’ll learn about how the working of the Internet
+is organized into conceptual layers.
+
+---PAGE 15---
+Layered Architectures & Protocol Stacks
+Layered architectures are a way to organize computer networks. Let's dive right in!
+We'll cover the following
+• Introduction to Layered Architectures
+• Why Layers?
+• An Analogy: Post
+• Layers As Services To Each Other: Layers Are Vertical
+• Vertical Layers in Post
+• Vertical Layers in Networks
+• Layers Communicate with Their Parallels: Layers Are Horizontal
+• Horizontal Layers in Post
+• Horizontal Layers in Networks
+• Layers Evolve Independently
+• Independent Evolution in Post
+• Independent Evolution in Networks
+• Encapsulation & Decapsulation
+Introduction to Layered Architectures #
+When building a large complex system, it helps to approach the problem at
+gradually increasing levels of abstraction. Thus, systems can be composed of
+layers, each performing a specific set of tasks.
+Why Layers? #
+Layered architectures give us modularity by allowing us to discuss specific,
+well-defined parts of larger systems. This makes changing
+implementation-level details and identifying bugs easier.
+An Analogy: Post #
+Before we dive deep into different models of the network layer stack, let’s look
+at an interesting analogy.
+Think about posting a letter or a package. The general steps to doing so are as
+follows,
+The letter is received at the local
+post office on the receiver's end
+Sender
+Post Office
+Transportation
+Postman
+Transportation
+Post Office
+Postman
+Receiver
+1
+2
+3
+4
+5
+6
+7
+8
+The letter is written, wrapped in an envelope,
+and put in a mailbox for a postman to pick up
+The local post office sorts
+the letter and sends it
+Transportation such as a plane, ship, or van takes
+the letter to the receiver's local post office. This
+actually may be a chain of transportation mediums.
+The letter is taken from the post office
+to the receiver's address by a postman
+The letter is read
+Postman picks the letter up and takes it
+to the post office to be shipped
+Transportation such as a plane, ship, or van takes
+the letter to the receiver's local post office. This
+actually may be a chain of transportation mediums.
+Posting a letter
+Notice that a few things are in parallel with computer networking here.
+Here are some examples of how that is the case:
+Layers As Services To Each Other: Layers Are
+Vertical #
+Each layer provides some services to the layer above it. Furthermore, the
+layer above is not concerned with the details of how the layer below
+performs its services. This is called abstraction. So in this way, the layers
+communicate with each other in a vertical fashion.
+Vertical Layers in Post #
+In our letter analogy, each layer is servicing the layer above it. For instance,
+the postman provides services to the senders and receivers. They collect
+dropped letters from mailboxes and deliver mail to the houses.
+Furthermore, all a sender knows and cares about is that once they write a
+letter, put it in an envelope, stick a stamp on it and drop it in a letterbox, it
+will eventually be delivered at the destination. Whether it’s transported on
+pickup trucks, on railway trains or by air is irrelevant and immaterial to
+senders. So, how layer 4 does its job is irrelevant to the layers above, and
+that’s called abstraction.
+Vertical Layers in Networks #
+Similarly, computer networks are conceptually divided into layers that each
+serves the layer above and below it.
+For example, the top layer in most layered models is called the
+application layer. End-user applications live in the application layer,
+which includes the web and email and are almost always implemented in
+software. The application layer is also where an outgoing message starts
+its journey.
+The application needs an underlying service that can get application
+messages delivered from source to destination and bring back replies
+which is what the layer(s) after do(es).
+Since the underlying layer collects messages from the upper layer for delivery
+to the destination and hands over messages destined for the upper layer, it
+serves the application layer. Furthermore, the application layer abstracts,
+and hence is not concerned with any implementation details of the layers
+below.
+Layers Communicate with Their Parallels: Layers
+Are Horizontal #
+Note that each layer at the sending end has a parallel in the receiving end.
+Horizontal Layers in Post #
+In the post analogy, the letter writer and receiver appear to be in direct
+communication with each other. The writer writes, the reader reads, oblivious
+to the man-hours spent in the lower layers. Similarly, the post office at the
+sender’s side is in communication with some other post office. They cooperate
+in getting the letter delivered. At the lowest layer, there could be multiple
+hops. For instance, there is a bicycle pickup of letters from a box, delivered to
+the post office. Then, the letters are bundled and sent by pickup truck to an
+airport. The airport flies the postage to a different airport. The airport sends
+the postage to a post office by a pickup truck and the delivery ensues.
+Sometimes there are multiple entities horizontally, but we only see the sender
+and the receiver.
+Horizontal Layers in Networks #
+This makes more sense in the case of computer networks. For example,
+applications in the application layer send and receive data from the network.
+The application layer on one end system has a parallel on another end system,
+i.e., a chat app on one end system could be communicating with a chat app on
+another. These applications in the application layer are seemingly
+communicating with each other directly or horizontally. They are not
+aware of the layer below.
+Application produces data to
+send
+..
+..
+..
+..
+..
+..
+Application reads data
+1
+2
+3
+4
+5
+6
+7
+8
+horizontal communcation in networks
+Layers Evolve Independently #
+Any lower layer in this model provides certain services that the upper layer
+can build other services upon. The upper layer can evolve to build different
+kinds of services, like going from text-based email to attachments, to the
+world wide web, to dynamic websites, interactive gaming, interactive video
+conferencing and so on, all happening in the top layer over the same
+infrastructure.
+Independent Evolution in Post #
+1. For instance, the item being sent does not necessarily have to be a letter –
+It can also be a package.
+2. It can be put in an envelope or a box.
+3. It can be taken to the post office, dropped off into a post box, or picked
+up.
+4. The receiver’s end can be a P.O. box, a home or an office.
+Independent Evolution in Networks #
+The applications in the application layer can send and receive almost any
+form of data, be it an mp3 file or a word document.
+Encapsulation & Decapsulation #
+
+---PAGE 16---
+Encapsulation & Decapsulation #
+Each layer adds its own header to the message coming from above and the
+receiving entity on the other end removes it. The information in each header
+is useful for transmitting the message to the layer above. Adding the header is
+called encapsulation and removing it is called decapsulation. Have a look at
+the following slides to see how this works.
+Take a look at the following drawing. We have not given names to these layers
+because we have not introduced them yet, but the general idea is depicted.
+Layer 3
+Layer 2
+Layer 1
+Layer 2
+Layer 1
+Layer 3
+Encapsulation and decapsulation
+Now that we have an introduction to layered architectures, let’s discuss a
+popular network reference model in the next lesson.
+The Open Systems Interconnection (OSI) Model
+The OSI layer model will help us to understand the overall picture of how computer
+networks work without getting into too many low-level details.
+We'll cover the following
+• Common Models
+• The OSI Model
+• The Layers of the OSI Model
+• Mnemonic
+• Application Layer
+• Presentation Layer
+• Session Layer
+• Transport Layer
+• Network Layer
+• Data Link Layer
+• Physical Layer
+• Quick Quiz!
+Common Models #
+There are several models along which computer networks are organized. The
+two most common ones are the Open Systems Interconnection (OSI) model
+and the Transmission Control Protocol/Internet Protocol (TCP/IP) model.
+We will discuss each model and the differences between the two in detail
+starting with the OSI model.
+The OSI Model #
+The OSI Model was developed in the '70s by the Organization for
+Standardization (ISO). At this time, the Internet was in its infancy and its
+l h d
+f ll
+d Th OSI
+d l
+id
+d
+d f
+protocols had not fully matured. The OSI model provides a standard for
+different computer systems to be able to communicate with each other.
+The Layers of the OSI Model #
+The model splits up a communication system into 7 abstract layers, stacked
+upon each other.
+Here are the seven layers of the OSI Model.
+Application
+Session
+Transport
+Network
+Data Link
+Physical
+Presentation
+The OSI Network Stack
+Mnemonic #
+A good mnemonic device to help remember these layers is:
+Please Do Not Throw Sausage Pizza Away
+Application
+Session
+Transport
+Network
+Data Link
+Physical
+Presentation
+Please
+Do
+Not
+Throw
+Sausage
+Pizza
+Away
+Mnemonic to Memorize the Layers of The Network Stack
+Mnemonic to Memorize the Layers of The Network Stack
+Network protocols are implemented in software, hardware or a combination
+of both, and their hardware and software components are organized into
+these layers. So the main purpose of this ‘network stack’ is to understand
+how the components of these protocols fit into the stack and work with
+each other.
+Here are some key responsibilities of each layer. Note that we are listing only
+some of the responsibilities of each layer. The exhaustive discussion is
+deferred to later chapters.
+Application Layer #
+These applications or protocols are almost always implemented in
+software.
+End-users interact with the application layer.
+The application layer is where most end-user applications such as web
+browsing and email live.
+The application layer is where an outgoing message starts its journey so it
+provides data for the layer below.
+🔎 Did You Know? Ascribing to the OSI model, Layer 8 is a pseudo-layer
+that consists of the end-users! A lot of IT support humor has involved
+telling unsuspecting non-tech-savvy users that the issue is a “Layer 8
+issue.” So the application layer can technically be said to be sitting in
+between layers 8 and 6!
+Presentation Layer #
+Presents data in a way that can be easily understood and displayed by
+the application layer.
+Encoding is an example of such presentation. The underlying layers
+might use a different character encoding compared to the one used
+by the application layer. The presentation layer is responsible for the
+translation.
+Encryption (changing the data so that it is only readable by the parties it
+
+---PAGE 17---
+Encryption (changing the data so that it is only readable by the parties it
+was intended for) is also usually done at this layer.
+Abstracts: the presentation layer assumes that a user session is being
+maintained by the lower layers and transforms content presentation to
+suit the application.
+End-to-end Compression: The presentation layer might also implement
+end to end compression to reduce the traffic in the network.
+Session Layer #
+The session layer’s responsibility is to take the services of the transport
+layer and build a service on top of it that manages user sessions.
+As we will see shortly, the transport layer is responsible for
+transporting session layer messages across the network to the
+destination. The session layer must manage the mapping of
+messages delivered by the transport layer to the sessions.
+A session is an exchange of information between local applications and
+remote services on other end systems.
+For example, one session spans a customer’s interaction with an ecommerce site whereby they search, browse and select products,
+then make the payment and logout.
+Abstracts: the session layer assumes that connections establishment and
+packet transportation is handled by the layers below it.
+Transport Layer #
+The transport layer also has protocols implemented largely in software.
+Since the application, presentation and session layers may be handing off
+large chunks of data, the transport layer segments it into smaller chunks.
+These chunks are called datagrams or segments depending on the
+protocol used.
+Furthermore, sometimes some additional information is required to
+transmit the segment/datagram reliably. The transport layer adds this
+information to the segment/datagram.
+An example of this would be the checksum, which helps ensure that
+the message is correctly delivered to the destination i e that it’s not
+the message is correctly delivered to the destination, i.e. that it’s not
+corrupted and changed to something else on the way.
+When additional information is added to the start of a
+segment/datagram, it’s called a header.
+When additional information is appended to the end it’s called a
+trailer.
+Network Layer #
+Network layer messages are termed as packets.
+They facilitate the transportation of packets from one end system to
+another and help to determine the best routes that messages should
+take from one end system to another.
+Routing protocols are applications that run on the network layer and
+exchange messages with each other to develop information that helps
+them route transport layer messages.
+Load Balancing There are many links (copper wire, optical fiber,
+wireless) in a given network and one objective of the network layer is to
+keep them all roughly equally utilized. Otherwise, if some links are
+under-utilized, there will be concerns about the economic sense of
+deploying and managing them.
+Data Link Layer #
+Allows directly connected hosts to communicate. Sometimes these hosts
+are the only two things on a physical medium. In that case, the challenges
+that this layer addresses include flow control and error
+detection/correction.
+Encapsulates packets for transmission across a single link.
+Resolves transmission conflicts i.e., when two end systems send a
+message at the same time across one singular link.
+Handles addressing If the data link is a broadcast medium, addressing is
+another data link layer problem,
+Multiplexing & Demultiplexing:
+Multiple data links can be multiplexed into something that appears
+like one, to integrate their bandwidths.
+Likewise, sometimes we disaggregate a single data link into virtual
+data links which appear like separate network interfaces
+data links which appear like separate network interfaces.
+Physical Layer #
+Consists largely of hardware.
+Provides a solid electrical and mechanical medium to transmit the data.
+Transmits bits. Not logical packets, datagrams, or segments.
+Also has to deal with mechanical specifications about the makeup of the
+cables and the design of the connectors.
+We’ve mostly already studied what constitutes the physical layer. We don’t
+need to know more than what we’ve looked at in the Phyical Communication
+Media chapter.
+Have a look at the following slides to understand how data would
+conceptually travel through the layers.
+Application
+Presentation
+Session
+Transport
+Network
+Data Link
+Physical
+Application
+Presentation
+Session
+Transport
+Data Link
+Physical
+Network
+The application layer writes out streams
+of data to the presentation layer
+How data conceptually travels through the layers
+1 of 13
+Quick Quiz! #
+
+---PAGE 18---
+1
+How many layers does the OSI model have?
+COMPLETED 0%
+1 of 5
+A) six
+B) eight
+C) nine
+D) seven
+E) four
+Conceptualizing networks into layers like this had a significant impact on
+networking education, which is why it’s still taught as the primary model in a
+lot of courses. However, now that protocols have matured, a better way to
+teach networks is to take a more protocol-oriented approach. This is where
+the TCP/IP model comes in which is what we’ll look at in the next lesson.
+The TCP/IP Model
+Let's now have a look at the TCP/IP Model
+We'll cover the following
+• Introduction
+• The Layers of The TCP/IP Stack
+• TCP/IP vs OSI
+• Key Differences
+• Differences in Layer Functionality
+• There is No Unanimous Stack
+• The End-To-End Argument in System Design
+• Packet Switched Core
+• Quick Quiz!
+Introduction #
+The TCP/IP Model, also known as the Internet protocol suite, was
+developed in 1989.
+Its development was funded by DARPA (Advanced Research Projects
+Agency (ARPA) was renamed to the Defense Advanced Research Projects
+Agency (DARPA)!)
+Its technical specifications are detailed in RFC 1122.
+This model is primarily based upon the most protocols of the Internet,
+namely the Internet Protocol (IP) and the Transmission Control
+Protocol (TCP).
+The protocols in each layer are clearly defined, unlike in the OSI model.
+In this course, we’ll largely adhere to the TCP/IP model and take a
+protocol-oriented approach.
+The Layers of The TCP/IP Stack #
+The TCP/IP model splits up a communication system into 5 abstract layers,
+stacked upon each other. Each layer performs a particular service and
+communicates with the layers above and below itself.
+Here are the five layers of the TCP/IP model:
+Application
+Transport
+Network
+Data Link
+Physical
+The Network Stack
+TCP/IP vs OSI #
+Key Differences #
+Here are some main differences between TCP/IP and OSI.
+TCP/IP
+OSI
+Is used practically
+The OSI model is conceptual and is
+not practically used for
+communication.
+Consists of five layers
+Consists of seven layers
+Elaborating further on the first point, OSI is a theoretical model and
+works very well for teaching purposes, but it’s far too complex for anyone
+to implement.
+TCP/IP, on the other hand, wasn’t really a model. People just implemented
+it and got it to work Then people reverse engineered a reference
+it and got it to work. Then, people reverse-engineered a reference
+model out of it for theoretical and pedagogical purposes. So, something
+that “sounds like” a great idea might not be the eventual winner. It’s de
+facto vs de jure standards.
+Differences in Layer Functionality #
+The layers in the TCP/IP stack largely perform the same functions as their
+counterparts in the OSI model, except that the application layer in the TCP/IP
+model encompasses the functionalities of the top three layers of the OSI
+model.
+Have a look at the following diagram for a more concrete view.
+Session
+Transport
+Network
+Data Link
+Physical
+Application
+Transport
+Network
+Data Link
+Physical
+Presentation
+Application
+OSI Model
+TCP/IP Model
+The Network Stack
+There is No Unanimous Stack #
+This is an example of where primary sources like RFCs clash with secondary
+sources like textbooks. There is, in fact, an entire table on Wikipedia dedicated
+to the prominent layer stacks! Regardless, we’ll be sticking to the TCP/IP model
+described above.
+The End-To-End Argument in System Design #
+The TCP/IP protocol suite is heavily influenced by the following design choice,
+also known as the end-to-end argument
+
+---PAGE 19---
+also known as the end to end argument.
+Implementing intelligence in the core was too expensive, therefore,
+intelligence was implemented at edge devices. So, the Internet’s design was of
+intelligent end devices and a dumb and fast core network.
+Packet Switched Core #
+Furthermore, the core was made packet-switched, which means that packets
+are routed per-hop, so they can circumvent failures because the requirement
+was for resilience.
+With circuit-switched networks, however, torn connections have to be reestablished, if there is still a path.
+Quick Quiz! #
+1
+The responsibilities of the presentation layer from the OSI model
+are handled by the ______ layer in the TCP/IP model.
+COMPLETED 0%
+1 of 2
+A) Network
+B) Transport
+C) Application
+D) Data Link
+Let’s start on the application layer from the next chapter!
+What Is the Application Layer?
+Here's an introduction to the application layer!
+We'll cover the following
+• You Are Here!
+• Key Responsibilities of the Application Layer
+• The Post Analogy
+• Where It Exists
+• Application Layer Protocols
+You Are Here! #
+We’re starting our study of the TCP/IP layers with the application layer.
+Application
+Transport
+Network
+Data Link
+Physical
+you
+are
+here
+Key Responsibilities of the Application Layer #
+The main job of the application layer is to enable end-users to access the
+Internet via a number of applications. This involves:
+Writing data off to the network in a format that is compliant with the
+protocol in use.
+Reading data from the end-user.
+Providing useful applications to end users.
+Some applications also ensure that the data from the end-user is in the
+correct format.
+Error handling and recovery is also done by some applications.
+The Post Analogy #
+Imagine you post a package across the world.
+Presumably, the post system would hand it off to an airplane or ship to
+transport it across the world.
+However, you would take it to the post office first to be shipped off.
+Carrying the package to the post office is what the application layer
+does in networks, except that it carries messages to the transport
+layer!
+Where It Exists #
+The application layer resides entirely on end-systems. These end-systems can
+be any Internet-enabled device, be it a refrigerator or a tower PC.
+Application Layer Protocols #
+Most would argue that user applications are the true purpose of the
+Internet. If useful applications did not exist, the Internet would not be
+what it is today.
+The development of the Internet in the last century started with textbased network apps such as e-mail.
+Then came the app: the World Wide Web which revolutionized
+everything.
+Instant messaging came at the end of the millennium, which has
+changed the way we communicate.
+Since then, we have come up with voice over IP, (WhatsApp calls), video
+chat (Skype), and video streaming (YouTube).
+Social media has also taken the world by storm resulting in complex
+human social networks and businesses building on top of these websites.
+All of these applications run on application layer protocols. Due to the
+
+---PAGE 20---
+presence of these standard protocols, client applications developed by various
+vendors can talk to server applications developed by others!
+Let’s uncover some of the underlying application layer protocols, in the next
+few lessons.
+Network Application Architectures
+In this lesson, we'll learn about network application architectures.
+We'll cover the following
+• Client-Server Architecture
+• Servers
+• Clients
+• An Example
+• Data Centers
+• Peer-to-Peer Architecture (P2P)
+• An Example
+• Hybrid
+• Quick Quiz!
+Before we start off with application layer protocols, it’s important to
+understand how applications are structured across end systems. This is
+called the network application’s architecture and it’s designed by application
+developers. The architecture lays out how the application communicates
+and with what.
+Let’s discuss some common application architectures.
+Client-Server Architecture #
+In this architecture, a network application consists of two parts: client-side
+software and server-side software. These pieces of software are generally
+called processes, and they communicate with each other through messages.
+Servers #
+The server process controls access to a centralized resource or service such as
+a website.
+Servers have two important characteristics:
+1. Generally, an attempt is made to keep servers online all the time,
+although 100% availability is impossible to achieve. Furthermore, servers
+set up as a hobby or as an experiment may not need to be kept online.
+Nevertheless, the client must be able to find the server online when
+needed, otherwise, communication wouldn’t take place.
+2. They have at least one reliable IP address with which they can be
+reached.
+A good analogy is a 24/7 pizza delivery place. They are always open and have
+a phone number with which they can always be reached.
+Clients #
+Client processes use the Internet to consume content and use the services.
+Client processes almost always initiate connections to servers, while server
+processes wait for requests from clients.
+An Example #
+A good example of the client-server architecture is the web.
+Take Google for instance. Google has several servers that control access to
+videos. So when a google.com is accessed, a client process (a browser)
+requests Google’s homepage from one of Google’s servers. That server was
+presumably online, got the request, and granted access to the page by sending
+it.
+Data Centers #
+Now, you might have noticed that we mentioned that Google has servers and
+not one server. That’s because, as mentioned previously, when client-server
+applications scale, one or even two servers can’t handle the requests from a
+large number of clients. Additionally, servers may crash due to any reason
+and might stop working. Most applications have several servers in case one
+fails. Therefore, several machines host server processes (these machines are
+called servers too), and they reside in data centers.
+Data centers are buildings that house servers. Facebook, for example, has
+“nearly 15 million square feet of data center space completed or under
+construction, with several million more feet in the planning stages” as of 2018.
+Client
+Server
+Show me a video on YouTube
+Sure, here it is.
+Clients obtain content (such as videos) and/or services (such as an online calculator) from servers.
+Peer-to-Peer Architecture (P2P) #
+In this architecture, applications on end-systems called ‘peers’ communicate
+with each other. No dedicated server or large data center is involved. Peers
+mostly reside on PCs like laptops and desktops in homes, offices, and
+universities.
+The key advantage of the P2P architecture is that it can scale rapidly – without
+the need of spending large amounts of money, time or effort.
+Peers communicate with each other without a dedicated server
+Regardless of P2P’s decentralized nature, each peer can be categorized as
+servers or clients i.e., every machine is capable of being a client as well as a
+server. Strictly speaking, the peer that initiates a connection is the client, and
+the other one is called the server.
+An Example #
+
+---PAGE 21---
+a
+p e 
+A lot of popular applications today, like BitTorrent, are based on P2P
+architectures.
+When a file is downloaded via BitTorrent, the downloading party accesses bits
+of the file on several other users’ computers and puts them together on its
+end. No traditional ‘server’ is involved in this scenario.
+📝 Note: P2P Is Not the Same as File Sharing! Some early P2P
+applications were used for file sharing. For example, Napster and
+Gnutella. Because of the massive impact of these P2P applications, a lot
+of people associate file sharing exclusively with P2P. 
+File sharing is a specific application. Whereas P2P is a design principle
+for distributed systems and an application architecture. 
+Also, file sharing is not the only application of P2P. Other examples
+include: streaming media, telephony, content distribution, routing, and
+volunteer computing.
+Hybrid #
+The hybrid architecture involves server involvement to some degree. It’s
+essentially a combination of the P2P and client-server architectures.
+Quick Quiz! #
+1
+What architecture is the web based on?
+A) P2P
+B) Client-Server
+COMPLETED 0%
+1 of 5
+C) Distributed
+D) Hybrid
+Let’s look at how processes communicate across machines in the next lesson!
+P2P vs. Client-Server
+Before we move on with the details of BitTorrent, it's useful to do a quantitative
+comparison of the hybrid architecture with the client-server architecture.
+We'll cover the following
+• Quantitative Comparison of P2P with Client-Server
+• Client-Server
+• P2P
+• Quick Quiz!
+Quantitative Comparison of P2P with Client-
+Server #
+Let’s calculate how long it will take to transmit a file from one server to a
+number of clients based on both the P2P and server-client architectures. The
+calculations will be performed based on the following givens.
+A server that can upload at a rate of up  where up  is the upload speed
+in bits/second.
+There are N clients all wanting to download the same file from the
+server. Client i can upload at a rate of up  bits/second and download at a
+rate of dwn  bits/second.
+The size of the file that all the peers want is S.
+Client-Server #
+Let’s start with the client-server architecture. The following can be observed.
+Since N clients each want a file of size S, the server will have to upload 
+NS bits. The upload rate of the server is up  so the server will take at
+least 
+ time to transmit the file to all N clients.
+The client with the lowest download rate (dwn
+= min(dwn )) will
+take at least 
+ time to download the full file.
+s
+s
+i
+i
+s
+ups
+NS
+min
+i
+dwn
+i
+S
+So, in total the time taken to transmit the file will be the maximum of both of
+the times above, i.e.:
+max {
+,
+}
+dwnmin
+ups
+NS
+dwnmin
+S
+P2P #
+We can make the following observations:
+Initially, only the server has the file. It has to throw the file out into the
+network and to do that, it will take at least 
+ time. While the file is
+being sent out into the network of peers, they start to distribute it
+amongst themselves.
+The peer with the lowest download rate (dwn
+) will take at least 
+time to download the full file.
+The file cannot be transmitted faster than the total upload speed of the
+entire network: (up
+= {up + up + up + ... + up }). Since the
+file has to be distributed to all N peers, NS bits have to be transmitted,
+that will take 
+ time.
+Therefore, the time taken in total to distribute a file of size S to N peers is:
+max {
+,
+,
+}
+Note that as the number of clients/peers, N, grows, the time taken by the
+client-server architecture also grows. Here is a graph of how the distribution
+time grows for each architecture as the number of clients/peers grow:
+ups
+S
+min
+dwnmin
+S
+sum
+1
+2
+3
+N
+upsum
+NS
+ups
+S
+dwnmin
+S
+upsum
+NS
+
+---PAGE 22---
+Graph of How p2p Scales vs Client-Server attributed to:
+https://pdfs.semanticscholar.org/3de3/1a9b45a3d071c638574117af8e046b578004.pdf
+P2P networks are extremely mathematically scalable. The resources of a
+P2P system grows with the number of peers in the system. Thus, applications
+with P2P architecture are self-scaling.
+Quick Quiz! #
+1
+In a client-server model, the rate at which a client can download a
+file is limited by the ______.
+COMPLETED 0%
+1 of 2
+A) server upload rate
+B) client download rate
+C) min( a , b )
+Let’s now get into how processes communicate!

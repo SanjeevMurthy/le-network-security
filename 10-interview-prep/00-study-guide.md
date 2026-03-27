@@ -1,5 +1,25 @@
 # Interview Prep — Study Guide and Methodology
 
+## Table of Contents
+
+- [Quick Reference](#quick-reference)
+- [Q: How should I structure 4 weeks of interview prep for a Staff SRE networking role?](#q-how-should-i-structure-4-weeks-of-interview-prep-for-a-staff-sre-networking-role)
+  - [Week 1: Foundations and Internals (Sections 01, 02)](#week-1-foundations-and-internals-sections-01-02)
+  - [Week 2: Cloud and Kubernetes Networking (Sections 03, 04)](#week-2-cloud-and-kubernetes-networking-sections-03-04)
+  - [Week 3: Security, Deep Dives, and Q&A Practice (Sections 05, 09, 10)](#week-3-security-deep-dives-and-qa-practice-sections-05-09-10)
+  - [Week 4: Integration, System Design, and Polish (Sections 06, 07, 08)](#week-4-integration-system-design-and-polish-sections-06-07-08)
+- [Q: What prerequisite knowledge do I need before this prep is useful?](#q-what-prerequisite-knowledge-do-i-need-before-this-prep-is-useful)
+  - [Must-Know Cold (No Reference)](#must-know-cold-no-reference)
+- [Q: How do you answer networking questions at staff level? Give me the methodology.](#q-how-do-you-answer-networking-questions-at-staff-level-give-me-the-methodology)
+- [Critical Commands Cheat Sheet (30 Most Important)](#critical-commands-cheat-sheet-30-most-important)
+- [Q: What do interviewers actually evaluate — what separates Senior from Staff from Principal?](#q-what-do-interviewers-actually-evaluate-what-separates-senior-from-staff-from-principal)
+  - [Senior SRE (L5 equivalent)](#senior-sre-l5-equivalent)
+  - [Staff SRE (L6 equivalent)](#staff-sre-l6-equivalent)
+  - [Principal SRE (L7 equivalent)](#principal-sre-l7-equivalent)
+- [Key Takeaways](#key-takeaways)
+
+---
+
 ## Quick Reference
 
 This section is the synthesis layer for the entire `le-network-security` knowledge base. It does not teach concepts — it teaches you how to demonstrate mastery under interview conditions. Senior SRE interviews test mental models, debugging methodology, and trade-off reasoning, not encyclopedic recall. This guide maps 4 weeks of prep to the sections in this repo, defines prerequisite knowledge, and explains the evaluation rubric interviewers actually use at the Senior, Staff, and Principal levels.

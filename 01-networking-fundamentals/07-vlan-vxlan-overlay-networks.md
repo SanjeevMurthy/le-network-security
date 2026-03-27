@@ -1,5 +1,30 @@
 # VLAN, VXLAN, and Overlay Networks — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [802.1Q VLAN](#8021q-vlan)
+  - [Frame Structure](#frame-structure)
+  - [Trunk vs Access Ports](#trunk-vs-access-ports)
+- [VXLAN: Virtual Extensible LAN](#vxlan-virtual-extensible-lan)
+  - [VXLAN Packet Encapsulation](#vxlan-packet-encapsulation)
+  - [VTEP: VXLAN Tunnel Endpoint](#vtep-vxlan-tunnel-endpoint)
+- [VXLAN in Kubernetes CNIs](#vxlan-in-kubernetes-cnis)
+  - [Flannel VXLAN Mode](#flannel-vxlan-mode)
+  - [Calico VXLAN Mode](#calico-vxlan-mode)
+- [GENEVE: Generic Network Virtualization Encapsulation](#geneve-generic-network-virtualization-encapsulation)
+- [VXLAN MTU Problem in Production](#vxlan-mtu-problem-in-production)
+- [Production Scenario: Intermittent Drops in K8s Pod-to-Pod Communication](#production-scenario-intermittent-drops-in-k8s-pod-to-pod-communication)
+  - [Investigation](#investigation)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Overlay networks exist to solve a fundamental problem: physical network topology constrains logical network design. VLANs segment a physical network into isolated broadcast domains — but they're limited to 4094 segments and require physical switch configuration. VXLAN extends this concept to cloud scale: 16 million virtual segments, spanning any number of physical switches, using standard UDP packets as a transport. Understanding VXLAN is essential for any SRE working with Kubernetes, where every pod network in production is either VXLAN, GENEVE, or a close relative.

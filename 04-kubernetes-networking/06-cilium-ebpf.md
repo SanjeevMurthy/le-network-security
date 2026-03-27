@@ -1,5 +1,35 @@
 # Cilium and eBPF
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Cilium Architecture](#cilium-architecture)
+- [eBPF Datapath](#ebpf-datapath)
+  - [How Packets Move](#how-packets-move)
+  - [XDP Integration](#xdp-integration)
+  - [BPF Map Types Used](#bpf-map-types-used)
+- [Identity-Based Security](#identity-based-security)
+- [CiliumNetworkPolicy](#ciliumnetworkpolicy)
+  - [L3/L4 Policy (pod-to-pod)](#l3l4-policy-pod-to-pod)
+  - [L7 HTTP Policy](#l7-http-policy)
+  - [DNS-Based Egress (toFQDNs)](#dns-based-egress-tofqdns)
+- [Hubble: Built-in Observability](#hubble-built-in-observability)
+  - [CLI Usage](#cli-usage)
+  - [Hubble UI](#hubble-ui)
+- [Tetragon: eBPF Runtime Security](#tetragon-ebpf-runtime-security)
+- [Cilium Mesh: Sidecarless Service Mesh](#cilium-mesh-sidecarless-service-mesh)
+- [Cluster Mesh: Multi-Cluster Networking](#cluster-mesh-multi-cluster-networking)
+- [Production Scenario: Cilium Policy Silently Dropping Traffic](#production-scenario-cilium-policy-silently-dropping-traffic)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 Cilium is a CNI plugin, network security enforcement engine, and observability platform built on eBPF (extended Berkeley Packet Filter). It represents a fundamental architectural shift from the traditional approach of using iptables + kube-proxy + a sidecar-based service mesh: Cilium replaces all three with eBPF programs that run in the Linux kernel at near line-rate without userspace overhead.

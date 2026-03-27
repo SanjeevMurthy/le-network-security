@@ -1,5 +1,35 @@
 # Kubernetes Network Policies
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Default Behavior and Policy Model](#default-behavior-and-policy-model)
+- [NetworkPolicy Spec Anatomy](#networkpolicy-spec-anatomy)
+- [Default-Deny Patterns](#default-deny-patterns)
+  - [Deny All Ingress (Default Deny Ingress)](#deny-all-ingress-default-deny-ingress)
+  - [Deny All Egress](#deny-all-egress)
+  - [Deny All (Both Directions)](#deny-all-both-directions)
+  - [Namespace Isolation Architecture](#namespace-isolation-architecture)
+- [Namespace Isolation Patterns](#namespace-isolation-patterns)
+  - [Isolate Namespace (Allow Only Internal Traffic)](#isolate-namespace-allow-only-internal-traffic)
+  - [Allow Monitoring Namespace to Scrape All Pods](#allow-monitoring-namespace-to-scrape-all-pods)
+- [CNI Enforcement Reality](#cni-enforcement-reality)
+- [Calico GlobalNetworkPolicy](#calico-globalnetworkpolicy)
+- [Cilium L7 NetworkPolicy](#cilium-l7-networkpolicy)
+  - [HTTP Path-Level Policy](#http-path-level-policy)
+  - [DNS-Based Egress (toFQDNs)](#dns-based-egress-tofqdns)
+- [Testing Network Policies](#testing-network-policies)
+- [Production Scenario: Missing DNS Egress Rule](#production-scenario-missing-dns-egress-rule)
+- [Failure Modes](#failure-modes)
+- [Debugging Guide](#debugging-guide)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 By default, Kubernetes allows all pod-to-pod traffic across the entire cluster — any pod can reach any other pod on any port. This is a deliberate design choice (flat networking model) but a significant security liability in multi-tenant clusters. Network Policies are the Kubernetes native mechanism for implementing microsegmentation at the pod level.

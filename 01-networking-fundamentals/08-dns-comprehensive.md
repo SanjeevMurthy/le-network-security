@@ -1,5 +1,40 @@
 # DNS Comprehensive — SRE Field Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [DNS Record Types Reference](#dns-record-types-reference)
+- [DNS Resolution Chain with Failure Points](#dns-resolution-chain-with-failure-points)
+- [DNSSEC: Chain of Trust](#dnssec-chain-of-trust)
+  - [How DNSSEC Validation Works](#how-dnssec-validation-works)
+  - [DNSSEC Failure Modes](#dnssec-failure-modes)
+- [DNS Security Attacks](#dns-security-attacks)
+  - [Kaminsky Cache Poisoning Attack (2008)](#kaminsky-cache-poisoning-attack-2008)
+  - [DNS Rebinding Attack](#dns-rebinding-attack)
+  - [DNS Amplification DDoS](#dns-amplification-ddos)
+- [DoH vs DoT: Operational Trade-offs](#doh-vs-dot-operational-trade-offs)
+- [Anycast DNS: How Cloudflare 1.1.1.1 Works](#anycast-dns-how-cloudflare-1111-works)
+- [Split-Horizon DNS](#split-horizon-dns)
+  - [Implementation with BIND Views](#implementation-with-bind-views)
+  - [Implementation with CoreDNS (Kubernetes)](#implementation-with-coredns-kubernetes)
+- [DNS Performance: Negative TTL, NXDOMAIN Caching, Resolver Sizing](#dns-performance-negative-ttl-nxdomain-caching-resolver-sizing)
+  - [Negative TTL](#negative-ttl)
+  - [NXDOMAIN Caching Impact](#nxdomain-caching-impact)
+  - [Resolver Cache Sizing](#resolver-cache-sizing)
+- [Production Scenario: DNS Propagation Delay Causing Multi-Region Inconsistency](#production-scenario-dns-propagation-delay-causing-multi-region-inconsistency)
+  - [Investigation](#investigation)
+  - [The 0 TTL Trade-off](#the-0-ttl-trade-off)
+- [Debugging Guide](#debugging-guide)
+- [Route 53 Advanced Routing Policies](#route-53-advanced-routing-policies)
+- [Failure Modes](#failure-modes)
+- [Security Considerations](#security-considerations)
+- [Interview Questions](#interview-questions)
+  - [Basic](#basic)
+  - [Intermediate](#intermediate)
+  - [Advanced / Staff Level](#advanced-staff-level)
+
+---
+
 ## Overview
 
 DNS is simultaneously the simplest protocol in your stack (a name lookup) and the most dangerous single point of failure (everything depends on it). The Dyn 2016 DDoS took down Twitter, GitHub, Spotify, and Reddit simultaneously — DNS. The 2021 Fastly outage took down a significant fraction of the web in under a minute — also DNS-adjacent (BGP to DNS providers). Every production incident response should start with "is DNS working?" This guide extends the foundational DNS knowledge with the depth needed to operate DNS at scale, debug failures that appear to be application bugs, and defend against DNS-based attacks.
