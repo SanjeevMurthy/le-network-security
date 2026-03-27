@@ -209,10 +209,10 @@ sequenceDiagram
     participant C as Client Process
     participant S as Server Process
 
-    Note over C,S: Server is always-on, fixed address/port
-    C->>S: Request (e.g., HTTP GET)
-    S-->>C: Response (e.g., HTTP 200 + body)
-    Note over C: Client initiates; server reacts
+    Note over C,S: Server is always-on at fixed address and port
+    C->>S: Request (HTTP GET /resource)
+    S-->>C: Response (HTTP 200 + body)
+    Note over C: Client initiates, server reacts
 ```
 
 Servers are always-on processes bound to well-known ports, waiting for connections. Clients are transient — they initiate connections, exchange data, and disconnect.
