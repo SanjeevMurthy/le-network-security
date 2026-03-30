@@ -98,6 +98,12 @@ A NAT Gateway allows instances in **private subnets** to initiate outbound conne
 
 **NAT Gateway vs NAT Instance**: NAT Gateway is managed, scales automatically, and requires no maintenance. NAT Instances (EC2) give you more control (custom routing, filtering) but require patching, sizing, and HA design.
 
+Feature,Internet Gateway (IGW),NAT Gateway
+Placement,Attached to the VPC,Sits inside a Public Subnet
+Purpose,Provides 2-way connectivity for Public Subnets,Provides 1-way (outbound) for Private Subnets
+IP Handling,Maps Private IP to Instance's Public IP,Maps many Private IPs to the Gateway's Elastic IP
+Cost,Free,Hourly charge + Data processing fees
+
 ### VPC Endpoints
 
 VPC Endpoints allow private connectivity to AWS services without using the internet, IGW, or NAT Gateway.
