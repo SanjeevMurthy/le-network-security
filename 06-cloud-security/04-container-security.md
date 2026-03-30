@@ -597,12 +597,28 @@ A: Admission controllers evaluate resource *configuration* at deploy time — th
 ### Intermediate
 
 **Q: How would you implement a zero-trust container security policy for a production Kubernetes cluster?**
-A: Four layers: (1) **Build:** Distroless base images, multi-stage builds, Trivy scanning in CI blocking on CRITICAL, Cosign keyless signing of all images. (2) **Admission:** Kyverno ClusterPolicies enforcing non-root, no privilege escalation, drop ALL capabilities, seccomp RuntimeDefault, read-only root FS. Separate Kyverno `verifyImages` policy requiring valid Cosign signature from the CI OIDC issuer. OPA Gatekeeper for complex policies (e.g., no `:latest` tag). (3) **Network:** Default-deny NetworkPolicy per namespace, Istio strict mTLS between services. (4) **Runtime:** Falco with Falcosidekick for alerting, Tetragon TracingPolicy to enforce kill on critical violations. PSA `restricted` mode at namespace level as a final backstop.
+A: Four layers:
+
+1. **Build:** Distroless base images, multi-stage builds, Trivy scanning in CI blocking on CRITICAL, Cosign keyless signing of all images.
+2. **Admission:** Kyverno ClusterPolicies enforcing non-root, no privilege escalation, drop ALL capabilities, seccomp RuntimeDefault, read-only root FS. Separate Kyverno `verifyImages` policy requiring valid Cosign signature from the CI OIDC issuer. OPA Gatekeeper for complex policies (e.g., no `:latest` tag).
+3. **Network:** Default-deny NetworkPolicy per namespace, Istio strict mTLS between services.
+4. **Runtime:** Falco with Falcosidekick for alerting, Tetragon TracingPolicy to enforce kill on critical violations. PSA `restricted` mode at namespace level as a final backstop.
 
 **Q: A developer says they need `CAP_NET_ADMIN` in their container. How do you evaluate this request?**
-A: First, understand why — what specific operation requires it? `CAP_NET_ADMIN` covers a broad range: creating network interfaces, modifying routing tables, configuring firewalls. Usually the actual need is narrower. Ask: (1) Is this a legitimate system-level operation (e.g., a CNI plugin, a VPN client) or an application-level operation that should be restructured? (2) Can the functionality be moved to an init container that runs with the capability and sets up the network state, allowing the main container to run without it? (3) Is there a Kubernetes mechanism (e.g., HostNetwork: true for specific cases) that satisfies the need more safely? If it's genuinely required, add only `CAP_NET_ADMIN` (not broader capabilities), document the justification, create a PolicyException in Kyverno scoped to this specific workload, and review quarterly.
+A: First, understand why — what specific operation requires it? `CAP_NET_ADMIN` covers a broad range: creating network interfaces, modifying routing tables, configuring firewalls. Usually the actual need is narrower. Ask:
+
+1. Is this a legitimate system-level operation (e.g., a CNI plugin, a VPN client) or an application-level operation that should be restructured?
+2. Can the functionality be moved to an init container that runs with the capability and sets up the network state, allowing the main container to run without it?
+3. Is there a Kubernetes mechanism (e.g., HostNetwork: true for specific cases) that satisfies the need more safely? If it's genuinely required, add only `CAP_NET_ADMIN` (not broader capabilities), document the justification, create a PolicyException in Kyverno scoped to this specific workload, and review quarterly.
 
 ### Advanced / Staff Level
 
 **Q: Design a container security pipeline that achieves SLSA Level 3 compliance for all production images.**
-A: SLSA L3 requires: non-falsifiable provenance, isolated build environment, no credential access in build. Implementation: (1) **Hermetic builds on GitHub Actions:** Use `ubuntu-latest` ephemeral runners. Pin all GitHub Actions to commit SHAs. `permissions: contents: read` only — no write access during build. (2) **Provenance generation:** `actions/attest-build-provenance@v2` generates signed SLSA provenance (L2 built-in, approaching L3 with additional controls). For L3: use SLSA GitHub Generator with `generator_container_slsa3.yml` which runs in an isolated GHA job with `id-token: write` only. (3) **Signing:** Cosign keyless sign using the GitHub OIDC token — recorded in Rekor. (4) **SBOM:** Syft generates CycloneDX SBOM; cosign attests it to the image. (5) **Verification at admission:** Kyverno `verifyImages` policy validates: (a) Cosign signature with expected OIDC issuer and subject pattern, (b) SBOM attestation exists, (c) SLSA provenance attestation exists and `builder.id` matches the expected GitHub Actions workflow URL. Any image without all three attestations is rejected at the admission gate. (6) **Continuous rescan:** Trivy Operator in-cluster rescans all running images daily; CRITICAL findings trigger a PagerDuty alert and a deployment restart to force a new build.
+A: SLSA L3 requires: non-falsifiable provenance, isolated build environment, no credential access in build. Implementation:
+
+1. **Hermetic builds on GitHub Actions:** Use `ubuntu-latest` ephemeral runners. Pin all GitHub Actions to commit SHAs. `permissions: contents: read` only — no write access during build.
+2. **Provenance generation:** `actions/attest-build-provenance@v2` generates signed SLSA provenance (L2 built-in, approaching L3 with additional controls). For L3: use SLSA GitHub Generator with `generator_container_slsa3.yml` which runs in an isolated GHA job with `id-token: write` only.
+3. **Signing:** Cosign keyless sign using the GitHub OIDC token — recorded in Rekor.
+4. **SBOM:** Syft generates CycloneDX SBOM; cosign attests it to the image.
+5. **Verification at admission:** Kyverno `verifyImages` policy validates: (a) Cosign signature with expected OIDC issuer and subject pattern, (b) SBOM attestation exists, (c) SLSA provenance attestation exists and `builder.id` matches the expected GitHub Actions workflow URL. Any image without all three attestations is rejected at the admission gate.
+6. **Continuous rescan:** Trivy Operator in-cluster rescans all running images daily; CRITICAL findings trigger a PagerDuty alert and a deployment restart to force a new build.

@@ -557,15 +557,38 @@ A: There are two separate queues for a listening TCP socket. `tcp_max_syn_backlo
 ### Intermediate
 
 **Q: An application explicitly calls `setsockopt(SO_RCVBUF, 128*1024)`. What are the consequences?**
-A: Three consequences: (1) The socket's receive buffer is set to 128KB (the kernel doubles the value internally for metadata overhead, so the effective value is ~256KB); (2) TCP **auto-tuning is disabled** for this socket — the kernel will not grow the buffer based on measured BDP; (3) The value is capped at `net.core.rmem_max` — if `rmem_max` is 212KB and the app requests 256KB, it gets 212KB. This is the most common source of "I set tcp_rmem to 64MB but my application is still slow" problems. The fix: either remove the explicit `setsockopt` (let auto-tuning work) or increase `rmem_max` to allow the application to set a larger value.
+A: Three consequences:
+
+1. The socket's receive buffer is set to 128KB (the kernel doubles the value internally for metadata overhead, so the effective value is ~256KB)
+2. TCP **auto-tuning is disabled** for this socket — the kernel will not grow the buffer based on measured BDP
+3. The value is capped at `net.core.rmem_max` — if `rmem_max` is 212KB and the app requests 256KB, it gets 212KB. This is the most common source of "I set tcp_rmem to 64MB but my application is still slow" problems. The fix: either remove the explicit `setsockopt` (let auto-tuning work) or increase `rmem_max` to allow the application to set a larger value.
 
 **Q: Your server processes 500K new connections per second and experiences frequent `EADDRINUSE` errors. Diagnose and fix.**
-A: `EADDRINUSE` on outbound connections means ephemeral port exhaustion. Each outbound TCP connection requires a unique `(src_ip, src_port, dst_ip, dst_port)` tuple. With the default port range (32768-60999 = 28,231 ports) and a single destination IP/port, you can only have 28K outbound connections at once. At 500K new/sec with TIME_WAIT lasting 60 seconds, you need 500K × 60 = 30M ports — impossible. Solutions: (1) Widen port range: `sysctl -w net.ipv4.ip_local_port_range="1024 65535"` (gains ~37K ports); (2) Enable `tcp_tw_reuse=1` (allows reuse of TIME_WAIT sockets for new outbound connections); (3) Add multiple source IPs — each source IP gets its own ~64K ports; (4) Use connection pooling in the application to amortize the port cost; (5) Reduce `tcp_fin_timeout` and `tcp_tw_timeout` to reclaim sockets faster.
+A: `EADDRINUSE` on outbound connections means ephemeral port exhaustion. Each outbound TCP connection requires a unique `(src_ip, src_port, dst_ip, dst_port)` tuple. With the default port range (32768-60999 = 28,231 ports) and a single destination IP/port, you can only have 28K outbound connections at once. At 500K new/sec with TIME_WAIT lasting 60 seconds, you need 500K × 60 = 30M ports — impossible. Solutions:
+
+1. Widen port range: `sysctl -w net.ipv4.ip_local_port_range="1024 65535"` (gains ~37K ports)
+2. Enable `tcp_tw_reuse=1` (allows reuse of TIME_WAIT sockets for new outbound connections)
+3. Add multiple source IPs — each source IP gets its own ~64K ports
+4. Use connection pooling in the application to amortize the port cost
+5. Reduce `tcp_fin_timeout` and `tcp_tw_timeout` to reclaim sockets faster.
 
 ### Advanced / Staff Level
 
 **Q: A service achieves 15 Gbps with iperf3 -P 8 but only 3 Gbps with iperf3 -P 1. Explain why and what you would tune.**
-A: Single-flow performance is limited by single-CPU processing. With `-P 1`, a single TCP flow is hashed by RSS to one NIC queue and processed by one CPU. The bottleneck is how fast a single CPU can run the TCP stack — typically limited by: interrupt coalescing, per-packet processing in softirq, and the single CPU's cache bandwidth. With `-P 8` and 8 separate flows, RSS hashes them to 8 different queues on 8 different CPUs — parallelizing the entire stack. To improve single-flow performance: (1) Enable TSO/GSO — the NIC handles segmentation, dramatically reducing per-packet CPU overhead; (2) Increase NAPI budget per device; (3) Use hardware segmentation offload confirmation: `ethtool -k eth0 | grep segmentation`; (4) Enable GRO for the receiving side; (5) Consider Receive Flow Steering (RFS) to ensure the application and its network processing run on the same CPU (cache locality); (6) For the absolute maximum single-flow throughput, enable hardware multi-queue and RPS, and pin the application thread to the same CPU as the NIC's queue that processes its flow.
+A: Single-flow performance is limited by single-CPU processing. With `-P 1`, a single TCP flow is hashed by RSS to one NIC queue and processed by one CPU. The bottleneck is how fast a single CPU can run the TCP stack — typically limited by: interrupt coalescing, per-packet processing in softirq, and the single CPU's cache bandwidth. With `-P 8` and 8 separate flows, RSS hashes them to 8 different queues on 8 different CPUs — parallelizing the entire stack. To improve single-flow performance:
+
+1. Enable TSO/GSO — the NIC handles segmentation, dramatically reducing per-packet CPU overhead
+2. Increase NAPI budget per device
+3. Use hardware segmentation offload confirmation: `ethtool -k eth0 | grep segmentation`
+4. Enable GRO for the receiving side
+5. Consider Receive Flow Steering (RFS) to ensure the application and its network processing run on the same CPU (cache locality)
+6. For the absolute maximum single-flow throughput, enable hardware multi-queue and RPS, and pin the application thread to the same CPU as the NIC's queue that processes its flow.
 
 **Q: Explain TCP auto-tuning in detail: what triggers it, what does it adjust, and what are its failure modes?**
-A: TCP auto-tuning (controlled by `net.ipv4.tcp_moderate_rcvbuf=1`) adjusts each socket's receive buffer dynamically based on the measured bandwidth-delay product. Mechanism: the kernel tracks the actual throughput of each connection in `tcp_rcv_nxt` and measures RTT from ACK timestamps. Every ~200ms, if the current buffer is too small (buffer < 2 × BDP), the kernel doubles the buffer, up to `tcp_rmem` max. Failure modes: (1) Application called `setsockopt(SO_RCVBUF)` — disables auto-tuning for that socket; (2) `tcp_rmem` max set too low — auto-tuning can't scale up enough; (3) Short-lived connections — auto-tuning doesn't have time to ramp up before the transfer ends; large files transferred in <5 RTTs may underperform. (4) `tcp_mem` pressure — when global TCP memory is high, auto-tuning is suspended and all new sockets get minimum buffers; monitor `TcpExtTCPMemoryPressures` in `/proc/net/netstat`. (5) `rmem_max` < `tcp_rmem` max — auto-tuning works internally but if the application tries to read with a buffer check, it may see a mismatch. Monitoring: `nstat -z | grep TcpExtTCPRcvCoalesce` and `ss -ti` showing `rcv_space` growing for a new connection are signs of healthy auto-tuning.
+A: TCP auto-tuning (controlled by `net.ipv4.tcp_moderate_rcvbuf=1`) adjusts each socket's receive buffer dynamically based on the measured bandwidth-delay product. Mechanism: the kernel tracks the actual throughput of each connection in `tcp_rcv_nxt` and measures RTT from ACK timestamps. Every ~200ms, if the current buffer is too small (buffer < 2 × BDP), the kernel doubles the buffer, up to `tcp_rmem` max. Failure modes:
+
+1. Application called `setsockopt(SO_RCVBUF)` — disables auto-tuning for that socket
+2. `tcp_rmem` max set too low — auto-tuning can't scale up enough
+3. Short-lived connections — auto-tuning doesn't have time to ramp up before the transfer ends; large files transferred in <5 RTTs may underperform.
+4. `tcp_mem` pressure — when global TCP memory is high, auto-tuning is suspended and all new sockets get minimum buffers; monitor `TcpExtTCPMemoryPressures` in `/proc/net/netstat`.
+5. `rmem_max` < `tcp_rmem` max — auto-tuning works internally but if the application tries to read with a buffer check, it may see a mismatch. Monitoring: `nstat -z | grep TcpExtTCPRcvCoalesce` and `ss -ti` showing `rcv_space` growing for a new connection are signs of healthy auto-tuning.

@@ -482,12 +482,28 @@ A: GuardDuty analyzes CloudTrail (API calls), VPC Flow Logs (network traffic), R
 ### Intermediate
 
 **Q: How would you restrict S3 access to originate only from within your VPC?**
-A: Two-layer approach: (1) Create an S3 Gateway Endpoint in the VPC — traffic routes through the backbone. (2) Add a bucket policy with a `Deny` statement that has a condition `StringNotEquals: aws:SourceVpce: vpce-xxx` — any request not originating from the specific VPC endpoint is denied. Additionally, add `aws:SourceVpc` condition for defense-in-depth. At the account level, enable S3 Block Public Access to prevent any accidental public access configuration.
+A: Two-layer approach:
+
+1. Create an S3 Gateway Endpoint in the VPC — traffic routes through the backbone.
+2. Add a bucket policy with a `Deny` statement that has a condition `StringNotEquals: aws:SourceVpce: vpce-xxx` — any request not originating from the specific VPC endpoint is denied. Additionally, add `aws:SourceVpc` condition for defense-in-depth. At the account level, enable S3 Block Public Access to prevent any accidental public access configuration.
 
 **Q: How do you investigate an IAM credential compromise with CloudTrail?**
-A: (1) Identify the compromised principal — GuardDuty finding provides the access key and source IP. (2) Look up `AssumeRole` and `GetSessionToken` events for that principal in CloudTrail to understand how they acquired credentials. (3) Enumerate all API calls from that principal in the incident window — sort by EventName to identify data access, IAM changes, and resource creation. (4) Use `GetCallerIdentity` calls to understand which accounts were accessed. (5) Check for `CreateAccessKey` calls indicating the attacker created persistence. Containment: add an inline Deny policy to immediately revoke all sessions (AWS IAM revoke-sessions-last-used pattern).
+A:
+
+1. Identify the compromised principal — GuardDuty finding provides the access key and source IP.
+2. Look up `AssumeRole` and `GetSessionToken` events for that principal in CloudTrail to understand how they acquired credentials.
+3. Enumerate all API calls from that principal in the incident window — sort by EventName to identify data access, IAM changes, and resource creation.
+4. Use `GetCallerIdentity` calls to understand which accounts were accessed.
+5. Check for `CreateAccessKey` calls indicating the attacker created persistence. Containment: add an inline Deny policy to immediately revoke all sessions (AWS IAM revoke-sessions-last-used pattern).
 
 ### Advanced / Staff Level
 
 **Q: Design a defense-in-depth strategy for a multi-account AWS organization handling PCI-DSS data.**
-A: (1) **Account isolation:** Dedicated AWS account for cardholder data environment (CDE) — total account isolation limits blast radius. (2) **SCPs:** Deny CloudTrail disable, GuardDuty disable, VPC Flow Log disable, root key creation across all accounts. Deny any action not required for PCI workloads in the CDE account. (3) **Network:** CDE VPC with no Internet Gateway. All AWS API access via Interface Endpoints with endpoint policies. Transit Gateway to a shared services account for controlled connectivity. No VPC peering to non-CDE accounts. (4) **IAM:** Session policies on all assumed roles. Require MFA for console access. IAM Access Analyzer continuous monitoring. Unused permission detection and automatic remediation. (5) **Detective controls:** GuardDuty + Security Hub + Config all enabled in every region. All logs to immutable logging account with CloudTrail Lake. Macie scanning CDE S3 buckets. (6) **Continuous compliance:** Config Conformance Pack for PCI DSS standard. Failed rules trigger automated remediation via SSM Automation. Security Hub custom insights for PCI control evidence collection.
+A:
+
+1. **Account isolation:** Dedicated AWS account for cardholder data environment (CDE) — total account isolation limits blast radius.
+2. **SCPs:** Deny CloudTrail disable, GuardDuty disable, VPC Flow Log disable, root key creation across all accounts. Deny any action not required for PCI workloads in the CDE account.
+3. **Network:** CDE VPC with no Internet Gateway. All AWS API access via Interface Endpoints with endpoint policies. Transit Gateway to a shared services account for controlled connectivity. No VPC peering to non-CDE accounts.
+4. **IAM:** Session policies on all assumed roles. Require MFA for console access. IAM Access Analyzer continuous monitoring. Unused permission detection and automatic remediation.
+5. **Detective controls:** GuardDuty + Security Hub + Config all enabled in every region. All logs to immutable logging account with CloudTrail Lake. Macie scanning CDE S3 buckets.
+6. **Continuous compliance:** Config Conformance Pack for PCI DSS standard. Failed rules trigger automated remediation via SSM Automation. Security Hub custom insights for PCI control evidence collection.

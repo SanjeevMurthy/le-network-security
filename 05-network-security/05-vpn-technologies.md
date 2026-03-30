@@ -511,7 +511,15 @@ A: Simplicity is a security property. WireGuard has ~4,000 lines of code vs Open
 ### Intermediate
 
 **Q: An AWS site-to-site VPN tunnel is showing as UP but traffic is failing. Walk through your diagnosis.**
-A: Check in order: (1) VPN tunnel state in AWS console — both tunnels UP or only one? (2) Route propagation — does the VGW have the on-prem routes in the route table? Check VGW route propagation is enabled and BGP is exchanging routes (`aws ec2 describe-vpn-connections`). (3) Security Groups — the EC2 instances in the VPC have Security Group rules allowing traffic from the on-prem CIDR? (4) NACLs — subnet-level NACLs might be blocking traffic (remember NACLs are stateless — need explicit inbound AND return traffic rules). (5) On-prem routing — does the on-prem router have a route for the VPC CIDR via the VPN gateway? (6) MTU — try pinging with large packets (`ping -M do -s 1400 <vpc-ip>`) to check for MTU issues. IPSec adds overhead and may require TCP MSS clamping. (7) IKE/IPSec SA status on the on-prem device — are SAs establishing or continuously renegotiating? Check for Phase 2 SA mismatches.
+A: Check in order:
+
+1. VPN tunnel state in AWS console — both tunnels UP or only one?
+2. Route propagation — does the VGW have the on-prem routes in the route table? Check VGW route propagation is enabled and BGP is exchanging routes (`aws ec2 describe-vpn-connections`).
+3. Security Groups — the EC2 instances in the VPC have Security Group rules allowing traffic from the on-prem CIDR?
+4. NACLs — subnet-level NACLs might be blocking traffic (remember NACLs are stateless — need explicit inbound AND return traffic rules).
+5. On-prem routing — does the on-prem router have a route for the VPC CIDR via the VPN gateway?
+6. MTU — try pinging with large packets (`ping -M do -s 1400 <vpc-ip>`) to check for MTU issues. IPSec adds overhead and may require TCP MSS clamping.
+7. IKE/IPSec SA status on the on-prem device — are SAs establishing or continuously renegotiating? Check for Phase 2 SA mismatches.
 
 **Q: What is Perfect Forward Secrecy and why does it matter for VPN security?**
 A: PFS ensures that compromise of long-term private keys does not allow decryption of previously recorded sessions. Without PFS (e.g., RSA key exchange in old TLS 1.2), an attacker can record encrypted sessions today and decrypt them later if they obtain the private key. With PFS (ECDHE in TLS 1.3, or IKEv2 with `pfs = yes`), each session generates fresh ephemeral key pairs. The session key is derived from the ephemeral keys + long-term authentication, and the ephemeral keys are discarded after the session. Even if the long-term private key is compromised, recorded sessions cannot be decrypted because the ephemeral keys no longer exist anywhere.

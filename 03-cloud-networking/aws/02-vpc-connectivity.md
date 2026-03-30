@@ -471,7 +471,12 @@ A: Each VPN connection has two IPsec tunnels terminating in different AWS Availa
 
 **Q: When would you use PrivateLink instead of VPC peering to connect to a service in another VPC?**
 
-A: Use PrivateLink when: (1) the VPCs have overlapping CIDRs (peering is impossible); (2) you want one-way service exposure without giving the consumer access to the entire provider VPC; (3) you're integrating with a SaaS vendor's PrivateLink endpoint service; (4) you need cross-account access where full peering would be too permissive. PrivateLink gives the consumer a private IP in their own VPC subnet; they can only reach the specific service, not probe the provider network.
+A: Use PrivateLink when:
+
+1. the VPCs have overlapping CIDRs (peering is impossible)
+2. you want one-way service exposure without giving the consumer access to the entire provider VPC
+3. you're integrating with a SaaS vendor's PrivateLink endpoint service
+4. you need cross-account access where full peering would be too permissive. PrivateLink gives the consumer a private IP in their own VPC subnet; they can only reach the specific service, not probe the provider network.
 
 **Q: How does a Transit Gateway route table differ from a VPC route table?**
 
@@ -485,4 +490,9 @@ A: Two dedicated Direct Connect connections at 10 Gbps each, from two different 
 
 **Q: A team reports that cross-VPC traffic via Transit Gateway is 3x higher than expected. Walk through investigating and reducing these costs.**
 
-A: First, enable TGW Flow Logs to understand which VPCs are generating the most cross-VPC traffic. Check if traffic patterns match expectations (legitimate service calls) or anomalies. Common causes of unexpectedly high TGW traffic: (1) EC2 instances in VPC-A resolving DNS names to IPs in VPC-B and then making data-plane calls that could be local — check if these should use VPC Endpoints instead; (2) Backup/replication traffic that should stay within a region but is routed through TGW; (3) Monitoring agents sending all telemetry to a collector in another VPC — consider local collectors with aggregated forwarding; (4) NTP traffic flowing across VPCs. For each traffic category, evaluate: VPC Endpoint (avoid TGW entirely for AWS services), colocation of services within the same VPC, or caching. Calculate TGW attachment fee + data processing fee vs. the cost of adding VPC Endpoints or restructuring VPCs.
+A: First, enable TGW Flow Logs to understand which VPCs are generating the most cross-VPC traffic. Check if traffic patterns match expectations (legitimate service calls) or anomalies. Common causes of unexpectedly high TGW traffic:
+
+1. EC2 instances in VPC-A resolving DNS names to IPs in VPC-B and then making data-plane calls that could be local — check if these should use VPC Endpoints instead
+2. Backup/replication traffic that should stay within a region but is routed through TGW
+3. Monitoring agents sending all telemetry to a collector in another VPC — consider local collectors with aggregated forwarding
+4. NTP traffic flowing across VPCs. For each traffic category, evaluate: VPC Endpoint (avoid TGW entirely for AWS services), colocation of services within the same VPC, or caching. Calculate TGW attachment fee + data processing fee vs. the cost of adding VPC Endpoints or restructuring VPCs.

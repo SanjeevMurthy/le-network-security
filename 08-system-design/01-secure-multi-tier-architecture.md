@@ -379,15 +379,36 @@ A: CloudFront injects a custom HTTP header (e.g., `X-Origin-Secret: <token>`) on
 A: Multi-AZ maintains a synchronous standby replica in a different AZ. Replication is synchronous — a write is not acknowledged until it is committed on both primary and standby. On primary failure, RDS flips the DNS CNAME of the endpoint from the primary to the standby within ~60-120 seconds. The application must handle this: database connection pools should reconnect on connection errors with exponential backoff. The DNS TTL for RDS endpoints is 5 seconds, so connections drain within ~2 minutes after the CNAME update.
 
 **Q: How would you design the auto-scaling policy to handle a flash sale (known spike)?**
-A: Three-part strategy: (1) **Scheduled scaling** — add capacity 15 minutes before the known event start to avoid scale-out latency during the initial spike; (2) **Target tracking** (CPU 70%) handles sustained and organic load growth; (3) **Predictive scaling** (ASG feature using ML on historical data) pre-provisions capacity. Also: pre-warm the ALB by requesting an increase from AWS support before large events, since ALB scales internally and there can be a brief period where it cannot handle a sudden 10x spike.
+A: Three-part strategy:
+
+1. **Scheduled scaling** — add capacity 15 minutes before the known event start to avoid scale-out latency during the initial spike
+2. **Target tracking** (CPU 70%) handles sustained and organic load growth
+3. **Predictive scaling** (ASG feature using ML on historical data) pre-provisions capacity. Also: pre-warm the ALB by requesting an increase from AWS support before large events, since ALB scales internally and there can be a brief period where it cannot handle a sudden 10x spike.
 
 ### Advanced / Staff Level
 
 **Q: A PCI auditor asks for evidence that no cardholder data can be exfiltrated from the RDS isolated subnet. How do you prove it?**
-A: Present multiple controls: (1) Route table for isolated subnet has no 0.0.0.0/0 route — only explicit routes to VPC-internal CIDR; (2) Security Group on RDS has no outbound rules permitting internet destinations; (3) VPC Flow Logs showing all rejected outbound attempts from isolated subnet; (4) CloudTrail showing no changes to the RDS Security Group outside approved change windows; (5) AWS Config rule `vpc-sg-open-only-to-authorized-ports` alerting on any SG modification; (6) GuardDuty findings for any anomalous RDS activity. Defense in depth means no single control needs to be perfect.
+A: Present multiple controls:
+
+1. Route table for isolated subnet has no 0.0.0.0/0 route — only explicit routes to VPC-internal CIDR
+2. Security Group on RDS has no outbound rules permitting internet destinations
+3. VPC Flow Logs showing all rejected outbound attempts from isolated subnet
+4. CloudTrail showing no changes to the RDS Security Group outside approved change windows
+5. AWS Config rule `vpc-sg-open-only-to-authorized-ports` alerting on any SG modification
+6. GuardDuty findings for any anomalous RDS activity. Defense in depth means no single control needs to be perfect.
 
 **Q: The application is growing 5x. At what point does RDS Multi-AZ become the bottleneck, and what is your migration path?**
-A: Single RDS Multi-AZ instance typically handles 5K-20K TPS depending on query complexity and instance size. At 5x current load, profile the bottleneck first (CPU, I/O, connections, or lock contention). Migration path: (1) Add **RDS Proxy** to pool connections and reduce connection overhead; (2) Add **read replicas** and redirect read traffic from the application (requires read/write splitting in app or using RDS Proxy read endpoint); (3) Migrate to **Aurora PostgreSQL** for up to 15 read replicas and faster failover (~30s vs 90s); (4) At extreme scale, introduce **PgBouncer** in front of Aurora, or consider **Citus** for horizontal sharding. Each step requires application changes and careful blue-green migration.
+A: Single RDS Multi-AZ instance typically handles 5K-20K TPS depending on query complexity and instance size. At 5x current load, profile the bottleneck first (CPU, I/O, connections, or lock contention). Migration path:
+
+1. Add **RDS Proxy** to pool connections and reduce connection overhead
+2. Add **read replicas** and redirect read traffic from the application (requires read/write splitting in app or using RDS Proxy read endpoint)
+3. Migrate to **Aurora PostgreSQL** for up to 15 read replicas and faster failover (~30s vs 90s)
+4. At extreme scale, introduce **PgBouncer** in front of Aurora, or consider **Citus** for horizontal sharding. Each step requires application changes and careful blue-green migration.
 
 **Q: How would you design a zero-downtime database schema migration for a PCI-scoped system with this architecture?**
-A: Use the expand-contract pattern: (1) **Expand** — deploy a schema migration that adds new columns/tables but does not remove anything; run this while old code is still live; (2) **Migrate** — deploy new application code that writes to both old and new schema, and reads from new (dual-write period); (3) **Backfill** — background job copies existing data to new schema; (4) **Contract** — once new code is fully deployed and verified, remove old columns. For PCI: all schema changes are tracked in CloudTrail (DDL via pgaudit), and the change is documented in the change management system. Never run a migration that locks a table for more than a few milliseconds in production — use `pg_repack` or `pg_online_schema_change` for table rewrites.
+A: Use the expand-contract pattern:
+
+1. **Expand** — deploy a schema migration that adds new columns/tables but does not remove anything; run this while old code is still live
+2. **Migrate** — deploy new application code that writes to both old and new schema, and reads from new (dual-write period)
+3. **Backfill** — background job copies existing data to new schema
+4. **Contract** — once new code is fully deployed and verified, remove old columns. For PCI: all schema changes are tracked in CloudTrail (DDL via pgaudit), and the change is documented in the change management system. Never run a migration that locks a table for more than a few milliseconds in production — use `pg_repack` or `pg_online_schema_change` for table rewrites.

@@ -540,12 +540,30 @@ A: Regular RBAC is a permanent assignment — the user always has the role. PIM 
 ### Intermediate
 
 **Q: How would you prevent lateral movement from a compromised AKS pod in Azure?**
-A: Multiple layers: (1) **Network:** AKS with Calico NetworkPolicy default-deny; pods can only reach explicitly allowed endpoints. Azure CNI with Network Policy enforced at the node level. (2) **Identity:** Workload Identity with a dedicated Managed Identity per workload scoped to minimum RBAC. If a pod's identity is compromised, the blast radius is limited to that identity's narrow permissions. (3) **Runtime:** Defender for Containers running in the cluster — detects anomalous process execution and network connections in real-time. (4) **API restrictions:** AKS authorized IP ranges limiting which networks can reach the Kubernetes API server. (5) **Admission:** Azure Policy add-on enforcing Pod Security Standards.
+A: Multiple layers:
+
+1. **Network:** AKS with Calico NetworkPolicy default-deny; pods can only reach explicitly allowed endpoints. Azure CNI with Network Policy enforced at the node level.
+2. **Identity:** Workload Identity with a dedicated Managed Identity per workload scoped to minimum RBAC. If a pod's identity is compromised, the blast radius is limited to that identity's narrow permissions.
+3. **Runtime:** Defender for Containers running in the cluster — detects anomalous process execution and network connections in real-time.
+4. **API restrictions:** AKS authorized IP ranges limiting which networks can reach the Kubernetes API server.
+5. **Admission:** Azure Policy add-on enforcing Pod Security Standards.
 
 **Q: A Sentinel alert fires for "impossible travel." Walk through your response.**
-A: (1) **Validate:** Check if the user is on a VPN or using a proxy — common false positive. Query the sign-in log for device details, conditional access results, and risk score. (2) **Correlate:** Look at all other activity from that user in the same timeframe — did they access sensitive resources, create service principals, or modify RBAC assignments? (3) **Contain if confirmed:** Disable the Entra ID account immediately (blocks new sign-ins). Revoke refresh tokens (`revokeSignInSessions` Microsoft Graph API). If evidence of privilege abuse, activate PIM break-glass to investigate with elevated access. (4) **Investigate:** Check all Azure Activity Log entries for the account. Review Key Vault access logs. Check for new service principal creation or RBAC assignments. (5) **Recover:** Password reset with MFA re-enrollment. Review CA policies that might have allowed the sign-in.
+A:
+
+1. **Validate:** Check if the user is on a VPN or using a proxy — common false positive. Query the sign-in log for device details, conditional access results, and risk score.
+2. **Correlate:** Look at all other activity from that user in the same timeframe — did they access sensitive resources, create service principals, or modify RBAC assignments?
+3. **Contain if confirmed:** Disable the Entra ID account immediately (blocks new sign-ins). Revoke refresh tokens (`revokeSignInSessions` Microsoft Graph API). If evidence of privilege abuse, activate PIM break-glass to investigate with elevated access.
+4. **Investigate:** Check all Azure Activity Log entries for the account. Review Key Vault access logs. Check for new service principal creation or RBAC assignments.
+5. **Recover:** Password reset with MFA re-enrollment. Review CA policies that might have allowed the sign-in.
 
 ### Advanced / Staff Level
 
 **Q: Design a Sentinel detection strategy for detecting Azure AD compromise before an attacker achieves persistence.**
-A: Focus on the attack progression timeline: (1) **Initial access indicators:** Sign-in risk elevation (Entra ID Protection feeds Sentinel), impossible travel, unfamiliar sign-in properties (new ASN, new device). Analytics rule correlating sign-in risk + new device + sensitive app access within 30 minutes. (2) **Persistence indicators:** New service principal creation, new OAuth app consent, new directory role assignment, new Conditional Access named location added. Any of these within 2 hours of a risky sign-in should fire a High incident. (3) **Privilege escalation indicators:** PIM activation outside business hours, PIM activation for Global Admin without prior pattern, direct RBAC assignment bypassing PIM. (4) **Lateral movement indicators:** Service principal signing in from new IP, Managed Identity used from unexpected network source (compare against baseline using ML-based analytics), new Azure resource deployment in unexpected regions/subscriptions. (5) **Fusion rules:** Sentinel's ML Fusion engine correlates signals across these stages to detect multi-stage attacks that individual rules would miss. Tune fusion sensitivity based on your baseline noise level.
+A: Focus on the attack progression timeline:
+
+1. **Initial access indicators:** Sign-in risk elevation (Entra ID Protection feeds Sentinel), impossible travel, unfamiliar sign-in properties (new ASN, new device). Analytics rule correlating sign-in risk + new device + sensitive app access within 30 minutes.
+2. **Persistence indicators:** New service principal creation, new OAuth app consent, new directory role assignment, new Conditional Access named location added. Any of these within 2 hours of a risky sign-in should fire a High incident.
+3. **Privilege escalation indicators:** PIM activation outside business hours, PIM activation for Global Admin without prior pattern, direct RBAC assignment bypassing PIM.
+4. **Lateral movement indicators:** Service principal signing in from new IP, Managed Identity used from unexpected network source (compare against baseline using ML-based analytics), new Azure resource deployment in unexpected regions/subscriptions.
+5. **Fusion rules:** Sentinel's ML Fusion engine correlates signals across these stages to detect multi-stage attacks that individual rules would miss. Tune fusion sensitivity based on your baseline noise level.

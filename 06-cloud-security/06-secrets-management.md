@@ -620,12 +620,32 @@ A: Envelope encryption uses two levels of keys: a Data Encryption Key (DEK) that
 ### Intermediate
 
 **Q: How would you implement zero-downtime secret rotation for a database password?**
-A: Three components: (1) **Dual-credential rotation:** During rotation, create the new DB user first while keeping the old user valid. After all applications have switched to the new credentials, drop the old user. This eliminates any window where neither credential is valid. (2) **ESO with short refreshInterval (5m):** Picks up the new secret from AWS Secrets Manager quickly after rotation. (3) **Stakater Reloader:** Triggers a rolling restart of the Deployment when the K8s Secret changes — rolling restart ensures at most one pod is restarting at a time, maintaining availability. The sequence: rotate → both credentials valid → ESO picks up new secret → Reloader rolling restart → all pods using new credential → drop old credential. Total safe window: 5-10 minutes with no downtime.
+A: Three components:
+
+1. **Dual-credential rotation:** During rotation, create the new DB user first while keeping the old user valid. After all applications have switched to the new credentials, drop the old user. This eliminates any window where neither credential is valid.
+2. **ESO with short refreshInterval (5m):** Picks up the new secret from AWS Secrets Manager quickly after rotation.
+3. **Stakater Reloader:** Triggers a rolling restart of the Deployment when the K8s Secret changes — rolling restart ensures at most one pod is restarting at a time, maintaining availability. The sequence: rotate → both credentials valid → ESO picks up new secret → Reloader rolling restart → all pods using new credential → drop old credential. Total safe window: 5-10 minutes with no downtime.
 
 **Q: A developer accidentally committed an AWS access key to a public GitHub repository. Walk through your response.**
-A: (1) **Immediate containment (< 2 minutes):** Deactivate the access key in AWS IAM: `aws iam update-access-key --access-key-id $KEY_ID --status Inactive`. Do NOT delete immediately — you need it for forensics. (2) **Scope assessment:** Use CloudTrail to find all API calls made with that key from the git commit time onward. `aws cloudtrail lookup-events --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=$KEY_ID`. (3) **Assess blast radius:** What permissions did this key have? Look at the IAM policies attached to the user/role. (4) **Forensic preservation:** Export all CloudTrail events for the key to immutable storage. (5) **Clean up:** Remove the access key from git history (`git filter-branch` or BFP Repo Cleaner). Force-push to GitHub. Enable git-secrets or truffleHog pre-commit hooks. (6) **Remediate:** Switch the workload to OIDC federation / IRSA — eliminate static credentials entirely. (7) **Prevent recurrence:** Add `trufflehog` to CI to block future credential commits. Add AWS `git-secrets` as pre-commit hook.
+A:
+
+1. **Immediate containment (< 2 minutes):** Deactivate the access key in AWS IAM: `aws iam update-access-key --access-key-id $KEY_ID --status Inactive`. Do NOT delete immediately — you need it for forensics.
+2. **Scope assessment:** Use CloudTrail to find all API calls made with that key from the git commit time onward. `aws cloudtrail lookup-events --lookup-attributes AttributeKey=AccessKeyId,AttributeValue=$KEY_ID`.
+3. **Assess blast radius:** What permissions did this key have? Look at the IAM policies attached to the user/role.
+4. **Forensic preservation:** Export all CloudTrail events for the key to immutable storage.
+5. **Clean up:** Remove the access key from git history (`git filter-branch` or BFP Repo Cleaner). Force-push to GitHub. Enable git-secrets or truffleHog pre-commit hooks.
+6. **Remediate:** Switch the workload to OIDC federation / IRSA — eliminate static credentials entirely.
+7. **Prevent recurrence:** Add `trufflehog` to CI to block future credential commits. Add AWS `git-secrets` as pre-commit hook.
 
 ### Advanced / Staff Level
 
 **Q: Design a secrets management architecture for a multi-region, multi-tenant SaaS platform on Kubernetes.**
-A: (1) **Secret store:** AWS Secrets Manager with cross-region replication enabled for disaster recovery. Separate secret paths per tenant: `tenants/{tenant-id}/database`, `tenants/{tenant-id}/api-keys`. (2) **IAM architecture:** One IAM role per tenant workload using IRSA. Each role's resource policy scoped to `arn:aws:secretsmanager:*:*:secret:tenants/{tenant-id}/*` — cross-tenant access structurally impossible. (3) **K8s namespace isolation:** One namespace per tenant. ESO ClusterSecretStore with IRSA; ExternalSecrets per tenant namespace can only reference their tenant's secret path (enforced via Kyverno policy validating ExternalSecret remote key prefixes). (4) **Dynamic secrets for databases:** Each tenant's database connection uses Vault dynamic credentials rather than static passwords — unique per-pod credentials with 1-hour leases. (5) **Rotation:** AWS Secrets Manager auto-rotation + ESO 5-minute refresh + Reloader for static secrets. Vault handles rotation automatically for dynamic secrets. (6) **Audit:** All Secrets Manager and Vault access logs forwarded to CloudWatch Logs + S3 for long-term retention. Athena queries for per-tenant access audit. Alert on cross-tenant access attempts. (7) **DR:** In region failover scenario, Secrets Manager replicated copies are readable immediately. ESO ClusterSecretStore regional endpoint configuration switches to secondary region.
+A:
+
+1. **Secret store:** AWS Secrets Manager with cross-region replication enabled for disaster recovery. Separate secret paths per tenant: `tenants/{tenant-id}/database`, `tenants/{tenant-id}/api-keys`.
+2. **IAM architecture:** One IAM role per tenant workload using IRSA. Each role's resource policy scoped to `arn:aws:secretsmanager:*:*:secret:tenants/{tenant-id}/*` — cross-tenant access structurally impossible.
+3. **K8s namespace isolation:** One namespace per tenant. ESO ClusterSecretStore with IRSA; ExternalSecrets per tenant namespace can only reference their tenant's secret path (enforced via Kyverno policy validating ExternalSecret remote key prefixes).
+4. **Dynamic secrets for databases:** Each tenant's database connection uses Vault dynamic credentials rather than static passwords — unique per-pod credentials with 1-hour leases.
+5. **Rotation:** AWS Secrets Manager auto-rotation + ESO 5-minute refresh + Reloader for static secrets. Vault handles rotation automatically for dynamic secrets.
+6. **Audit:** All Secrets Manager and Vault access logs forwarded to CloudWatch Logs + S3 for long-term retention. Athena queries for per-tenant access audit. Alert on cross-tenant access attempts.
+7. **DR:** In region failover scenario, Secrets Manager replicated copies are readable immediately. ESO ClusterSecretStore regional endpoint configuration switches to secondary region.

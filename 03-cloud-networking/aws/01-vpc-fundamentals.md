@@ -535,4 +535,10 @@ A: This pattern suggests NAT Gateway connection table exhaustion or SNAT port ex
 
 **Q: How do you prevent a misconfigured application from exfiltrating data through DNS (DNS tunneling) in a VPC?**
 
-A: Multiple controls in depth: (1) Route 53 Resolver DNS Firewall — create a rule group that blocks known-malicious domains and domains with unusual query patterns; (2) Enable Route 53 Resolver query logging to CloudWatch — query logs capture every DNS query for analysis; (3) VPC Interface Endpoint for Route 53 Resolver keeps DNS queries inside the VPC without going through the DNS server at VPC+2; (4) Use VPC Flow Logs to detect anomalous traffic patterns on UDP/53; (5) GuardDuty has a specific finding type `Backdoor:EC2/DNSDataExfiltration` that uses ML to detect DNS tunneling patterns. The key detection signal is high-entropy subdomain names (e.g., `a3f8k2m9p.attacker.com`) or unusually large TXT record responses.
+A: Multiple controls in depth:
+
+1. Route 53 Resolver DNS Firewall — create a rule group that blocks known-malicious domains and domains with unusual query patterns
+2. Enable Route 53 Resolver query logging to CloudWatch — query logs capture every DNS query for analysis
+3. VPC Interface Endpoint for Route 53 Resolver keeps DNS queries inside the VPC without going through the DNS server at VPC+2
+4. Use VPC Flow Logs to detect anomalous traffic patterns on UDP/53
+5. GuardDuty has a specific finding type `Backdoor:EC2/DNSDataExfiltration` that uses ML to detect DNS tunneling patterns. The key detection signal is high-entropy subdomain names (e.g., `a3f8k2m9p.attacker.com`) or unusually large TXT record responses.

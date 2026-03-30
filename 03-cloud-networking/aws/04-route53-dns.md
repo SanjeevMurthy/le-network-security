@@ -538,7 +538,15 @@ A: Geolocation routing (not latency-based). Latency-based routing selects the re
 
 **Q: Design a DNS architecture for a global SaaS application that needs: regional failover under 2 minutes, GDPR compliance (EU data stays in EU), canary deploys, and hybrid on-premises connectivity.**
 
-A: Public hosted zone with layered routing: (1) Geolocation records for EU traffic → EU ALB, with a Route 53 health check. Behind the EU ALB, use weighted target groups (90/10) for canary deploys — this is ALB-level, not DNS-level, to avoid DNS propagation delays for canary rollback. (2) Default geolocation → US ALB with same canary pattern. (3) Both health checks use 10s interval, threshold 3, probing from 3 regions. TTL = 60s. Total failover time ≤ 30s detection + 60s TTL = 90 seconds. (4) For hybrid on-premises: Route 53 Resolver outbound endpoint with forwarding rules for `corp.internal` → on-premises DNS. Private hosted zone for `internal.saas.com` with split-horizon for internal service discovery. (5) DNSSEC enabled on public zone with KSK in KMS (with key rotation policy). (6) Resolver DNS Firewall on all VPCs blocking threat intel feeds. (7) All DNS queries logged to S3 for 1 year retention.
+A: Public hosted zone with layered routing:
+
+1. Geolocation records for EU traffic → EU ALB, with a Route 53 health check. Behind the EU ALB, use weighted target groups (90/10) for canary deploys — this is ALB-level, not DNS-level, to avoid DNS propagation delays for canary rollback.
+2. Default geolocation → US ALB with same canary pattern.
+3. Both health checks use 10s interval, threshold 3, probing from 3 regions. TTL = 60s. Total failover time ≤ 30s detection + 60s TTL = 90 seconds.
+4. For hybrid on-premises: Route 53 Resolver outbound endpoint with forwarding rules for `corp.internal` → on-premises DNS. Private hosted zone for `internal.saas.com` with split-horizon for internal service discovery.
+5. DNSSEC enabled on public zone with KSK in KMS (with key rotation policy).
+6. Resolver DNS Firewall on all VPCs blocking threat intel feeds.
+7. All DNS queries logged to S3 for 1 year retention.
 
 **Q: A DNS outage at Dyn in 2016 took down major internet services. How would you design Route 53 usage to survive an equivalent AWS Route 53 outage?**
 

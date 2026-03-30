@@ -511,13 +511,22 @@ A: Create two target groups — stable and canary. Configure the ALB listener's 
 
 **Q: A backend EC2 instance is passing ALB health checks but returning 500 errors for real requests. How do you detect and auto-eject it?**
 
-A: ALB health checks can only verify the health check endpoint (e.g., `/health`). Real requests hit `/api/...` paths which can return 500s. To detect unhealthy targets in production traffic: (1) Check CloudWatch per-target metrics (`HealthyHostCount`, `HTTPCode_Target_5XX_Count` per target); (2) Use ALB access logs with `target_ip` field to identify the failing instance; (3) Configure Auto Scaling Group health checks based on ALB health — after repeated 5xx, trigger instance replacement; (4) At the application level, implement a `/health` endpoint that actually tests dependencies (DB connectivity, cache). If any dependency fails, return 503 — this makes the health check meaningful.
+A: ALB health checks can only verify the health check endpoint (e.g., `/health`). Real requests hit `/api/...` paths which can return 500s. To detect unhealthy targets in production traffic:
+
+1. Check CloudWatch per-target metrics (`HealthyHostCount`, `HTTPCode_Target_5XX_Count` per target)
+2. Use ALB access logs with `target_ip` field to identify the failing instance
+3. Configure Auto Scaling Group health checks based on ALB health — after repeated 5xx, trigger instance replacement
+4. At the application level, implement a `/health` endpoint that actually tests dependencies (DB connectivity, cache). If any dependency fails, return 503 — this makes the health check meaningful.
 
 ### Advanced / Staff Level
 
 **Q: Explain how you would design a zero-downtime deployment pipeline for an ALB-fronted service with a mix of short-lived API requests and long-lived WebSocket connections.**
 
-A: Two separate target groups: one for REST API (deregistration delay: 30s) and one for WebSocket connections (deregistration delay: 300s). ALB listener routes based on the `Upgrade: websocket` header to the WebSocket TG. During deployment: (1) Deregister old instances from the API TG — after 30s, API connections drain; (2) The WebSocket TG drains slowly — new instances accept new connections while old instances finish existing WebSocket sessions (up to 300s); (3) Use rolling deployment (not blue-green) so new instances absorb new WebSocket connections immediately. Monitor `ActiveConnectionCount` metric per target group to confirm draining. For very long-lived WebSocket connections (> 5 minutes), implement client-side reconnection logic — connections will eventually be terminated and clients must gracefully reconnect to a new instance.
+A: Two separate target groups: one for REST API (deregistration delay: 30s) and one for WebSocket connections (deregistration delay: 300s). ALB listener routes based on the `Upgrade: websocket` header to the WebSocket TG. During deployment:
+
+1. Deregister old instances from the API TG — after 30s, API connections drain
+2. The WebSocket TG drains slowly — new instances accept new connections while old instances finish existing WebSocket sessions (up to 300s)
+3. Use rolling deployment (not blue-green) so new instances absorb new WebSocket connections immediately. Monitor `ActiveConnectionCount` metric per target group to confirm draining. For very long-lived WebSocket connections (> 5 minutes), implement client-side reconnection logic — connections will eventually be terminated and clients must gracefully reconnect to a new instance.
 
 **Q: How does WAF integrate with ALB at the network level, and what are the performance implications?**
 

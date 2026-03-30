@@ -589,7 +589,10 @@ A: VPC CNI assigns secondary IPs from ENIs attached to the EC2 node directly to 
 
 **Q: What is the maximum pod limit on an m5.large instance with standard VPC CNI?**
 
-A: (3 ENIs × (10 IPs per ENI - 1)) + 2 = (3 × 9) + 2 = 29 pods. With prefix delegation: (3 × (10-1) × 16) + 2 = 434 pods.
+A: (3 ENIs × (10 IPs per ENI - 1)) + 2 = (3 × 9) + 2 = 29 pods. With prefix delegation: (3 × (10-
+
+1. ×
+2. + 2 = 434 pods.
 
 **Q: What does ndots:5 mean and why is it a problem?**
 
@@ -599,7 +602,12 @@ A: `ndots:5` in `/etc/resolv.conf` means names with fewer than 5 dots are treate
 
 **Q: A node has available CPU and memory but pods are failing to schedule with "Too many pods." How do you fix this?**
 
-A: The pod limit is per instance type (ENI count × IPs per ENI - 1 + 2). For m5.xlarge it's 58 pods. Solutions: (1) Enable prefix delegation on VPC CNI — /28 blocks per ENI slot increase capacity to 898 pods on m5.xlarge; (2) Use larger instances with more ENIs (m5.4xlarge: 234 pods, m5.24xlarge: 737 pods); (3) Switch to instance types with more IPs per ENI; (4) Reduce pod count via rightsizing — many over-provisioned pods. Prefix delegation is usually the right first step — it's a configuration change, not a node replacement.
+A: The pod limit is per instance type (ENI count × IPs per ENI - 1 + 2). For m5.xlarge it's 58 pods. Solutions:
+
+1. Enable prefix delegation on VPC CNI — /28 blocks per ENI slot increase capacity to 898 pods on m5.xlarge
+2. Use larger instances with more ENIs (m5.4xlarge: 234 pods, m5.24xlarge: 737 pods)
+3. Switch to instance types with more IPs per ENI
+4. Reduce pod count via rightsizing — many over-provisioned pods. Prefix delegation is usually the right first step — it's a configuration change, not a node replacement.
 
 **Q: How does the AWS Load Balancer Controller differ between IP mode and instance mode for ALB targets?**
 
@@ -609,8 +617,23 @@ A: Instance mode: ALB targets the EC2 node's NodePort. Traffic goes ALB → Node
 
 **Q: Your EKS cluster has 200 nodes and is experiencing CoreDNS latency spikes that correlate with batch job deployments. How do you investigate and fix it?**
 
-A: Investigation: (1) CoreDNS Prometheus metrics on `:9153` — check `coredns_dns_request_duration_seconds` histogram spikes; look at `coredns_dns_requests_total` by type (A, AAAA, errors). (2) Identify ndots:5 amplification: if batch jobs make many external DNS calls to `api.external.com` (2 dots), each call generates 4 CoreDNS queries instead of 1. (3) Check if batch job pods have dnsConfig optimization. Fix strategy: (1) Deploy NodeLocal DNSCache — a DaemonSet running a DNS cache on each node (using 169.254.20.10 link-local IP); this intercepts DNS queries before they reach CoreDNS, handling cache hits locally; (2) Scale CoreDNS during batch windows using KEDA or a scheduled HPA; (3) Add `ndots:2` to all batch job pod specs; (4) Use FQDNs with trailing dots in batch job configurations. NodeLocal DNSCache typically reduces CoreDNS load by 60-70% by serving cached responses locally.
+A: Investigation:
+
+1. CoreDNS Prometheus metrics on `:9153` — check `coredns_dns_request_duration_seconds` histogram spikes; look at `coredns_dns_requests_total` by type (A, AAAA, errors).
+2. Identify ndots:5 amplification: if batch jobs make many external DNS calls to `api.external.com` (2 dots), each call generates 4 CoreDNS queries instead of 1.
+3. Check if batch job pods have dnsConfig optimization. Fix strategy:
+4. Deploy NodeLocal DNSCache — a DaemonSet running a DNS cache on each node (using 169.254.20.10 link-local IP); this intercepts DNS queries before they reach CoreDNS, handling cache hits locally
+5. Scale CoreDNS during batch windows using KEDA or a scheduled HPA
+6. Add `ndots:2` to all batch job pod specs
+7. Use FQDNs with trailing dots in batch job configurations. NodeLocal DNSCache typically reduces CoreDNS load by 60-70% by serving cached responses locally.
 
 **Q: Design an EKS network architecture for a multi-tenant platform where different tenant pods must have strict network isolation, separate security group policies, and shared cluster infrastructure.**
 
-A: Namespace-per-tenant model with Defense-in-Depth: (1) VPC CNI with Security Groups for Pods — each tenant namespace has a dedicated security group; pods in that namespace get the tenant SG via SecurityGroupPolicy CRD; tenants cannot communicate directly even on the same node. (2) Kubernetes NetworkPolicy — default-deny in each namespace; explicit allow for intra-tenant traffic; deny cross-tenant traffic at L3/L4. (3) Cilium as CNI — enables L7 NetworkPolicy (HTTP method/path level) for API-level isolation; provides native network observability per tenant. (4) Separate node groups per tenant tier (Spot for batch, On-Demand for production) with node selectors and taints/tolerations; tenant workloads are physically separated on different nodes, eliminating cross-pod attack surface. (5) Separate ALBs per tenant (using ALB group.name annotation to segregate) so load balancer logs and WAF rules are tenant-scoped. (6) OPA/Gatekeeper policies enforce namespace-based network policy requirements — new namespaces automatically get default-deny NetworkPolicy applied via admission webhook.
+A: Namespace-per-tenant model with Defense-in-Depth:
+
+1. VPC CNI with Security Groups for Pods — each tenant namespace has a dedicated security group; pods in that namespace get the tenant SG via SecurityGroupPolicy CRD; tenants cannot communicate directly even on the same node.
+2. Kubernetes NetworkPolicy — default-deny in each namespace; explicit allow for intra-tenant traffic; deny cross-tenant traffic at L3/L4.
+3. Cilium as CNI — enables L7 NetworkPolicy (HTTP method/path level) for API-level isolation; provides native network observability per tenant.
+4. Separate node groups per tenant tier (Spot for batch, On-Demand for production) with node selectors and taints/tolerations; tenant workloads are physically separated on different nodes, eliminating cross-pod attack surface.
+5. Separate ALBs per tenant (using ALB group.name annotation to segregate) so load balancer logs and WAF rules are tenant-scoped.
+6. OPA/Gatekeeper policies enforce namespace-based network policy requirements — new namespaces automatically get default-deny NetworkPolicy applied via admission webhook.

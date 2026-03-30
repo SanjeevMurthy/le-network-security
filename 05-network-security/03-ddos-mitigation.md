@@ -435,7 +435,13 @@ A: SYN cookies eliminate the need to allocate a SYN queue entry for each incomin
 ### Intermediate
 
 **Q: How does DNS amplification work and what defenses exist at each layer?**
-A: Attacker sends DNS queries to open resolvers with the victim's IP as the spoofed source. A 40-byte query returns a 4KB DNSKEY response — 100x amplification. Defenses layered: (1) ISP layer: BCP38 prevents IP spoofing — without spoofing, the attacker receives the amplified traffic themselves. (2) DNS resolver layer: restrict recursion to known clients, disable `ANY` query type (Response Rate Limiting in BIND/Unbound). (3) Scrubbing center: Cloudflare/Akamai identify amplification patterns (response > query) and filter upstream. (4) Target network: rate limit inbound UDP from known DNS servers, block UDP > 512 bytes on port 53 if you don't need DNSSEC. (5) AWS: Shield Standard detects UDP reflection automatically; Shield Advanced provides near-real-time detection and automated mitigation with DRT support.
+A: Attacker sends DNS queries to open resolvers with the victim's IP as the spoofed source. A 40-byte query returns a 4KB DNSKEY response — 100x amplification. Defenses layered:
+
+1. ISP layer: BCP38 prevents IP spoofing — without spoofing, the attacker receives the amplified traffic themselves.
+2. DNS resolver layer: restrict recursion to known clients, disable `ANY` query type (Response Rate Limiting in BIND/Unbound).
+3. Scrubbing center: Cloudflare/Akamai identify amplification patterns (response > query) and filter upstream.
+4. Target network: rate limit inbound UDP from known DNS servers, block UDP > 512 bytes on port 53 if you don't need DNSSEC.
+5. AWS: Shield Standard detects UDP reflection automatically; Shield Advanced provides near-real-time detection and automated mitigation with DRT support.
 
 ### Advanced / Staff Level
 

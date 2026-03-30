@@ -426,15 +426,39 @@ A: SPIRE solves this through node attestation and workload attestation. Node att
 A: With `failurePolicy: Fail`, if the Gatekeeper webhook is unavailable, all new resource admissions (pod creates, deployments, config changes) will fail until Gatekeeper recovers. This means no new deployments can happen during an outage. The trade-off is intentional for security-critical policies (e.g., no privileged containers) — allowing deployments to proceed without security validation is worse than a brief deployment freeze. Mitigation: run Gatekeeper with 3+ replicas across AZs, and use `failurePolicy: Ignore` for non-security-critical policies (e.g., labeling conventions) to avoid blocking deployments for cosmetic violations.
 
 **Q: A new microservice team wants to join the mesh. Walk me through the onboarding process.**
-A: (1) Namespace creation with standard labels (`istio-injection: enabled`) and default-deny NetworkPolicy; (2) SPIRE registration entries created for the new service's ServiceAccount; (3) OPA Gatekeeper automatically validates all resources on admission; (4) Start with Istio PERMISSIVE mode for 1 week to observe actual traffic patterns using Hubble; (5) Define AuthorizationPolicy ALLOW rules based on observed traffic; (6) Switch to STRICT PeerAuthentication; (7) Set up Prometheus alerts for the service's error rate and mTLS status; (8) Create ExternalSecret for any AWS Secrets Manager dependencies. The whole process is codified as a Terraform module + Helm chart.
+A:
+
+1. Namespace creation with standard labels (`istio-injection: enabled`) and default-deny NetworkPolicy
+2. SPIRE registration entries created for the new service's ServiceAccount
+3. OPA Gatekeeper automatically validates all resources on admission
+4. Start with Istio PERMISSIVE mode for 1 week to observe actual traffic patterns using Hubble
+5. Define AuthorizationPolicy ALLOW rules based on observed traffic
+6. Switch to STRICT PeerAuthentication
+7. Set up Prometheus alerts for the service's error rate and mTLS status
+8. Create ExternalSecret for any AWS Secrets Manager dependencies. The whole process is codified as a Terraform module + Helm chart.
 
 ### Advanced / Staff Level
 
 **Q: How do you detect and respond to a compromised pod in a zero-trust mesh?**
-A: Detection has multiple layers: (1) **Hubble/Cilium** detects flows to services not in the AuthorizationPolicy ALLOW list (these are blocked and logged); (2) **Falco** or **Tetragon** (eBPF-based) detects anomalous syscalls (unexpected network connections, file system access, privilege escalation attempts) within the pod; (3) **Prometheus alerts** on sudden changes in service call patterns (a service that never called payment-service suddenly making requests); (4) **SPIRE audit logs** showing certificate requests for unexpected SPIFFE IDs. Response: (1) Immediately revoke the SPIFFE SVID for the compromised workload — SPIRE Server removes the registration entry, existing certs expire within 24h (or 1h if short TTL), and Envoy will not renew; (2) Scale the deployment to zero to kill existing pods; (3) Cordon the node if node-level compromise is suspected; (4) Use Hubble to review all connections the pod made before detection; (5) Trigger incident response. Key insight: because every connection requires a valid SVID and passes through Envoy, the attacker's lateral movement options are extremely limited even after compromise.
+A: Detection has multiple layers:
+
+1. **Hubble/Cilium** detects flows to services not in the AuthorizationPolicy ALLOW list (these are blocked and logged)
+2. **Falco** or **Tetragon** (eBPF-based) detects anomalous syscalls (unexpected network connections, file system access, privilege escalation attempts) within the pod
+3. **Prometheus alerts** on sudden changes in service call patterns (a service that never called payment-service suddenly making requests)
+4. **SPIRE audit logs** showing certificate requests for unexpected SPIFFE IDs. Response:
+5. Immediately revoke the SPIFFE SVID for the compromised workload — SPIRE Server removes the registration entry, existing certs expire within 24h (or 1h if short TTL), and Envoy will not renew
+6. Scale the deployment to zero to kill existing pods
+7. Cordon the node if node-level compromise is suspected
+8. Use Hubble to review all connections the pod made before detection
+9. Trigger incident response. Key insight: because every connection requires a valid SVID and passes through Envoy, the attacker's lateral movement options are extremely limited even after compromise.
 
 **Q: The Istio control plane (Istiod) crashes during a production incident. What happens to traffic?**
 A: Envoy proxies continue to enforce the last known configuration. This is Envoy's design — it operates independently of the control plane once configured. Running traffic using existing connections continues unaffected. New connections also work because Envoy's cert cache (from SPIRE SDS) remains valid until certificate TTL. What does NOT work: new AuthorizationPolicies will not be pushed; new service registrations (new pods, new services) will not be discovered by existing Envoys; certificate renewals will fail if SPIRE integration also goes down. Recovery: Istiod is deployed as a 3-replica deployment — it should restart automatically. Operator action: verify Istiod pod health, check etcd/API server connectivity, ensure SPIRE Server is healthy. The blast radius of Istiod downtime is limited to configuration freshness, not to complete traffic loss — this is a key design property of the xDS protocol.
 
 **Q: Compare SPIRE + Istio to a simpler cert-manager + Kubernetes NetworkPolicy approach for a 10-service startup. When does the complexity of ZTA pay off?**
-A: For a 10-service startup with a single Kubernetes cluster and a small team, cert-manager + NetworkPolicy is the right choice. It provides mTLS between services (cert-manager issues certificates per ServiceAccount), network-level isolation (NetworkPolicy), and is much simpler to operate. SPIRE's value emerges when: (1) you have multi-cluster or multi-cloud deployments where a single k8s-native CA is insufficient; (2) you need hardware attestation (regulated industries); (3) you have non-Kubernetes workloads (VMs, Lambda) that need the same identity fabric; (4) you need cross-cluster federation. Istio over a simpler alternative is justified when: you need L7 authorization (HTTP method/path), traffic management (canary, circuit breaking), and unified observability across 20+ services. The inflection point is roughly 15-20 services where ad-hoc service-to-service auth becomes unmanageable, or when cross-platform identity is required. Never choose complexity for its own sake — choose it when the problem requires it.
+A: For a 10-service startup with a single Kubernetes cluster and a small team, cert-manager + NetworkPolicy is the right choice. It provides mTLS between services (cert-manager issues certificates per ServiceAccount), network-level isolation (NetworkPolicy), and is much simpler to operate. SPIRE's value emerges when:
+
+1. you have multi-cluster or multi-cloud deployments where a single k8s-native CA is insufficient
+2. you need hardware attestation (regulated industries)
+3. you have non-Kubernetes workloads (VMs, Lambda) that need the same identity fabric
+4. you need cross-cluster federation. Istio over a simpler alternative is justified when: you need L7 authorization (HTTP method/path), traffic management (canary, circuit breaking), and unified observability across 20+ services. The inflection point is roughly 15-20 services where ad-hoc service-to-service auth becomes unmanageable, or when cross-platform identity is required. Never choose complexity for its own sake — choose it when the problem requires it.

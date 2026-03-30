@@ -427,7 +427,11 @@ A: It's the most commonly used range, leading to CIDR overlap issues in VPC peer
 
 **Q: A Kubernetes cluster is running out of pod IPs. How do you diagnose and fix it?**
 
-A: Diagnosis: `kubectl describe node <node>` shows `PodCIDR` and `kubectl get pods --all-namespaces | wc -l` vs the node's max pods. With AWS VPC CNI, each node borrows IPs directly from its subnet — large instance types get more IPs. Fixes: (1) use a larger subnet, (2) enable prefix delegation in VPC CNI (`ENABLE_PREFIX_DELEGATION=true`) which allocates /28 prefixes per ENI instead of individual IPs, (3) switch to secondary CIDR for pods.
+A: Diagnosis: `kubectl describe node <node>` shows `PodCIDR` and `kubectl get pods --all-namespaces | wc -l` vs the node's max pods. With AWS VPC CNI, each node borrows IPs directly from its subnet — large instance types get more IPs. Fixes:
+
+1. use a larger subnet,
+2. enable prefix delegation in VPC CNI (`ENABLE_PREFIX_DELEGATION=true`) which allocates /28 prefixes per ENI instead of individual IPs,
+3. switch to secondary CIDR for pods.
 
 **Q: How does IPv6 SLAAC work, and what's EUI-64?**
 
