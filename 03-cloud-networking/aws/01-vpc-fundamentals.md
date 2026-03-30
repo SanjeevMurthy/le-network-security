@@ -40,6 +40,9 @@ A Virtual Private Cloud (VPC) is a logically isolated section of AWS where you d
 
 The core mental model: a VPC is a software-defined data center. You control IP addressing, routing, firewall rules, and internet access. AWS provides the physical underlay; you define the virtual topology.
 
+<img width="521" height="311" alt="image" src="https://github.com/user-attachments/assets/81eef7f2-6835-4a08-bb8d-5a8ded6c6415" />
+
+
 ---
 
 ## VPC Components
