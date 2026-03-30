@@ -49,6 +49,9 @@ Understanding VNet internals is not just about knowing the concepts — a Senior
 
 ## VNet Address Space and Subnet Reservations
 
+> When you create a subnet in an Azure Virtual Network, Azure reserves five IP addresses within the subnet's CIDR range. These reserved addresses include the network address, Azure's default gateway, the Azure DNS resolver (two addresses), and the broadcast address, leaving the remaining addresses for your resources.
+> — [Azure Docs: Azure VNet Subnets](https://learn.microsoft.com/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
+
 Azure reserves 5 IP addresses in every subnet — the same count as AWS but at different positions:
 
 | Offset | Purpose |
@@ -62,6 +65,9 @@ Azure reserves 5 IP addresses in every subnet — the same count as AWS but at d
 A `/29` subnet gives you only 3 usable IPs (8 - 5 = 3). For AKS node pools or large workloads, undersized subnets are a production killer. Always calculate: `2^(32-prefix) - 5`.
 
 ### Multiple CIDR Blocks on a VNet
+
+> Azure Virtual Networks support multiple address spaces, allowing you to associate more than one CIDR block with a single VNet. You can add additional address spaces to an existing VNet without recreating it, enabling you to expand capacity or accommodate non-contiguous IP ranges from different organizational units or acquisitions.
+> — [Azure Docs: Create, Change, or Delete a Virtual Network](https://learn.microsoft.com/azure/virtual-network/manage-virtual-network)
 
 Azure VNets support adding multiple address spaces. This allows:
 - Expanding a VNet without recreating it (add a new `/16` alongside the original)
@@ -80,6 +86,9 @@ az network vnet update \
 
 ## Network Security Groups (NSGs)
 
+> A Network Security Group (NSG) in Azure contains security rules that allow or deny inbound or outbound network traffic to resources in an Azure Virtual Network. NSGs operate at Layer 4 and are stateful, meaning return traffic for allowed connections is automatically permitted without the need to write explicit reverse rules.
+> — [Azure Docs: Network Security Groups](https://learn.microsoft.com/azure/virtual-network/network-security-groups-overview)
+
 NSGs are stateful L4 firewalls. "Stateful" means return traffic for an established connection is automatically allowed — you do not write a reverse rule. This is a common interview trap: if you allow TCP 443 inbound, the response traffic on ephemeral ports outbound is automatically permitted.
 
 ### NSG Attachment Points
@@ -92,6 +101,9 @@ When both are applied, traffic must pass BOTH NSGs. Inbound traffic hits the sub
 
 ### Priority System
 
+> NSG security rules are evaluated and applied based on the priority number assigned to each rule. Rules with lower priority numbers are processed before rules with higher priority numbers. The first matching rule is applied and no subsequent rules are evaluated. Priority numbers range from 100 (highest priority) to 4096 (lowest priority).
+> — [Azure Docs: NSG Rule Priority](https://learn.microsoft.com/azure/virtual-network/network-security-groups-overview#security-rules)
+
 Priority ranges from **100 to 4096**. Lower number = higher priority = evaluated first. Rules are evaluated in priority order and the first match wins — subsequent rules are not evaluated.
 
 | Priority | Rule Name | Source | Dest | Port | Action |
@@ -103,6 +115,9 @@ Priority ranges from **100 to 4096**. Lower number = higher priority = evaluated
 **Production failure pattern**: Team adds a `DenyAllInbound` rule at priority 1000, forgetting that Azure Load Balancer health probes come from the `AzureLoadBalancer` service tag. The built-in rule at 65001 allows LB probes, but the custom deny at 1000 hits first, dropping health probes and taking all backends out of rotation.
 
 ### NSG Service Tags
+
+> Service tags represent groups of IP address prefixes from a given Azure service. Microsoft manages the address prefixes encompassed by the service tag and automatically updates the tag as addresses change, minimizing the complexity of frequent updates to network security rules and avoiding the need to hardcode lists of Azure service IP addresses.
+> — [Azure Docs: Service Tags](https://learn.microsoft.com/azure/virtual-network/service-tags-overview)
 
 Service tags represent groups of IP prefixes managed by Microsoft. Avoid hardcoding IPs:
 
@@ -117,6 +132,9 @@ Storage.EastUS      - Azure Storage in East US region
 ---
 
 ## Application Security Groups (ASGs)
+
+> Application Security Groups (ASGs) enable you to configure network security as a natural extension of an application’s structure, grouping virtual machines by function (e.g., web tier, database tier) and using those groups as sources or destinations in NSG rules. This eliminates the need to maintain lists of IP addresses and allows security policies to scale automatically as the application grows.
+> — [Azure Docs: Application Security Groups](https://learn.microsoft.com/azure/virtual-network/application-security-groups)
 
 ASGs let you group VMs by role and use those groups as source/destination in NSG rules — eliminating IP address maintenance entirely.
 
@@ -157,6 +175,9 @@ az network nsg rule create \
 
 ## Subnet Delegation
 
+> Subnet delegation gives explicit permissions to an Azure service to create service-specific resources in a subnet, enabling the service to establish its own network policies within that subnet. A delegated subnet is exclusively reserved for the designated service and cannot host other resource types simultaneously.
+> — [Azure Docs: Subnet Delegation](https://learn.microsoft.com/azure/virtual-network/subnet-delegation-overview)
+
 Subnet delegation is Azure's mechanism for dedicating a subnet to a specific managed service. When you delegate a subnet, the Azure service can inject NICs, manage routes, and apply its own NSG-equivalent policies within that subnet.
 
 Common delegations:
@@ -174,6 +195,9 @@ Common delegations:
 
 ## User-Defined Routes (UDRs)
 
+> User-defined routes (UDRs) allow you to override Azure's default system routes to control how traffic is routed between subnets in a VNet, between VNets, and to on-premises or external destinations. Each route specifies a next-hop type and, when applicable, a next-hop IP address such as a network virtual appliance (NVA) private IP.
+> — [Azure Docs: User-Defined Routes](https://learn.microsoft.com/azure/virtual-network/virtual-networks-udr-overview)
+
 Azure automatically creates system routes for VNet communication. UDRs override these defaults to force traffic through Network Virtual Appliances (NVAs) like Azure Firewall or third-party firewalls (Palo Alto, Fortinet).
 
 ### Key Next-Hop Types
@@ -187,6 +211,9 @@ Azure automatically creates system routes for VNet communication. UDRs override 
 | `VirtualNetwork` | Keep within VNet (rarely needed explicitly) |
 
 ### UDR for NVA Hairpinning
+
+> A common pattern for centralizing network inspection is to force all subnet traffic through a Network Virtual Appliance (NVA) such as Azure Firewall using a UDR with a `VirtualAppliance` next hop. All traffic — including east-west subnet traffic and internet-bound traffic — is redirected to the NVA's private IP for inspection before being forwarded to its destination.
+> — [Azure Docs: Route Network Traffic with a Route Table](https://learn.microsoft.com/azure/virtual-network/tutorial-create-route-table-portal)
 
 The canonical pattern: all spoke traffic must traverse Azure Firewall in the hub before reaching other spokes or the internet.
 
@@ -209,6 +236,9 @@ az network route-table route create \
 
 ### Private DNS Zones
 
+> Azure Private DNS provides a reliable, secure DNS service to manage and resolve domain names in a virtual network without the need to add a custom DNS solution. You can link private DNS zones to VNets to enable name resolution for resources within those VNets, with optional auto-registration to create DNS records for VMs automatically.
+> — [Azure Docs: Azure Private DNS](https://learn.microsoft.com/azure/dns/private-dns-overview)
+
 Azure Private DNS allows you to use custom domain names (e.g., `internal.contoso.com`) within VNets without managing DNS servers.
 
 - A Private DNS Zone is a global resource — not tied to a region
@@ -230,6 +260,9 @@ az network private-dns link vnet create \
 
 ### Split-Horizon DNS
 
+> Split-horizon DNS in Azure is achieved by creating both a public DNS zone and a private DNS zone for the same domain name. Resources within VNets linked to the private zone receive internal IP addresses, while external clients receive the public IP address — enabling the same FQDN to route traffic differently based on the origin of the DNS query.
+> — [Azure Docs: Private DNS Zone Split-Horizon](https://learn.microsoft.com/azure/dns/private-dns-scenarios#scenario-split-horizon-functionality)
+
 Same domain resolves differently inside vs outside Azure:
 - Public: `api.contoso.com` → `203.0.113.50` (public IP, goes through WAF)
 - Private: `api.contoso.com` → `10.1.0.10` (private IP, stays on backbone)
@@ -239,6 +272,9 @@ Implementation: Create a Private DNS Zone with the same name as the public domai
 ---
 
 ## Service Endpoints vs Private Endpoints
+
+> Azure provides two mechanisms to restrict access to PaaS services to private network traffic. Service Endpoints extend VNet subnet identity to the PaaS service without creating a private IP, while Private Endpoints provision a private network interface within your VNet that maps to a specific PaaS resource — enabling the public endpoint to be fully disabled and providing stronger isolation.
+> — [Azure Docs: Compare Private Endpoints and Service Endpoints](https://learn.microsoft.com/azure/virtual-network/vnet-integration-for-azure-services)
 
 This distinction is critical and frequently tested at staff level interviews.
 
@@ -265,6 +301,9 @@ az storage account network-rule add \
 ```
 
 ### Private Endpoints
+
+> A private endpoint is a network interface that uses a private IP address from your virtual network. It connects you privately and securely to a service powered by Azure Private Link. By creating a private endpoint, you bring the service into your VNet, requiring DNS configuration to override the service's public FQDN with the private IP address.
+> — [Azure Docs: Private Endpoints](https://learn.microsoft.com/azure/private-link/private-endpoint-overview)
 
 Private Endpoints place a private NIC with a private IP into your VNet that maps to a specific Azure PaaS resource. DNS for the resource's FQDN is overridden to return the private IP.
 

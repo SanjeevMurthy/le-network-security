@@ -48,15 +48,24 @@ This document extends the DNS fundamentals from `/le-study-notes/networking/01-d
 
 ## Hosted Zones
 
+> A hosted zone is a container for DNS records for a specific domain, such as `example.com`, and its subdomains. Route 53 hosted zones come in two types: public hosted zones that answer queries from the internet, and private hosted zones that answer queries only within associated Amazon VPCs.
+> — [AWS Docs: Hosted Zones](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zones-working-with.html)
+
 A hosted zone is a container for DNS records for a domain. Route 53 supports two types.
 
 ### Public Hosted Zones
+
+> A public hosted zone contains records that specify how you want Route 53 to route traffic on the internet for a domain and its subdomains. When you create a public hosted zone, Route 53 automatically assigns four name servers that are part of its globally distributed, anycast network with a 100% SLA.
+> — [AWS Docs: Public Hosted Zones](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/AboutHZWorkingWith.html)
 
 Visible to the internet. When you create a public hosted zone for `example.com`, Route 53 assigns four name servers (NS records). You must update your domain registrar to point to these NS records.
 
 **Key production detail**: Route 53's NS servers are part of a distributed, anycast network. The four assigned NS servers span multiple geographically separated PoPs. This is why Route 53 has 100% SLA — losing one PoP doesn't affect availability.
 
 ### Private Hosted Zones
+
+> A private hosted zone is a container that holds information about how you want Route 53 to respond to DNS queries for a domain and its subdomains within one or more VPCs. It provides internal DNS resolution for resources within your private network without exposing those names to the internet.
+> — [AWS Docs: Private Hosted Zones](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zones-private.html)
 
 Only visible within associated VPCs. A private hosted zone for `internal.example.com` resolves only when a query originates from an associated VPC.
 
@@ -70,6 +79,9 @@ aws route53 associate-vpc-with-hosted-zone \
 Private hosted zones can be associated with VPCs across **multiple accounts** (requires cross-account association using `authorize-vpc-association` + `associate-vpc-with-hosted-zone`).
 
 ### Split-Horizon DNS
+
+> Split-horizon DNS (also called split-view DNS) allows you to serve different DNS answers for the same domain name depending on the origin of the query. In Route 53, you achieve this by creating both a public hosted zone and a private hosted zone for the same domain, associating the private zone with VPCs that should receive internal answers.
+> — [AWS Docs: Private and Public Zones](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-considerations.html)
 
 Split-horizon uses the same domain name in both a public and private hosted zone, returning different IPs based on where the query originates:
 
@@ -89,6 +101,9 @@ Private zone (example.com): api.example.com → 10.0.1.100 (internal IP)
 
 ## Routing Policies
 
+> Route 53 routing policies determine how Route 53 responds to DNS queries when multiple resource record sets exist for the same name and type. Route 53 supports eight routing policies — from simple single-resource routing to complex policies based on latency, geographic location, health checks, and weighted distribution.
+> — [AWS Docs: Routing Policies](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html)
+
 Route 53 routing policies determine how DNS responds when multiple records exist for the same name.
 
 ### Policy Comparison
@@ -106,6 +121,9 @@ Route 53 routing policies determine how DNS responds when multiple records exist
 
 ### Weighted Routing
 
+> Weighted routing lets you associate multiple resources with a single domain name and control what proportion of DNS queries are routed to each resource. This is useful for load balancing between regions and for testing new versions of software by sending a small portion of traffic to the new version while the rest goes to the existing version.
+> — [AWS Docs: Weighted Routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html)
+
 Each record has a weight (0-255). The probability of returning a record = `weight / sum(all weights)`.
 
 ```
@@ -116,6 +134,9 @@ app.example.com  →  ALB-v2  Weight: 10
 Weight 0 = never returned (useful to park a record without deleting it). If all records have weight 0, Route 53 returns all records equally (treats as Simple routing).
 
 ### Failover Routing
+
+> Failover routing lets you route traffic to a resource when it is healthy, and route traffic to a different resource when the primary resource is not healthy. You configure health checks on your primary records; if they fail, Route 53 automatically responds to queries using the secondary record, providing an active-passive failover configuration.
+> — [AWS Docs: Failover Routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-failover.html)
 
 ```mermaid
 graph TD
@@ -141,6 +162,9 @@ Route 53 health checkers from multiple global regions probe the endpoint. If the
 
 ### Geolocation vs Geoproximity
 
+> Geolocation routing lets you choose the resources that serve your traffic based on the geographic location of your end users — continent, country, or US state — enabling compliance with regional regulations. Geoproximity routing routes traffic based on the geographic distance between your users and your resources, with an optional bias parameter to shift more or less traffic to a region.
+> — [AWS Docs: Geolocation Routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html)
+
 **Geolocation**: Exact continent/country/US state matching. Traffic from France → always goes to EU region, regardless of latency. Used for GDPR compliance (EU data must stay in EU) or legal jurisdictions.
 
 **Geoproximity**: Distance-based with a **bias** parameter (-99 to +99). Positive bias expands the region's effective coverage; negative bias shrinks it. Allows shifting the geographic boundary without exact country matching. Use in Traffic Flow (advanced routing) only.
@@ -148,6 +172,9 @@ Route 53 health checkers from multiple global regions probe the endpoint. If the
 ---
 
 ## Health Checks
+
+> Amazon Route 53 health checks monitor the health and performance of your web applications, web servers, and other resources. Route 53 health checkers around the world send requests to your application and, if the application does not respond correctly, Route 53 can route DNS queries away from the unhealthy resource.
+> — [AWS Docs: Route 53 Health Checks](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover.html)
 
 Route 53 health checks are distinct from load balancer health checks. They determine whether a DNS record should be returned.
 
@@ -197,12 +224,18 @@ aws route53 create-health-check \
 
 ## Route 53 Resolver
 
+> Route 53 Resolver is a regional DNS service that answers DNS queries for Amazon EC2 instances and on-premises resources using the resolver at the VPC+2 IP address. It supports inbound and outbound endpoints to enable hybrid DNS resolution between your AWS VPCs and on-premises networks, without the need to manage your own DNS servers.
+> — [AWS Docs: Route 53 Resolver](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html)
+
 Route 53 Resolver is the DNS resolver built into every VPC (the .2 address in each subnet — e.g., 10.0.0.2). It handles:
 - Private hosted zone resolution
 - Public DNS forwarding
 - Hybrid DNS for on-premises connectivity
 
 ### Inbound Endpoints (On-Premises → AWS)
+
+> Route 53 Resolver inbound endpoints enable DNS queries originating from your on-premises network or other VPCs to be resolved by Route 53 Resolver. Each inbound endpoint provisions Elastic Network Interfaces (ENIs) in your VPC subnets, providing IP addresses that your on-premises DNS servers can use as forwarding targets.
+> — [AWS Docs: Resolver Inbound Endpoints](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-inbound-queries.html)
 
 An inbound endpoint creates ENIs in your VPC subnets. On-premises DNS servers forward queries for AWS internal names (e.g., `*.internal.example.com`) to these ENI IPs.
 
@@ -215,6 +248,9 @@ Route 53 Private Hosted Zone: internal.example.com → 10.0.10.5
 ```
 
 ### Outbound Endpoints (AWS → On-Premises)
+
+> Route 53 Resolver outbound endpoints enable DNS queries from your VPC to be forwarded to your on-premises DNS servers or resolvers. You define forwarding rules that specify which domain names should be forwarded and to which DNS server IP addresses, enabling seamless name resolution for on-premises resources from within AWS.
+> — [AWS Docs: Resolver Outbound Endpoints](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-outbound-queries.html)
 
 An outbound endpoint creates ENIs in your VPC. Forwarding rules route specific domain queries to on-premises DNS servers.
 
@@ -237,6 +273,9 @@ aws route53resolver create-resolver-rule \
 Queries from VPC for `*.corp.example.com` are forwarded to on-premises DNS servers at 192.168.1.53.
 
 ### Resolver DNS Firewall
+
+> Route 53 Resolver DNS Firewall lets you filter and block DNS queries for domain names that you specify in domain lists. You can use it to block queries to malicious, unauthorized, or unintended domains while allowing queries to trusted destinations, providing a DNS-layer control for your VPC resources without requiring inline network appliances.
+> — [AWS Docs: Resolver DNS Firewall](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-dns-firewall.html)
 
 Route 53 Resolver DNS Firewall allows you to block DNS queries for malicious or unauthorized domains at the resolver level.
 
@@ -271,6 +310,9 @@ DNS Firewall can also **log all DNS queries** per VPC — query logs go to Cloud
 ---
 
 ## DNSSEC in Route 53
+
+> DNSSEC (Domain Name System Security Extensions) is a set of protocols that add a layer of security to the DNS lookup and exchange processes to protect against cache poisoning and DNS spoofing attacks. Route 53 supports DNSSEC signing for public hosted zones, using AWS KMS customer-managed keys to sign zone records and establish a cryptographic chain of trust from the root zone.
+> — [AWS Docs: DNSSEC in Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring-dnssec.html)
 
 DNSSEC adds cryptographic signatures to DNS records, preventing cache poisoning and DNS spoofing.
 
@@ -310,6 +352,9 @@ aws route53 get-dnssec \
 ---
 
 ## TTL Strategy
+
+> The time-to-live (TTL) value in a DNS record specifies how long, in seconds, DNS resolvers worldwide should cache that record before checking Route 53 for an updated value. Lower TTLs allow faster propagation of DNS changes but increase the number of queries Route 53 must answer; higher TTLs improve resolver cache efficiency and reduce query costs.
+> — [AWS Docs: TTL Values](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-values-basic.html#rrsets-values-basic-ttl)
 
 TTL determines how long DNS resolvers cache a record before querying again.
 

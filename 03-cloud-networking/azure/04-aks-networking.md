@@ -41,7 +41,13 @@ AKS networking is one of the most operationally complex areas in Azure. The choi
 
 ## AKS Networking Models
 
+> Azure Kubernetes Service (AKS) supports multiple network plugin options that determine how pod networking, IP address allocation, and network policies are configured for your cluster. The choice of network plugin has significant implications for IP address consumption, pod density, network policy capabilities, and compatibility with other Azure services.
+> — [Azure Docs: AKS Network Concepts](https://learn.microsoft.com/azure/aks/concepts-network)
+
 ### kubenet
+
+> Kubenet is a basic network plugin that configures the Linux kernel's networking stack to use a virtual network for pod communication. With kubenet, nodes receive IP addresses from the Azure VNet subnet, but pods receive IP addresses from a logically different address space. Azure uses user-defined routes (UDRs) to enable cross-node pod communication by routing pod traffic through the node's IP address.
+> — [Azure Docs: Kubenet Networking](https://learn.microsoft.com/azure/aks/use-kubenet)
 
 kubenet is AKS's simple overlay networking model. Nodes get VNet IPs; pods get IPs from a private overlay range (default `10.244.0.0/16`) that is NOT routable in the VNet.
 
@@ -72,6 +78,9 @@ Pod on Node 1 (10.244.0.5) → Pod on Node 2 (10.244.1.5):
 
 ### Azure CNI
 
+> With Azure CNI, every pod gets an IP address from the subnet and can be accessed directly. These IP addresses must be unique across your network space and must be planned in advance. Each node has a maximum number of pods it can support, and each supported pod has one IP address reserved in the subnet. This approach requires more IP address planning but allows direct pod connectivity and enables Azure network policies.
+> — [Azure Docs: Azure CNI Networking](https://learn.microsoft.com/azure/aks/configure-azure-cni)
+
 Azure CNI assigns each pod a real VNet IP address. Pods are first-class citizens in the VNet — they're directly reachable from on-premises, other VNets, and Azure services without any encapsulation.
 
 **How it works**:
@@ -100,6 +109,9 @@ This is the #1 mistake teams make with Azure CNI: undersized subnets.
 
 ### Azure CNI Overlay
 
+> Azure CNI Overlay is an updated networking model that separates pod IP addressing from the VNet address space. Nodes receive VNet IPs, while pods receive IPs from a private overlay CIDR that does not consume VNet address space. This significantly reduces VNet IP consumption compared to standard Azure CNI while retaining support for Azure network policies, Calico, and Cilium.
+> — [Azure Docs: Azure CNI Overlay](https://learn.microsoft.com/azure/aks/azure-cni-overlay)
+
 Azure CNI Overlay is the recommended model for new clusters as of 2023. It combines the best of both worlds:
 - **Nodes** get VNet IPs (directly routable, manageable count)
 - **Pods** get IPs from a private overlay CIDR (not VNet-routable, no VNet IP exhaustion)
@@ -126,7 +138,13 @@ This is the model that solves VNet IP exhaustion without losing network policy c
 
 ## Network Policy Engines on AKS
 
+> Kubernetes network policies control traffic flow at the IP address or port level between pods within a cluster. AKS supports multiple network policy engines — Azure Network Policy Manager, Calico, and Cilium — each implementing the Kubernetes NetworkPolicy API with different performance characteristics, additional features, and compatibility requirements.
+> — [Azure Docs: AKS Network Policies](https://learn.microsoft.com/azure/aks/use-network-policies)
+
 ### Azure Network Policy (Native)
+
+> Azure Network Policy Manager (NPM) is Microsoft's native implementation of Kubernetes network policies for AKS. It translates Kubernetes NetworkPolicy objects into Linux iptables rules on each node, enforcing pod-level network segmentation within the cluster. It is designed for simpler policy scenarios and is being superseded by Azure CNI Powered by Cilium for new workloads.
+> — [Azure Docs: Azure NPM](https://learn.microsoft.com/azure/aks/use-network-policies#network-policy-options-in-aks)
 
 Microsoft's native network policy implementation. It uses Linux iptables rules on each node.
 
@@ -138,6 +156,9 @@ Microsoft's native network policy implementation. It uses Linux iptables rules o
 - Being superseded by Cilium in new AKS releases
 
 ### Calico on AKS
+
+> Calico is an open-source networking and network policy engine for Kubernetes that can be used with AKS. It enforces Kubernetes NetworkPolicy using iptables or eBPF rules on each node and extends the standard API with its own CRDs (GlobalNetworkPolicy, NetworkSet) for cluster-wide policy defaults, FQDN-based policies, and richer logging capabilities.
+> — [Azure Docs: Use Calico Network Policies](https://learn.microsoft.com/azure/aks/use-network-policies)
 
 Project Calico, now maintained by Tigera, is the most widely deployed network policy engine. Microsoft recommends Calico for production AKS.
 
@@ -157,6 +178,9 @@ az aks create \
 - FQDN-based policies with Calico Enterprise (paid)
 
 ### Azure CNI Powered by Cilium
+
+> Azure CNI Powered by Cilium is the most advanced AKS networking option, combining Azure CNI Overlay for IP address management with Cilium as the networking and security dataplane. Cilium uses eBPF (extended Berkeley Packet Filter) for high-performance network policy enforcement, replaces kube-proxy for service load balancing, and provides Hubble for built-in network observability and flow logging.
+> — [Azure Docs: Azure CNI Powered by Cilium](https://learn.microsoft.com/azure/aks/azure-cni-powered-by-cilium)
 
 The newest AKS networking option combines Azure CNI Overlay with Cilium as the dataplane. This replaces kube-proxy with Cilium's eBPF-based load balancing and provides:
 - eBPF-based network policies (significantly better performance than iptables)
@@ -181,6 +205,9 @@ az aks create \
 ---
 
 ## AGIC (Application Gateway Ingress Controller)
+
+> The Application Gateway Ingress Controller (AGIC) is a Kubernetes application that runs as a pod within your AKS cluster. AGIC monitors the Kubernetes Ingress resources and translates them into Application Gateway-specific configuration updates, allowing a single Application Gateway to serve traffic for multiple services in AKS without requiring a separate load balancer or proxy.
+> — [Azure Docs: AGIC Overview](https://learn.microsoft.com/azure/application-gateway/ingress-controller-overview)
 
 AGIC is a Kubernetes Ingress controller that provisions and manages Azure Application Gateway resources in response to Kubernetes Ingress objects.
 
@@ -215,6 +242,9 @@ az aks enable-addons \
 
 ## Azure Load Balancer Integration with AKS
 
+> When you create a Kubernetes Service of type `LoadBalancer` in AKS, the Azure Cloud Controller Manager automatically provisions an Azure Standard Load Balancer with a public or private frontend IP. The controller manages the LB lifecycle alongside the Service object, including backend pool membership, health probe configuration, and load balancing rules.
+> — [Azure Docs: Load Balancer in AKS](https://learn.microsoft.com/azure/aks/load-balancer-standard)
+
 When you create a Kubernetes `Service` of type `LoadBalancer`, AKS automatically creates an Azure Standard Load Balancer. The integration uses the Azure Cloud Controller Manager.
 
 ```yaml
@@ -243,6 +273,9 @@ spec:
 
 ## Private AKS Clusters
 
+> A private AKS cluster ensures that network traffic between the API server and node pools remains on the private network only. The API server endpoint has no public IP address and is routable solely within the VNet via a Private Endpoint, preventing the Kubernetes control plane from being exposed to the internet.
+> — [Azure Docs: Private AKS Cluster](https://learn.microsoft.com/azure/aks/private-cluster)
+
 A private AKS cluster exposes the API server exclusively via a Private Endpoint — no public IP on the API server.
 
 ```bash
@@ -269,6 +302,9 @@ For enterprise setups with custom DNS servers, use `none` and configure your DNS
 ---
 
 ## NAT Gateway for AKS Outbound
+
+> Azure NAT Gateway provides outbound internet connectivity for resources in private subnets by using a pool of static public IP addresses for source network address translation (SNAT). When attached to an AKS node subnet, it ensures all outbound traffic from cluster nodes and pods uses predictable, stable public IP addresses with a large pool of SNAT ports.
+> — [Azure Docs: NAT Gateway for AKS](https://learn.microsoft.com/azure/aks/nat-gateway)
 
 AKS nodes need outbound internet access (for pulling container images, calling external APIs). Three outbound methods:
 

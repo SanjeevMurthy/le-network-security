@@ -50,9 +50,15 @@ This creates unique operational advantages (no overlay overhead, native VPC rout
 
 ## EKS Networking Fundamentals
 
+> Amazon EKS uses the VPC Container Network Interface (CNI) plugin by default, which assigns each pod a real IP address from the VPC subnet. This means pods are native VPC resources — they are directly addressable by other AWS resources, security groups, and route tables — without requiring overlay networks or NAT translation.
+> — [AWS Docs: EKS Networking](https://docs.aws.amazon.com/eks/latest/userguide/eks-networking.html)
+
 EKS nodes are EC2 instances running in VPC subnets. Every node has a primary ENI for node traffic. The VPC CNI (aws-node DaemonSet) manages additional ENIs to provide IP addresses for pods.
 
 ### Pod Networking Models
+
+> With the Amazon VPC CNI plugin, every pod receives an IP address from a secondary IPv4 or IPv6 address assigned to an Elastic Network Interface (ENI) on the EC2 worker node. Pods can communicate directly with other pods, EC2 instances, and AWS services using native VPC routing, with no encapsulation overhead.
+> — [AWS Docs: Pod Networking](https://docs.aws.amazon.com/eks/latest/userguide/pod-networking.html)
 
 ```mermaid
 graph TD
@@ -78,6 +84,9 @@ Each pod gets an IP address from a secondary IP on an ENI attached to its node. 
 ---
 
 ## VPC CNI (aws-node)
+
+> The Amazon VPC CNI plugin for Kubernetes runs as a DaemonSet (`aws-node`) on each worker node and is responsible for attaching ENIs to nodes, assigning secondary IP addresses to pods, and configuring host-level routing rules so that traffic between pods and other VPC resources flows correctly.
+> — [AWS Docs: VPC CNI Plugin](https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html)
 
 The VPC CNI runs as a DaemonSet (`aws-node`) in `kube-system`. It is responsible for:
 1. Attaching additional ENIs to the node
@@ -113,6 +122,9 @@ This is a hard limit. Attempting to schedule more pods results in `Insufficient 
 
 ### ENI Management and Warm Pool
 
+> The VPC CNI plugin maintains a warm pool of pre-allocated ENIs and secondary IP addresses on each node to reduce latency when new pods are scheduled. The size of the warm pool is configurable via environment variables on the aws-node DaemonSet, allowing you to balance IP consumption against pod scheduling speed.
+> — [AWS Docs: VPC CNI Configuration Variables](https://docs.aws.amazon.com/eks/latest/userguide/cni-env-vars.html)
+
 The VPC CNI maintains a warm pool of pre-allocated ENIs and IPs to avoid cold-start latency when pods are scheduled:
 
 | Environment Variable | Default | Effect |
@@ -126,6 +138,9 @@ The VPC CNI maintains a warm pool of pre-allocated ENIs and IPs to avoid cold-st
 ---
 
 ## Prefix Delegation Mode
+
+> With IPv4 prefix delegation, the Amazon VPC CNI plugin assigns a /28 IPv4 prefix to each ENI slot instead of a single secondary IP address. This increases the number of pods that a node can host by a factor of 16, enabling higher pod density from the same instance type and subnet CIDR range without changing instance types or subnets.
+> — [AWS Docs: Prefix Delegation](https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html)
 
 Standard VPC CNI assigns individual IPs — one IP per ENI slot. Prefix delegation assigns an entire /28 CIDR block (16 IPs) per ENI slot, dramatically increasing pod density.
 
@@ -168,6 +183,9 @@ kubectl set env daemonset aws-node \
 
 ## Security Groups for Pods
 
+> Security groups for pods enable you to assign AWS security groups to individual Kubernetes pods, providing network-level isolation at the pod level rather than the node level. Each pod receives a dedicated branch ENI with the assigned security group, allowing fine-grained inbound and outbound rule enforcement for individual workloads within a shared cluster.
+> — [AWS Docs: Security Groups for Pods](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html)
+
 By default, all pods on a node share the node's security group. Security Groups for Pods allows pod-level security group enforcement.
 
 ```mermaid
@@ -188,6 +206,9 @@ graph TD
 ```
 
 ### SecurityGroupPolicy CRD
+
+> The SecurityGroupPolicy custom resource is an Amazon EKS-specific Kubernetes resource that associates a set of AWS security groups with pods matching a label selector within a namespace. When a pod matches the selector, the VPC CNI plugin automatically attaches a dedicated branch ENI with those security groups to the pod.
+> — [AWS Docs: SecurityGroupPolicy](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html#security-groups-pods-deployment)
 
 ```yaml
 apiVersion: vpcresources.k8s.aws/v1beta1
@@ -223,6 +244,9 @@ Pods matching the selector get dedicated branch ENIs with the specified security
 ---
 
 ## EKS Cluster Endpoint Modes
+
+> The Amazon EKS API server endpoint can be configured to be accessible publicly from the internet, privately within the VPC only, or both. The public endpoint can be restricted to specific CIDR ranges, while the private endpoint routes API server traffic through AWS PrivateLink to stay within the VPC network.
+> — [AWS Docs: Cluster Endpoint Access](https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
 
 The Kubernetes API server endpoint can be configured in three modes:
 
@@ -260,9 +284,15 @@ aws eks update-cluster-config \
 
 ## CoreDNS in EKS
 
+> CoreDNS is the DNS server deployed by Amazon EKS in the `kube-system` namespace for in-cluster DNS resolution. It handles service discovery (resolving Kubernetes Service names), external name resolution, and can be configured with custom forwarding rules to resolve on-premises domain names via Route 53 Resolver outbound endpoints.
+> — [AWS Docs: CoreDNS Add-on](https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html)
+
 CoreDNS runs as a Deployment (typically 2 replicas) in `kube-system`. It handles all in-cluster DNS resolution.
 
 ### ndots:5 Problem
+
+> Kubernetes configures pods with `ndots:5` in `/etc/resolv.conf` by default, meaning any DNS name with fewer than 5 dots is treated as a relative name and the resolver tries appending each search domain suffix before attempting the name as an absolute (FQDN). This causes multiple failed DNS queries (NXDOMAIN responses) for external domain names, amplifying CoreDNS query load significantly.
+> — [Kubernetes Docs: DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config)
 
 Every Kubernetes pod has `ndots:5` in `/etc/resolv.conf` by default. This causes 5 DNS lookups for a short name like `api.example.com` before resolving correctly:
 
@@ -318,9 +348,15 @@ data:
 
 ## kube-proxy in EKS
 
+> kube-proxy is a network proxy that runs on each node in a Kubernetes cluster, implementing part of the Kubernetes Service concept. It maintains network rules on nodes that allow network communication to pods from inside or outside of your cluster, programming iptables or IPVS rules based on Service and Endpoint objects watched from the Kubernetes API.
+> — [Kubernetes Docs: kube-proxy](https://kubernetes.io/docs/concepts/overview/components/#kube-proxy)
+
 kube-proxy runs as a DaemonSet on every node. It programs iptables (or IPVS) rules to implement Kubernetes Service routing.
 
 ### iptables vs IPVS Mode
+
+> kube-proxy can operate in iptables mode (the default) or IPVS mode. In iptables mode, Service rules are implemented as sequential iptables chains with O(n) lookup complexity that degrades at scale. In IPVS mode, rules are stored in an in-kernel hash table with O(1) lookup complexity, supporting thousands of Services with consistent performance.
+> — [Kubernetes Docs: IPVS Proxier](https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-ipvs)
 
 | Property | iptables (default) | IPVS |
 |---|---|---|
@@ -348,6 +384,9 @@ Running both kube-proxy and Cilium kube-proxy replacement causes iptables rule c
 ---
 
 ## AWS Load Balancer Controller
+
+> The AWS Load Balancer Controller is a Kubernetes controller that manages AWS Elastic Load Balancers for a Kubernetes cluster. It provisions Application Load Balancers for Kubernetes Ingress resources and Network Load Balancers for Kubernetes Service resources of type `LoadBalancer`, using IAM Roles for Service Accounts (IRSA) for secure API access.
+> — [AWS Docs: AWS Load Balancer Controller](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html)
 
 The AWS Load Balancer Controller (formerly ALB Ingress Controller) manages ALBs and NLBs from Kubernetes resources.
 
@@ -402,6 +441,9 @@ spec:
 ```
 
 ### IP Mode vs Instance Mode
+
+> In instance target mode, the AWS Load Balancer Controller registers EC2 instances as targets using their NodePort. In IP target mode, it registers the individual pod IP addresses directly as targets, bypassing kube-proxy and enabling the load balancer to communicate directly with pods for lower-latency routing and preserved client IP addresses.
+> — [AWS Docs: Target Type](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html#alb-ingress-annotations)
 
 | Mode | How it works | Use case |
 |---|---|---|

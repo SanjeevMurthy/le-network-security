@@ -48,6 +48,9 @@ The core mental model: a VPC is a software-defined data center. You control IP a
 
 ### CIDR Blocks
 
+> A CIDR block is the IP address range assigned to your VPC, expressed in Classless Inter-Domain Routing notation (e.g., `10.0.0.0/16`). AWS supports IPv4 CIDR blocks from `/16` (65,536 IPs) to `/28` (16 IPs), and you may add up to four secondary CIDR blocks after creation. CIDR blocks cannot overlap with those of any peer VPC or on-premises network.
+> — [AWS Docs: VPC CIDR Blocks](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html)
+
 The VPC CIDR is the master address space. Choose RFC 1918 ranges:
 
 | RFC 1918 Range | Common VPC CIDR | Subnets Available |
@@ -65,6 +68,9 @@ The VPC CIDR is the master address space. Choose RFC 1918 ranges:
 
 ### The 5 Reserved IPs Per Subnet
 
+> When you create a subnet, AWS automatically reserves five IP addresses within its CIDR block that cannot be assigned to resources. These reserved addresses serve functions including the network address, the VPC router, the AWS-provided DNS server, future use, and the broadcast address.
+> — [AWS Docs: Subnets](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html)
+
 For every subnet you create, AWS reserves **5 IP addresses** at the bottom of the range:
 
 | Reserved IP | Purpose                                                       |
@@ -79,11 +85,17 @@ For a /24 subnet (256 addresses), this leaves **251 usable IPs**. For a /28 (16 
 
 ### Internet Gateway (IGW)
 
+> An internet gateway is a horizontally scaled, redundant, and highly available VPC component that enables communication between your VPC and the internet. It supports both IPv4 and IPv6 traffic and performs network address translation (NAT) for instances that have been assigned a public IPv4 address.
+> — [AWS Docs: Internet Gateways](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html)
+
 An IGW is a horizontally scaled, redundant, HA VPC component that provides internet connectivity. It performs NAT translation for public IPs: when a packet leaves an EC2 instance with a public IP, the IGW translates the private IP to the public Elastic IP.
 
 Key property: **one IGW per VPC maximum**. The IGW itself is not a bandwidth bottleneck — it scales automatically.
 
 ### NAT Gateway
+
+> A NAT gateway is a managed AWS service that enables instances in a private subnet to connect to the internet or other AWS services while preventing unsolicited inbound connections from the internet. It is deployed in a public subnet and uses an Elastic IP address, automatically scaling up to 100 Gbps without any user intervention.
+> — [AWS Docs: NAT Gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)
 
 A NAT Gateway allows instances in **private subnets** to initiate outbound connections to the internet while blocking inbound connections. It runs in a **public subnet** and has an Elastic IP.
 
@@ -106,6 +118,9 @@ A NAT Gateway allows instances in **private subnets** to initiate outbound conne
 | Cost        | Free                                           | Hourly charge + Data processing fees              |
 
 ### VPC Endpoints
+
+> A VPC endpoint allows you to privately connect your VPC to supported AWS services and VPC endpoint services powered by AWS PrivateLink, without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect. Traffic between your VPC and the other service does not leave the Amazon network.
+> — [AWS Docs: VPC Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints.html)
 
 VPC Endpoints allow private connectivity to AWS services without using the internet, IGW, or NAT Gateway.
 
@@ -134,6 +149,9 @@ VPC Endpoints allow private connectivity to AWS services without using the inter
 
 ### Why Never Use the Default VPC in Production
 
+> AWS creates a default VPC in each AWS Region when you create your account. A default VPC has a default subnet in each Availability Zone, an internet gateway, and a default security group — all instances launched into it receive a public IPv4 address, making it unsuitable for production workloads that require network isolation.
+> — [AWS Docs: Default VPC](https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html)
+
 AWS creates a default VPC in every region with these properties:
 
 - CIDR: 172.31.0.0/16
@@ -154,6 +172,9 @@ The default VPC is designed for getting started quickly — not for production. 
 ---
 
 ## Subnet Design Patterns
+
+> Subnets are segments of your VPC's IP address range that allow you to group resources based on security and operational needs. A public subnet has a direct route to an internet gateway, while a private subnet does not. AWS recommends designing subnets across multiple Availability Zones to maximize application resilience.
+> — [AWS Docs: Subnet Types](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html)
 
 ```mermaid
 graph TB
@@ -189,6 +210,9 @@ graph TB
 
 ### Subnet Tier Responsibilities
 
+> A well-architected VPC uses distinct subnet tiers — public, private, and isolated — each with a specific route table and security boundary. Public subnets host internet-facing resources such as load balancers and NAT gateways; private subnets host application workloads; isolated subnets host data stores with no internet route whatsoever.
+> — [AWS Docs: VPC Subnet Design](https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html)
+
 **Public Subnets** (10.0.0.0/24, 10.0.1.0/24):
 
 - Hosts: ALB, NLB, NAT Gateways, bastion hosts (if used)
@@ -213,6 +237,9 @@ graph TB
 ---
 
 ## Route Table Design
+
+> A route table contains a set of rules (routes) that determine where network traffic from your subnet or gateway is directed. Each subnet must be associated with exactly one route table; unassociated subnets implicitly use the VPC's main route table. Routes are evaluated using longest-prefix-match, so more specific routes always take priority.
+> — [AWS Docs: Route Tables](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)
 
 ```mermaid
 graph LR
@@ -244,6 +271,9 @@ Route evaluation uses **longest prefix match**. A packet destined for 10.0.5.10 
 
 ## Security Groups vs NACLs
 
+> AWS provides two distinct layers of network security within a VPC. Security groups act as virtual firewalls that control inbound and outbound traffic at the resource (ENI) level and are stateful — return traffic is automatically permitted. Network ACLs (NACLs) are stateless, subnet-level firewalls that evaluate rules in numbered order and require explicit rules for both directions of traffic.
+> — [AWS Docs: Security in Your VPC](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Security.html)
+
 ```mermaid
 graph TD
     Internet --> NACL_In["NACL (Inbound)\nStateless - evaluates rules\nin numeric order"]
@@ -255,6 +285,9 @@ graph TD
 ```
 
 ### Security Groups
+
+> A security group controls the inbound and outbound traffic for the AWS resources it is associated with, acting as a virtual firewall at the network interface level. Security groups are stateful — if you send a request from your instance, the response traffic is allowed regardless of the inbound rules. You can reference other security groups as sources, enabling least-privilege access between tiers without managing CIDR ranges.
+> — [AWS Docs: Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
 
 | Property     | Detail                                               |
 | ------------ | ---------------------------------------------------- |
@@ -272,6 +305,9 @@ graph TD
 - Separate SGs per tier: alb-sg, app-sg, db-sg
 
 ### NACLs (Network Access Control Lists)
+
+> A network access control list (NACL) is an optional, stateless layer of security for your VPC that acts at the subnet boundary. NACLs evaluate rules in ascending numerical order and stop at the first match; they require explicit allow rules for both request and response traffic, including ephemeral ports (1024–65535) for return TCP traffic.
+> — [AWS Docs: Network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html)
 
 | Property        | Detail                                                |
 | --------------- | ----------------------------------------------------- |
@@ -295,6 +331,9 @@ For fine-grained application-level rules, always use security groups.
 ---
 
 ## VPC Flow Logs
+
+> VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data can be published to Amazon CloudWatch Logs, Amazon S3, or Amazon Data Firehose for analysis. Flow logs do not capture the content of packets — only the connection metadata.
+> — [AWS Docs: VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html)
 
 VPC Flow Logs capture metadata about IP traffic to/from network interfaces. They do NOT capture packet payloads.
 

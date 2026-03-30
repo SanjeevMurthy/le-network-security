@@ -53,9 +53,15 @@ The Senior SRE must know not just what each service does, but exactly where it b
 
 ## VPC Peering
 
+> A VPC peering connection is a networking connection between two VPCs that enables you to route traffic between them using private IPv4 or IPv6 addresses. Instances in either VPC can communicate with each other as if they were within the same network. A peering connection can be created between your own VPCs, with a VPC in another AWS account, or with a VPC in another AWS Region.
+> — [AWS Docs: VPC Peering](https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html)
+
 VPC Peering creates a direct, private network connection between two VPCs. Traffic flows over AWS's internal network, not the public internet.
 
 ### Hard Constraints
+
+> VPC peering has several non-negotiable limitations that make it unsuitable for large-scale topologies. Routing is non-transitive — traffic cannot pass through an intermediate VPC — and CIDRs across all peered VPCs must not overlap. Each VPC supports a maximum of 125 active peering connections.
+> — [AWS Docs: VPC Peering Limitations](https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html#vpc-peering-limitations)
 
 | Constraint | Detail |
 |---|---|
@@ -78,6 +84,9 @@ Without these routes, the peering exists but traffic is dropped. This is a commo
 
 ### When to Use Peering
 
+> VPC peering is most appropriate for a small number of VPCs with direct, point-to-point connectivity requirements where the non-transitive routing limitation is not a concern. It incurs no attachment fee (unlike Transit Gateway) and has lower latency, making it the cost-effective choice when full mesh or hub-and-spoke routing is not needed.
+> — [AWS Docs: VPC Peering Use Cases](https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html)
+
 - Small number of VPCs (< 10) with point-to-point connectivity requirements
 - Low-latency requirements (peering has slightly lower latency than Transit Gateway)
 - Simple topology: no transitive routing needed
@@ -86,6 +95,9 @@ Without these routes, the peering exists but traffic is dropped. This is a commo
 ---
 
 ## Transit Gateway (TGW)
+
+> AWS Transit Gateway is a network transit hub that connects your VPCs and on-premises networks through a central gateway. It acts as a highly scalable cloud router — every new connection is made to the Transit Gateway, not to every other router in the network, significantly simplifying your network architecture and reducing operational overhead.
+> — [AWS Docs: Transit Gateway](https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html)
 
 Transit Gateway is a regional, fully managed, hub-and-spoke network transit hub. Every VPC and VPN connection attaches to the TGW, and the TGW routes between them.
 
@@ -113,6 +125,9 @@ graph TB
 
 ### TGW Route Tables
 
+> Each Transit Gateway has a default route table, and you can create additional route tables for network segmentation. By associating attachments with specific route tables and enabling selective route propagation, you can control which VPCs and networks can communicate — for example, isolating production traffic from development traffic at the routing layer.
+> — [AWS Docs: TGW Route Tables](https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html)
+
 TGW supports **multiple route tables** — this is what enables network segmentation at scale. Unlike a single shared routing domain, you can create:
 
 - **Production route table**: Prod VPCs + Shared Services; no staging VPCs
@@ -122,6 +137,9 @@ TGW supports **multiple route tables** — this is what enables network segmenta
 Each TGW attachment (VPC, VPN, Direct Connect) is associated with one route table and can propagate routes to multiple route tables.
 
 ### TGW Inter-Region Peering
+
+> Transit Gateway supports peering connections between Transit Gateways in different AWS Regions, enabling you to route traffic between VPCs and on-premises networks across regions. Inter-region peering traffic travels over the AWS global backbone network — not the public internet — providing improved security and consistent bandwidth.
+> — [AWS Docs: TGW Inter-Region Peering](https://docs.aws.amazon.com/vpc/latest/tgw/tgw-peering.html)
 
 TGW supports peering between TGWs in different regions. Traffic flows over AWS's backbone, not the internet. Use this for multi-region architectures instead of VPC peering across regions at scale.
 
@@ -135,6 +153,9 @@ TGW supports peering between TGWs in different regions. Traffic flows over AWS's
 | Bandwidth per VPC attachment | Up to 50 Gbps burst |
 
 ### Centralized Egress Pattern
+
+> A centralized egress architecture uses a dedicated Egress VPC connected to a Transit Gateway to provide internet access for all spoke VPCs. NAT Gateways and security appliances reside in the Egress VPC, allowing uniform enforcement of egress filtering, logging, and inspection policies without deploying appliances in every spoke VPC.
+> — [AWS Docs: Centralized Outbound Routing](https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-nat-igw.html)
 
 All VPCs route `0.0.0.0/0` to a dedicated Egress VPC via TGW. The Egress VPC contains NAT Gateways, security appliances, and optionally a proxy. Benefits:
 
@@ -152,6 +173,9 @@ Egress VPC route table:  0.0.0.0/0 → nat-gw
 ---
 
 ## AWS PrivateLink
+
+> AWS PrivateLink provides private connectivity between VPCs, AWS services, and your on-premises networks without exposing traffic to the public internet. It enables you to create Interface VPC Endpoints that appear as private IP addresses in your VPC, allowing access to services across account boundaries without VPC peering, route tables, or CIDR conflicts.
+> — [AWS Docs: AWS PrivateLink](https://docs.aws.amazon.com/vpc/latest/privatelink/what-is-privatelink.html)
 
 PrivateLink provides private connectivity to services without VPC peering, route tables, or internet exposure. It uses a consumer/provider model:
 
@@ -189,6 +213,9 @@ graph LR
 
 ### When to Use PrivateLink
 
+> PrivateLink is the preferred connectivity model when you need one-directional service access across VPCs or accounts without granting access to the full network, when overlapping CIDR blocks prevent VPC peering, or when integrating with third-party SaaS providers who expose their services via VPC Endpoint Services.
+> — [AWS Docs: PrivateLink Best Practices](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html)
+
 - SaaS vendor integration: vendor exposes their service via PrivateLink; you consume without VPC peering
 - Overlapping CIDRs: when VPC peering is impossible due to CIDR conflicts
 - Security isolation: consumer cannot scan provider's network; only the specific service port is accessible
@@ -197,6 +224,9 @@ graph LR
 ---
 
 ## Site-to-Site VPN
+
+> AWS Site-to-Site VPN creates encrypted IPsec connections between your network and your Amazon VPCs or AWS Transit Gateways over the public internet. Each VPN connection provides two redundant tunnels terminating in different Availability Zones, and supports both BGP dynamic routing and static routing configurations.
+> — [AWS Docs: Site-to-Site VPN](https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html)
 
 Site-to-Site VPN connects on-premises networks to AWS VPCs over IPsec tunnels over the internet.
 
@@ -225,6 +255,9 @@ graph LR
 
 ### BGP vs Static Routing
 
+> AWS Site-to-Site VPN supports both BGP (Border Gateway Protocol) dynamic routing and static routing. BGP is strongly recommended for production environments as it enables automatic route advertisement, automatic failover between tunnels, and flexible traffic engineering via attributes such as AS-path prepending and local preference.
+> — [AWS Docs: VPN Routing Options](https://docs.aws.amazon.com/vpn/latest/s2svpn/VPNRoutingTypes.html)
+
 **BGP (preferred for production)**:
 - Automatic failover between tunnels
 - Supports route summarization and filtering
@@ -245,6 +278,9 @@ graph LR
 
 ## AWS Direct Connect
 
+> AWS Direct Connect links your on-premises network to AWS over a dedicated network connection, bypassing the public internet. This provides more consistent network performance, increased bandwidth throughput, and reduced bandwidth costs compared to internet-based connections — with latency as low as sub-millisecond depending on proximity to a Direct Connect location.
+> — [AWS Docs: Direct Connect](https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html)
+
 Direct Connect provides dedicated private connectivity between on-premises and AWS, bypassing the public internet.
 
 ### Connection Types
@@ -255,6 +291,9 @@ Direct Connect provides dedicated private connectivity between on-premises and A
 | Hosted | 50 Mbps to 10 Gbps | Through APN partner; faster setup |
 
 ### Virtual Interfaces (VIFs)
+
+> A virtual interface (VIF) is the logical component of a Direct Connect connection that carries traffic to a specific destination. Private VIFs connect to VPCs via a Virtual Private Gateway, Public VIFs connect to AWS public endpoints, and Transit VIFs connect to Transit Gateways — each serving a distinct connectivity use case.
+> — [AWS Docs: Virtual Interfaces](https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html)
 
 | VIF Type | Connects To | Use Case |
 |---|---|---|
@@ -270,6 +309,9 @@ LAG bundles multiple Direct Connect connections into a single logical link for i
 - If a single connection fails, LAG continues with reduced bandwidth
 
 ### Direct Connect Gateway
+
+> A Direct Connect Gateway is a globally available, logical resource that you can use to connect your on-premises networks to multiple Amazon VPCs across different AWS Regions through a single Direct Connect connection. It eliminates the need for multiple dedicated connections to each Region, reducing provisioning complexity and cost.
+> — [AWS Docs: Direct Connect Gateways](https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html)
 
 A Direct Connect Gateway (DXGW) is a global resource that connects your on-premises network to multiple VPCs across regions via a single Direct Connect connection:
 

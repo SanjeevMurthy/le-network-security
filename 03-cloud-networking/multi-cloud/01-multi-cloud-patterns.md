@@ -67,6 +67,9 @@ The honest reality: teams often end up in multi-cloud by accident (M&A, departme
 
 ## Routing Paradigm Differences
 
+> Each major cloud provider implements network routing with a distinct architectural model. AWS uses explicit route tables with Transit Gateway as the hub for cross-VPC and hybrid connectivity. Azure uses system routes with optional UDR overrides and Azure Virtual WAN for managed hub-and-spoke transit. GCP uses a global VPC model with Cloud Router managing all BGP sessions. Understanding these paradigm differences is essential for designing cross-cloud connectivity.
+> — [AWS Docs: VPC Routing](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html) | [Azure Docs: Routing Overview](https://learn.microsoft.com/azure/virtual-network/virtual-networks-udr-overview) | [GCP Docs: Cloud Routes](https://cloud.google.com/vpc/docs/routes)
+
 AWS and Azure have fundamentally different mental models for network routing:
 
 ### AWS Routing Model
@@ -104,6 +107,9 @@ VPC → Cloud Router (manages BGP) → Interconnect/VPN
 
 ## IPAM Strategy: Preventing CIDR Overlaps
 
+> IP Address Management (IPAM) in multi-cloud environments requires careful pre-allocation of non-overlapping CIDR blocks across all cloud providers, on-premises networks, and environments. Overlapping address spaces prevent direct routing between networks and require NAT workarounds that break service mesh and zero-trust security assumptions. Establishing a centralized IPAM strategy before provisioning any cloud infrastructure is critical.
+> — [AWS Docs: VPC IPAM](https://docs.aws.amazon.com/vpc/latest/ipam/what-it-is-ipam.html)
+
 Overlapping CIDRs between clouds is the operational debt that kills multi-cloud connectivity. Once services are deployed with overlapping address spaces, you cannot create routing between them without NAT — and NAT breaks many service mesh and security assumptions.
 
 ### Address Space Allocation Strategy
@@ -127,6 +133,9 @@ Azure East US staging:  10.68.0.0/14
 ```
 
 ### Cloud-Native IPAM Tools
+
+> AWS VPC IP Address Manager (IPAM) is a managed service that helps you plan, track, and monitor IP addresses for your AWS workloads. It integrates with AWS Organizations for multi-account management and enables you to allocate CIDRs to VPCs from centrally managed pools, preventing overlap and providing network topology visibility across accounts and regions.
+> — [AWS Docs: VPC IPAM](https://docs.aws.amazon.com/vpc/latest/ipam/what-it-is-ipam.html)
 
 **AWS VPC IP Address Manager (IPAM)**: Centralized IP address management for AWS. Creates IP pools, enforces CIDR assignments, tracks utilization, and generates alerts on overlap. Integrates with AWS Organizations.
 
@@ -152,7 +161,13 @@ resource "aws_vpc" "prod" {
 
 ## Cross-Cloud Connectivity Options
 
+> Connecting workloads across multiple cloud providers requires selecting an appropriate connectivity model based on bandwidth requirements, latency sensitivity, cost constraints, and security requirements. Options range from simple encrypted tunnels over the public internet to dedicated private circuits through network exchange providers.
+> — [AWS Docs: Network-to-Amazon VPC Connectivity](https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/network-to-amazon-vpc-connectivity-options.html)
+
 ### Option 1: Internet with Encryption (WireGuard / IPSec)
+
+> WireGuard and IPSec are cryptographic tunneling protocols that encrypt traffic traversing the public internet between cloud providers. They provide a cost-effective connectivity option for scenarios where variable internet latency is acceptable, by establishing authenticated peer-to-peer tunnels between designated endpoints in each cloud.
+> — [WireGuard Docs](https://www.wireguard.com/) | [AWS Docs: VPN FAQs](https://aws.amazon.com/vpn/faqs/)
 
 The lowest-cost, highest-latency option. Cloud-to-cloud traffic traverses the public internet but is encrypted.
 
@@ -186,6 +201,9 @@ Endpoint = 54.x.x.x:51820  # AWS EC2 public IP
 **Limitations**: Latency is internet-dependent (50-150ms for cross-continental). The WireGuard endpoints are a single point of failure without HA setup. No SLA from cloud providers.
 
 ### Option 2: Cloud Provider Interconnect via Exchange
+
+> Network exchange providers such as Equinix Fabric, Megaport, and PacketFabric operate colocation facilities where multiple cloud providers have physical presence. By connecting AWS Direct Connect and Azure ExpressRoute circuits to the same exchange provider, organizations can establish private, high-bandwidth, low-latency connectivity between clouds without traversing the public internet.
+> — [AWS Docs: Direct Connect](https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html) | [Azure Docs: ExpressRoute Partners](https://learn.microsoft.com/azure/expressroute/expressroute-locations)
 
 Equinix, Megaport, and PCCW operate network exchanges where both AWS and Azure have presence. You order connectivity from both clouds to the same exchange, and traffic flows: AWS Direct Connect → Exchange → Azure ExpressRoute. This avoids the public internet.
 
@@ -230,6 +248,9 @@ graph LR
 
 ### Option 3: SD-WAN Overlays
 
+> Software-Defined WAN (SD-WAN) creates a managed overlay network that abstracts multiple underlying transport connections — including internet broadband, MPLS, and cloud provider interconnects — behind a unified management plane. SD-WAN controllers apply centralized routing policies, perform real-time path quality monitoring, and automatically failover between transport paths based on application SLA requirements.
+> — [Cisco Docs: Catalyst SD-WAN](https://www.cisco.com/c/en/us/solutions/enterprise-networks/sd-wan/index.html)
+
 SD-WAN (Software-Defined WAN) creates a managed overlay network across multiple underlying transports (internet, MPLS, cloud provider interconnect). The SD-WAN controller manages routing policy, failover, and performance monitoring.
 
 **Cisco Catalyst SD-WAN (formerly Viptela)**: Integrated with Cisco Meraki for cloud management. Supports AWS, Azure, GCP native integrations. ISR/ASR SD-WAN routers can be deployed as VMs in each cloud.
@@ -255,6 +276,9 @@ Drawbacks:
 ---
 
 ## DNS Federation in Multi-Cloud
+
+> DNS federation in multi-cloud environments involves configuring DNS forwarding between cloud-specific private DNS resolvers so that workloads in each cloud can resolve private domain names hosted in other clouds. This requires establishing conditional forwarding rules and ensuring that DNS traffic flows over private connectivity (not the internet) between cloud resolvers.
+> — [AWS Docs: Resolver Outbound Endpoints](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-outbound-queries.html) | [Azure Docs: DNS Private Resolver](https://learn.microsoft.com/azure/dns/dns-private-resolver-overview)
 
 ### The Problem
 
@@ -311,7 +335,13 @@ graph TB
 
 ## Service Mesh Multi-Cluster
 
+> Service meshes provide a transparent infrastructure layer for secure, observable, and reliable service-to-service communication. In multi-cluster deployments, service meshes extend this layer across cluster boundaries, enabling mTLS encryption, traffic management, and service discovery between services running in different Kubernetes clusters across different cloud providers.
+> — [Istio Docs: Multi-Cluster Installation](https://istio.io/latest/docs/setup/install/multicluster/) | [Cilium Docs: Cluster Mesh](https://docs.cilium.io/en/stable/network/clustermesh/clustermesh/)
+
 ### Istio Multi-Cluster
+
+> Istio supports multi-cluster deployments where services across clusters can discover and communicate with each other through the service mesh. In multi-primary mode, each cluster runs its own Istio control plane and they share service discovery information, allowing transparent cross-cluster load balancing through east-west gateway services that expose cluster-local services to remote clusters.
+> — [Istio Docs: Multi-Primary on Different Networks](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/)
 
 Istio supports two multi-cluster models:
 
@@ -349,6 +379,9 @@ spec:
 **Certificates**: All clusters share the same root CA (or use a common intermediate CA), enabling mTLS across clusters with mutual certificate validation.
 
 ### Cilium Cluster Mesh
+
+> Cilium Cluster Mesh enables pod-to-pod connectivity and service discovery across multiple Kubernetes clusters without requiring a sidecar proxy. It extends Cilium’s eBPF-based networking to share service endpoints across clusters, enabling global load balancing, network policy enforcement spanning cluster boundaries, and mTLS authentication using SPIFFE identities.
+> — [Cilium Docs: Cluster Mesh](https://docs.cilium.io/en/stable/network/clustermesh/clustermesh/)
 
 Cilium Cluster Mesh extends Cilium's eBPF networking across multiple clusters. It requires L3 connectivity between clusters (pod CIDRs must be routable cross-cluster — which in multi-cloud means cross-cloud routing).
 

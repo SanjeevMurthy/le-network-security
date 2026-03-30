@@ -43,6 +43,9 @@ Azure's load balancing portfolio spans four distinct products — each operating
 
 ## Azure Load Balancer (Standard)
 
+> Azure Standard Load Balancer is a highly available, zone-redundant Layer 4 (TCP/UDP) load balancer that distributes inbound network flows across backend instances. It provides sub-millisecond switching, supports up to 1,000 backend instances, and includes built-in availability zone support, SNAT for outbound connectivity, and rich diagnostics through Azure Monitor.
+> — [Azure Docs: Azure Load Balancer](https://learn.microsoft.com/azure/load-balancer/load-balancer-overview)
+
 Azure Load Balancer operates at Layer 4 (TCP/UDP). It makes routing decisions based on IP address and port — no HTTP awareness. Standard SKU is the production-grade option; Basic SKU is being deprecated.
 
 ### Key Components
@@ -62,6 +65,9 @@ Azure Load Balancer operates at Layer 4 (TCP/UDP). It makes routing decisions ba
 **Load Balancing Rules**: Defines frontend IP + port → backend pool + port mapping. Includes session persistence (hash-based or client IP affinity), idle timeout, and floating IP settings.
 
 ### HA Ports Mode
+
+> HA ports is a configuration of an internal load balancer that allows a single load balancing rule to handle all TCP and UDP flows on all ports simultaneously. This enables transparent pass-through for all traffic to a backend pool of Network Virtual Appliances (NVAs) without enumerating individual ports, making it ideal for high-availability NVA deployments.
+> — [Azure Docs: HA Ports](https://learn.microsoft.com/azure/load-balancer/load-balancer-ha-ports-overview)
 
 HA ports is a load balancing rule that uses port `0` and protocol `All`. This creates a rule that load-balances ALL TCP and UDP traffic on ALL ports simultaneously. Typically used for NVA (firewall/router) scenarios where you want all traffic flowing through the NVA without configuring individual port rules:
 
@@ -98,6 +104,9 @@ HA ports rules cannot coexist with specific port rules on the same frontend. Use
 
 ### Outbound Rules and SNAT
 
+> Azure Load Balancer outbound rules give you full control over outbound source network address translation (SNAT) for your virtual machines. You can configure the number of SNAT ports allocated per backend instance, the public IPs used for outbound connections, and the protocols and timeout values — providing explicit management of outbound connectivity scaling.
+> — [Azure Docs: Outbound Rules](https://learn.microsoft.com/azure/load-balancer/outbound-rules)
+
 Standard ALB's outbound SNAT (Source NAT) requires explicit configuration via Outbound Rules. This is different from Basic, which provides automatic SNAT.
 
 SNAT port exhaustion is a real production failure mode. Each frontend public IP provides ~64,000 SNAT ports. With many backend instances making many outbound connections, these ports can be exhausted.
@@ -123,6 +132,9 @@ Alert threshold: >0 failed SNAT connections
 ---
 
 ## Application Gateway
+
+> Azure Application Gateway is a web traffic load balancer operating at Layer 7 that enables you to manage traffic to your web applications based on host headers, URL paths, and other HTTP attributes. It includes built-in SSL/TLS termination, cookie-based session affinity, URL-path-based routing, and an integrated Web Application Firewall (WAF) to protect against common web exploits.
+> — [Azure Docs: Application Gateway Overview](https://learn.microsoft.com/azure/application-gateway/overview)
 
 Application Gateway is Azure's L7 load balancer with WAF capabilities. It terminates TCP connections, reads HTTP headers/paths, and makes routing decisions based on application-layer content.
 
@@ -158,6 +170,9 @@ az network application-gateway waf-policy policy-setting update \
 
 ### Autoscaling (v2 SKU)
 
+> Application Gateway v2 (Standard_v2 and WAF_v2 SKUs) supports autoscaling, automatically scaling the number of gateway instances up or down based on traffic load patterns. You configure minimum and maximum instance counts; the gateway provisions and releases capacity within those bounds without manual intervention.
+> — [Azure Docs: Application Gateway Autoscaling](https://learn.microsoft.com/azure/application-gateway/application-gateway-autoscaling-zone-redundant)
+
 Application Gateway v2 (WAF_v2 or Standard_v2) supports autoscaling. You define minimum and maximum instance counts. The gateway scales between min and max based on traffic load.
 
 ```bash
@@ -172,6 +187,9 @@ az network application-gateway create \
 **V2 subnet requirements**: Application Gateway v2 requires a dedicated subnet with minimum `/24` recommended (gateway uses IPs from this subnet for scaling — one IP per instance).
 
 ### Health Probe Configuration
+
+> Application Gateway health probes continuously monitor the health of servers in a backend pool. When a server fails to respond to health probe requests within the configured thresholds, it is marked unhealthy and removed from the rotation until it responds successfully again. Custom probes allow you to configure specific paths, hostnames, ports, and success status code ranges.
+> — [Azure Docs: Application Gateway Health Probes](https://learn.microsoft.com/azure/application-gateway/application-gateway-probe-overview)
 
 The most common source of production 502 errors is health probe misconfiguration. Default probes send HTTP GET to `/` on the same port as the backend HTTP setting. Override with custom probes for accurate health detection:
 
@@ -198,9 +216,15 @@ az network application-gateway probe create \
 
 ## Azure Front Door
 
+> Azure Front Door is Microsoft's modern cloud Content Delivery Network (CDN) that provides fast, reliable, and secure access between your users and your applications' static and dynamic web content across the globe. It delivers content using Microsoft's global edge network with hundreds of global and local points of presence close to both enterprise and consumer end users.
+> — [Azure Docs: Azure Front Door Overview](https://learn.microsoft.com/azure/frontdoor/front-door-overview)
+
 Azure Front Door is Microsoft's global L7 CDN and load balancer. Unlike Application Gateway (regional), Front Door has Points of Presence (PoPs) in 100+ locations worldwide.
 
 ### Key Architecture Concepts
+
+> Azure Front Door uses anycast to direct end-user requests to the nearest Front Door point of presence (PoP). Connections terminate at the PoP, and Front Door then uses its own optimized WAN path to route requests to the best available origin — accelerating both connection establishment for end users and content delivery from origins.
+> — [Azure Docs: Front Door Routing](https://learn.microsoft.com/azure/frontdoor/front-door-routing-architecture)
 
 **Anycast routing**: Client DNS resolution returns the nearest Front Door PoP IP. Traffic enters Microsoft's network at the closest PoP and traverses Microsoft's WAN backbone to reach the origin. This dramatically reduces time-to-first-byte for globally distributed clients.
 
@@ -217,6 +241,9 @@ Azure Front Door is Microsoft's global L7 CDN and load balancer. Unlike Applicat
 **WAF at the Edge**: Front Door WAF runs at the PoP, blocking malicious traffic before it reaches your origin. This is more cost-effective than running WAF at Application Gateway alone because malicious traffic is blocked globally at the edge.
 
 ### Origins and Origin Groups
+
+> In Azure Front Door Standard and Premium, an origin represents the backend application server or service that Front Door delivers content from. An origin group is a set of origins with health probe configuration and load balancing settings — Front Door routes incoming requests to the healthiest, lowest-latency origin within the group.
+> — [Azure Docs: Front Door Origins](https://learn.microsoft.com/azure/frontdoor/origin)
 
 Front Door Standard/Premium (the current generation, replacing classic Front Door):
 - **Origin**: A backend endpoint (App Service, AKS Ingress IP, Storage, custom IP)
@@ -250,11 +277,17 @@ az afd origin create \
 
 ## Azure Traffic Manager
 
+> Azure Traffic Manager is a DNS-based traffic load balancer that distributes traffic optimally to services across global Azure regions, while providing high availability and responsiveness. It works by applying DNS-level routing policies to direct end-user requests to different endpoints based on traffic routing methods, endpoint health checks, and geographic location.
+> — [Azure Docs: Azure Traffic Manager](https://learn.microsoft.com/azure/traffic-manager/traffic-manager-overview)
+
 Traffic Manager is **DNS-based** global load balancing. It does NOT proxy traffic — it returns DNS responses directing clients to specific endpoints. The client connects directly to the endpoint.
 
 This is fundamentally different from Front Door: Front Door is a reverse proxy that terminates connections; Traffic Manager just influences DNS resolution.
 
 ### Routing Methods
+
+> Azure Traffic Manager supports six traffic-routing methods to control how DNS queries are answered and which endpoint receives client traffic. You can combine routing methods using nested Traffic Manager profiles for complex multi-region, multi-layered load balancing scenarios.
+> — [Azure Docs: Traffic Manager Routing Methods](https://learn.microsoft.com/azure/traffic-manager/traffic-manager-routing-methods)
 
 | Method | Use Case |
 |--------|----------|
@@ -266,6 +299,9 @@ This is fundamentally different from Front Door: Front Door is a reverse proxy t
 | Subnet | Route based on client IP subnet |
 
 ### Traffic Manager Limitations
+
+> Because Traffic Manager is a DNS-based service, it cannot failover faster than the DNS TTL allows — clients that have cached a DNS response will continue using the previously resolved endpoint until the TTL expires. Additionally, Traffic Manager does not inspect or modify actual application traffic, so it cannot provide WAF protection, request manipulation, or TLS termination.
+> — [Azure Docs: Traffic Manager FAQ](https://learn.microsoft.com/azure/traffic-manager/traffic-manager-faqs)
 
 - **TTL-based failover**: Traffic Manager relies on DNS TTL. Default TTL is 300 seconds (5 minutes). If a primary endpoint fails, clients who have cached the DNS response will continue hitting the failed endpoint for up to TTL seconds. Reduce TTL to 60 seconds for faster failover (with increased DNS query load as a trade-off).
 - **No connection visibility**: Traffic Manager cannot see the actual HTTP requests. WAF, rate limiting, and request inspection must be at the origin or a proxy layer.

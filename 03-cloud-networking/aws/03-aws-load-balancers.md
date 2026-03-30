@@ -76,6 +76,9 @@ Source material from `/le-study-notes/networking/04-load-balancing.md` covers L4
 
 ## Application Load Balancer (ALB)
 
+> An Application Load Balancer operates at the request level (Layer 7), routing traffic to targets such as EC2 instances, containers, IP addresses, and Lambda functions based on the content of the request — including host headers, URL paths, query strings, and HTTP headers. It supports advanced request routing, TLS termination, WebSocket, and HTTP/2.
+> — [AWS Docs: Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
+
 ALB is the primary choice for HTTP/HTTPS workloads. It terminates TLS, parses HTTP, and routes based on content.
 
 ### Content-Based Routing with Listener Rules
@@ -112,6 +115,9 @@ Rules have **priorities** (1-50,000). Lower number = higher priority. A rule mat
 
 ### Target Groups
 
+> A target group routes requests to one or more registered targets using the configured protocol and port. Each target group has its own health check settings, and you can register different types of targets — EC2 instances, IP addresses, Lambda functions, or other ALBs — within the same or across different target groups.
+> — [AWS Docs: Target Groups](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
+
 | Target Type | Use Case | Notes |
 |---|---|---|
 | `instance` | EC2 instances registered by ID | Traffic goes to instance's primary ENI |
@@ -120,6 +126,9 @@ Rules have **priorities** (1-50,000). Lower number = higher priority. A rule mat
 | `alb` | Another ALB | NLB-to-ALB chaining pattern |
 
 ### Weighted Target Groups for Canary Deployments
+
+> ALB supports weighted target groups, allowing you to distribute incoming traffic across multiple target groups by specifying a relative weight for each. This enables canary deployments and blue/green releases directly at the load balancer level, without DNS changes or external orchestration tools.
+> — [AWS Docs: Weighted Target Groups](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#forward-actions)
 
 ALB supports traffic splitting between target groups using weighted forwarding:
 
@@ -139,15 +148,24 @@ This enables blue-green and canary releases without DNS changes or external tool
 
 ### ALB Idle Timeout
 
+> The idle timeout controls how long the ALB waits for data to be sent on an established connection. If no data is transmitted within the idle timeout period, the load balancer closes the connection. This applies to both the front-end connection (client to ALB) and the back-end connection (ALB to target).
+> — [AWS Docs: Connection Idle Timeout](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#connection-idle-timeout)
+
 ALB has a configurable idle timeout (default: 60 seconds). If no data is sent on an established connection for this duration, ALB closes the connection. This is the source of one of the most common production 504 errors (see Production Scenario below).
 
 ---
 
 ## Network Load Balancer (NLB)
 
+> A Network Load Balancer operates at the connection level (Layer 4), routing connections to targets based on IP protocol data. It is capable of handling millions of requests per second while maintaining ultra-low latencies, and provides static IP addresses per Availability Zone for use in firewall whitelisting and PrivateLink configurations.
+> — [AWS Docs: Network Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html)
+
 NLB operates at Layer 4. It does not inspect HTTP — it routes based on TCP/UDP/TLS and does not modify the packet beyond necessary rewriting.
 
 ### Source IP Preservation
+
+> Unlike the Application Load Balancer, the Network Load Balancer preserves the source IP address of the client in the TCP packet delivered to targets. This allows backend applications to see the actual client IP directly in the connection, rather than relying on the `X-Forwarded-For` HTTP header.
+> — [AWS Docs: NLB Target Groups](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
 
 Unlike ALB (which uses X-Forwarded-For), NLB preserves the original client IP address. The backend sees the actual client IP directly in the TCP connection. This matters for:
 - IP-based access control on backends
@@ -158,12 +176,18 @@ Unlike ALB (which uses X-Forwarded-For), NLB preserves the original client IP ad
 
 ### Static IPs Per AZ
 
+> Each Network Load Balancer node is assigned one static IP address per Availability Zone, and optionally an Elastic IP address. These IP addresses do not change for the lifetime of the load balancer, making NLB the right choice when downstream clients or firewalls require a fixed, unchanging IP address for whitelisting.
+> — [AWS Docs: NLB IP Addresses](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones)
+
 NLB creates one static Elastic IP per AZ. These IPs don't change even if the NLB scales. This makes NLB the right choice when:
 - Customers need to whitelist your IP addresses in their firewall
 - A legacy system cannot use DNS and needs a fixed IP
 - PrivateLink requires an NLB (ALB cannot back PrivateLink)
 
 ### TLS Passthrough Mode
+
+> When an NLB listener is configured with the `TCP` protocol (rather than `TLS`), it forwards raw TCP traffic without decrypting the TLS connection. The target receives the full encrypted payload and performs TLS termination itself, enabling end-to-end encryption and preserving client certificates for mutual TLS (mTLS) authentication.
+> — [AWS Docs: NLB TLS Listeners](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html)
 
 NLB can forward TLS connections without decrypting them (TLS passthrough). The backend terminates TLS, enabling:
 - End-to-end encryption where the LB never holds the private key
@@ -179,6 +203,9 @@ NLB is designed for extreme scale: millions of requests per second with ultra-lo
 ---
 
 ## Gateway Load Balancer (GLB)
+
+> A Gateway Load Balancer enables you to deploy, scale, and manage third-party virtual network appliances such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems. It provides a transparent bump-in-the-wire architecture using the GENEVE protocol (port 6081) to pass packets to appliances without modifying source or destination IP addresses.
+> — [AWS Docs: Gateway Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html)
 
 GLB inserts transparent network security appliances into the traffic path. It operates at Layer 3 and uses the GENEVE protocol (port 6081) to encapsulate packets to and from security appliances.
 
@@ -198,6 +225,9 @@ Traffic enters via the IGW, is routed to the GLB (via route table: `0.0.0.0/0 �
 
 ### GENEVE Protocol
 
+> GENEVE (Generic Network Virtualization Encapsulation) is a tunneling protocol used by the Gateway Load Balancer to forward traffic to appliances. It encapsulates the original packet with metadata context, allowing the appliance to process and return the packet without modifying the original source or destination addresses, preserving the appearance of normal through traffic.
+> — [AWS Docs: GENEVE Protocol](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
+
 GENEVE (Generic Network Virtualization Encapsulation) carries metadata about the original traffic along with the encapsulated packet. GLB uses GENEVE on UDP port 6081. Security appliances must support this protocol (most next-gen firewalls support it as of 2024).
 
 ### Use Cases
@@ -210,6 +240,9 @@ GENEVE (Generic Network Virtualization Encapsulation) carries metadata about the
 ---
 
 ## Connection Draining (Deregistration Delay)
+
+> Deregistration delay (also known as connection draining) is the time that Elastic Load Balancing waits for in-flight requests to complete before deregistering a target. During this delay, the load balancer stops routing new requests to the target while allowing existing connections to complete, ensuring graceful instance removal during deployments and scale-in events.
+> — [AWS Docs: Deregistration Delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#deregistration-delay)
 
 When a target is deregistered from a target group (deployment, scale-in, maintenance), ALB/NLB stops sending NEW requests but allows IN-FLIGHT requests to complete. This is connection draining.
 
@@ -235,6 +268,9 @@ aws elbv2 modify-target-group-attributes \
 ---
 
 ## WAF Integration with ALB
+
+> AWS WAF is a web application firewall that can be associated with an Application Load Balancer to inspect and filter HTTP/HTTPS web requests before they reach your backend targets. WAF rules can block common web exploits, filter traffic based on IP addresses and geographic location, and apply rate-based limits to protect against denial-of-service attacks.
+> — [AWS Docs: WAF with ALB](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html)
 
 AWS WAF (Web Application Firewall) can be attached to an ALB. It inspects HTTP/HTTPS requests before they reach backend targets.
 
@@ -283,6 +319,9 @@ aws wafv2 associate-web-acl \
 ---
 
 ## ALB Access Logs
+
+> Access logs for Application Load Balancers capture detailed information about every request sent to the load balancer, including the time, client IP address, latency, request paths, server response codes, and the IP addresses of the backend targets that processed each request. Logs are stored in Amazon S3 and can be queried with Amazon Athena for incident investigation and performance analysis.
+> — [AWS Docs: ALB Access Logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html)
 
 ALB writes detailed access logs to S3 for every request (disabled by default; must be enabled).
 

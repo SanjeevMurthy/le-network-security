@@ -51,6 +51,9 @@ Azure connectivity architecture is a layer of decisions that compound. Get VNet 
 
 ## VNet Peering
 
+> Azure Virtual Network peering seamlessly connects two Azure virtual networks, making them appear as one for connectivity purposes. Traffic between virtual machines in peered virtual networks uses the Microsoft backbone infrastructure and never passes through the public internet, resulting in low-latency, high-bandwidth connections.
+> — [Azure Docs: VNet Peering](https://learn.microsoft.com/azure/virtual-network/virtual-network-peering-overview)
+
 VNet Peering connects two VNets at the Azure SDN layer. Traffic flows over Microsoft's backbone, not the public internet. Latency is single-digit milliseconds within a region.
 
 ### Critical Property: Non-Transitive Routing
@@ -66,6 +69,9 @@ VNet-A <--peering--> VNet-B <--peering--> VNet-C
 This is the most common architectural mistake in Azure hub-spoke deployments. Teams set up a hub VNet, peer all spokes to the hub, and expect spokes to communicate via the hub — they cannot, unless you add UDRs that route inter-spoke traffic through an NVA (like Azure Firewall) in the hub.
 
 ### Gateway Transit
+
+> With gateway transit, a peered virtual network can use the virtual network gateway in the hub VNet for cross-premises or VNet-to-VNet connectivity. Spoke VNets do not need their own gateways — they can share the hub's VPN Gateway or ExpressRoute Gateway by enabling `useRemoteGateways` on the spoke and `allowGatewayTransit` on the hub.
+> — [Azure Docs: Gateway Transit](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-peering-gateway-transit)
 
 Peering supports gateway transit: a spoke VNet can use the hub's VPN Gateway or ExpressRoute Gateway to reach on-premises networks.
 
@@ -91,6 +97,9 @@ Gateway transit works in one direction only — the spoke uses the hub's gateway
 
 ### Global VNet Peering
 
+> Global virtual network peering enables you to connect virtual networks across Azure regions. Traffic between globally peered virtual networks travels over Microsoft's global backbone network and does not traverse the public internet, though data transfer charges apply and higher latency is expected compared to same-region peering.
+> — [Azure Docs: Global VNet Peering](https://learn.microsoft.com/azure/virtual-network/virtual-network-peering-overview#global-virtual-network-peering)
+
 Peering works across Azure regions (global peering). Traffic stays on Microsoft's WAN backbone. Higher latency than same-region peering, bandwidth limits apply per peering link. Global peering charges data transfer fees.
 
 ### Peering State Issues
@@ -105,6 +114,9 @@ az network vnet peering list --resource-group spoke-rg --vnet-name spoke-vnet -o
 ---
 
 ## Azure Virtual WAN (vWAN)
+
+> Azure Virtual WAN is a networking service that brings many networking, security, and routing functionalities together to provide a single operational interface. It enables hub-and-spoke architectures where the virtual hub automatically handles transit routing between connected VNets, branch sites, and on-premises networks, eliminating the need to manage individual route tables.
+> — [Azure Docs: Azure Virtual WAN](https://learn.microsoft.com/azure/virtual-wan/virtual-wan-about)
 
 Azure Virtual WAN is a Microsoft-managed networking service that provides hub-and-spoke topology with automatic transit routing. It solves the transitivity problem that basic VNet peering cannot.
 
@@ -125,11 +137,17 @@ Azure Virtual WAN is a Microsoft-managed networking service that provides hub-an
 
 ### How vWAN Transit Routing Works
 
+> When VNets are connected to a Virtual WAN hub, the hub's managed router automatically programs the necessary routes for all connected networks to communicate with each other. This provides transitive routing between all connected VNets and branches without requiring UDRs or NVAs for basic hub-to-spoke and spoke-to-spoke traffic flows.
+> — [Azure Docs: vWAN Routing Concepts](https://learn.microsoft.com/azure/virtual-wan/about-virtual-hub-routing)
+
 When you connect VNets to a vWAN hub, the hub's managed router automatically handles routing between connected VNets. VNet-A to VNet-B traffic flows: VNet-A → vWAN Hub → VNet-B. No UDRs needed, no NVA required for basic transit.
 
 For secured hubs (Azure Firewall integrated), all traffic — including VNet-to-VNet — can be routed through the hub firewall. The hub's routing policies handle this automatically.
 
 ### vWAN Routing Intent
+
+> Virtual WAN Routing Intent is a feature that simplifies the configuration of a Secured Virtual Hub by allowing you to specify, in a single policy, that all private (RFC 1918) traffic and/or all internet-bound traffic should be routed through the Azure Firewall or a supported security partner provider deployed in the hub.
+> — [Azure Docs: vWAN Routing Intent](https://learn.microsoft.com/azure/virtual-wan/how-to-routing-policies)
 
 Introduced to simplify secured hub configuration:
 ```
@@ -143,9 +161,15 @@ Previously required manual route tables in vWAN — Routing Intent automates thi
 
 ## VPN Gateway
 
+> Azure VPN Gateway is a managed service that creates encrypted cross-premises connections between an Azure virtual network and on-premises locations over the public internet, or between Azure VNets. A VPN Gateway consists of two or more VMs deployed to a dedicated gateway subnet that contain routing services and run specific gateway services.
+> — [Azure Docs: VPN Gateway](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpngateways)
+
 Azure VPN Gateway creates encrypted IPSec/IKE tunnels between Azure and on-premises networks or other Azure VNets.
 
 ### Policy-Based vs Route-Based
+
+> Policy-based VPN gateways use static routing policies to direct traffic through IPsec tunnels based on specific address pairs (traffic selectors). Route-based VPN gateways use dynamic routing protocols and route tables to forward packets to the appropriate tunnel interface, supporting more flexible topologies including active-active configuration and BGP.
+> — [Azure Docs: VPN Types](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-connect-different-deployment-models-portal#about-vpn-gateway-settings)
 
 | Type | Use Case | BGP | Multiple Tunnels |
 |------|----------|-----|-----------------|
@@ -170,6 +194,9 @@ Basic SKU does not support BGP, cannot be active-active, and cannot be upgraded 
 
 ### Active-Active Configuration
 
+> In active-active mode, an Azure VPN Gateway deploys two gateway instances, each with its own public IP address, and both instances maintain active BGP sessions to the on-premises device. This enables continuous connectivity even if one gateway instance is undergoing maintenance or fails, eliminating the cold standby delay of the default active-passive configuration.
+> — [Azure Docs: Active-Active VPN Gateway](https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-highlyavailable#active-active-vpn-gateways)
+
 Active-active deploys two gateway instances with two public IPs. On-premises must maintain BGP sessions to both. If one instance fails, BGP reconverges to the surviving instance. Without active-active, failover requires cold standby instance promotion (~90 seconds downtime).
 
 ```bash
@@ -193,6 +220,9 @@ BGP allows dynamic route exchange between Azure and on-premises. Routes advertis
 
 ## ExpressRoute
 
+> Azure ExpressRoute lets you extend your on-premises networks into the Microsoft cloud over a private connection facilitated by a connectivity provider. With ExpressRoute, you can establish connections to Microsoft cloud services such as Azure and Microsoft 365. The connection is not routed over the public internet, providing more reliability, faster speeds, consistent latencies, and higher security than typical internet connections.
+> — [Azure Docs: ExpressRoute Overview](https://learn.microsoft.com/azure/expressroute/expressroute-introduction)
+
 ExpressRoute provides a private, dedicated connection between on-premises and Azure using a connectivity provider (ISP or exchange provider). The connection is NOT over the public internet.
 
 ### Circuit Characteristics
@@ -205,6 +235,9 @@ ExpressRoute provides a private, dedicated connection between on-premises and Az
 
 ### Private Peering
 
+> ExpressRoute private peering connects your on-premises network to Azure virtual networks, allowing communication with VMs, cloud services, and other Azure resources using private IP addresses. All traffic is exchanged using BGP, and Microsoft uses AS 12076 as the public ASN for all ExpressRoute BGP sessions.
+> — [Azure Docs: ExpressRoute Private Peering](https://learn.microsoft.com/azure/expressroute/expressroute-circuit-peerings#privatepeering)
+
 Connects on-premises to Azure VNets. Traffic flows: On-premises router → Provider → Microsoft Edge (MSEE) → ExpressRoute Gateway → VNets.
 
 BGP is mandatory for ExpressRoute private peering. Azure uses AS 12076 (Microsoft's public ASN).
@@ -215,6 +248,9 @@ Connects on-premises to Azure public services (Storage, SQL, Cosmos DB) and Micr
 
 ### ExpressRoute Global Reach
 
+> ExpressRoute Global Reach allows you to link ExpressRoute circuits together to make a private network between your on-premises networks. For example, two on-premises networks in different countries can be connected to each other via Microsoft’s global backbone by using ExpressRoute circuits provisioned at nearby peering locations — without needing separate site-to-site WAN circuits between them.
+> — [Azure Docs: ExpressRoute Global Reach](https://learn.microsoft.com/azure/expressroute/expressroute-global-reach)
+
 Without Global Reach, two ExpressRoute-connected sites cannot communicate via Azure — they must use the internet or a separate WAN circuit. Global Reach extends the ExpressRoute backbone to provide site-to-site connectivity through Microsoft's network:
 
 ```
@@ -224,11 +260,17 @@ Site-A (Japan) --ER--> Microsoft Backbone --ER--> Site-B (London)
 
 ### FastPath
 
+> ExpressRoute FastPath is designed to improve data path performance between your on-premises network and your virtual network. When FastPath is enabled, it bypasses the ExpressRoute Gateway for data traffic and sends network traffic directly to virtual machines in the virtual network, significantly increasing throughput and reducing latency.
+> — [Azure Docs: ExpressRoute FastPath](https://learn.microsoft.com/azure/expressroute/about-fastpath)
+
 By default, data traffic flows through the ExpressRoute Gateway, creating a bottleneck. FastPath bypasses the gateway for data traffic (gateway still handles control plane). Maximum throughput scales significantly with FastPath enabled on UltraPerformance or ErGw3AZ SKUs.
 
 ---
 
 ## Azure Route Server
+
+> Azure Route Server simplifies dynamic routing between your network virtual appliance (NVA) and your Virtual Network. It allows you to exchange routing information directly through BGP between any NVA that supports the BGP routing protocol and the Azure Software Defined Network (SDN) in Azure VNets, without the need to manually configure and maintain route tables.
+> — [Azure Docs: Azure Route Server](https://learn.microsoft.com/azure/route-server/overview)
 
 Azure Route Server (ARS) solves the pain of UDR maintenance when using NVAs. Without ARS:
 - NVA learns routes dynamically from on-premises via BGP
@@ -261,6 +303,9 @@ ARS requires a dedicated subnet named `RouteServerSubnet` with minimum `/27`. It
 
 ## Private Link Service
 
+> Azure Private Link Service is the reference to your own service that is powered by Azure Private Link. Your service that is running behind Azure Standard Load Balancer can be enabled for Private Link access so that consumers can access it privately from their own VNets, without requiring VNet peering or public IP exposure — supporting cross-tenant scenarios.
+> — [Azure Docs: Private Link Service](https://learn.microsoft.com/azure/private-link/private-link-service-overview)
+
 While Private Endpoints are for consuming Azure PaaS services privately, Private Link Service allows you to expose YOUR OWN service privately to other Azure customers or tenants.
 
 Use cases:
@@ -279,6 +324,9 @@ The customer creates a Private Endpoint in their VNet. The Private Endpoint conn
 ---
 
 ## Hub-Spoke with Azure Firewall
+
+> The hub-spoke network topology in Azure uses a central hub virtual network that acts as a point of connectivity to on-premises networks, with spoke VNets peered to the hub. Azure Firewall deployed in the hub VNet, combined with User-Defined Routes in each spoke, provides centralized security inspection and internet egress control for all spoke workloads.
+> — [Azure Docs: Hub-Spoke Topology](https://learn.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 
 The canonical enterprise Azure topology:
 
