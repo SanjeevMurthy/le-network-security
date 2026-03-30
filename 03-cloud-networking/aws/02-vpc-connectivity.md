@@ -291,6 +291,8 @@ Direct Connect provides dedicated private connectivity between on-premises and A
 | Dedicated | 1 Gbps, 10 Gbps, 100 Gbps | AWS directly; ~weeks lead time |
 | Hosted | 50 Mbps to 10 Gbps | Through APN partner; faster setup |
 
+<img width="1040" height="311" alt="image" src="https://github.com/user-attachments/assets/9d8173c1-a387-4cbe-b293-297084784036" />
+
 ### Virtual Interfaces (VIFs)
 
 > A virtual interface (VIF) is the logical component of a Direct Connect connection that carries traffic to a specific destination. Private VIFs connect to VPCs via a Virtual Private Gateway, Public VIFs connect to AWS public endpoints, and Transit VIFs connect to Transit Gateways — each serving a distinct connectivity use case.
