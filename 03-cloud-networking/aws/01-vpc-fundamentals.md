@@ -109,6 +109,9 @@ A NAT Gateway allows instances in **private subnets** to initiate outbound conne
 
 VPC Endpoints allow private connectivity to AWS services without using the internet, IGW, or NAT Gateway.
 
+<img width="521" height="331" alt="image" src="https://github.com/user-attachments/assets/cd962c52-0421-452d-b713-d1c17fc2b7e3" />
+
+
 **Gateway Endpoints** (free):
 
 - Only for S3 and DynamoDB
