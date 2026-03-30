@@ -542,3 +542,6 @@ A: Multiple controls in depth:
 3. VPC Interface Endpoint for Route 53 Resolver keeps DNS queries inside the VPC without going through the DNS server at VPC+2
 4. Use VPC Flow Logs to detect anomalous traffic patterns on UDP/53
 5. GuardDuty has a specific finding type `Backdoor:EC2/DNSDataExfiltration` that uses ML to detect DNS tunneling patterns. The key detection signal is high-entropy subdomain names (e.g., `a3f8k2m9p.attacker.com`) or unusually large TXT record responses.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/96ac4735-9b4a-4793-b7aa-c0724184cc88" />
+
