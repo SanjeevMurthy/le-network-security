@@ -42,7 +42,6 @@ The core mental model: a VPC is a software-defined data center. You control IP a
 
 <img width="521" height="311" alt="image" src="https://github.com/user-attachments/assets/81eef7f2-6835-4a08-bb8d-5a8ded6c6415" />
 
-
 ---
 
 ## VPC Components
@@ -52,12 +51,13 @@ The core mental model: a VPC is a software-defined data center. You control IP a
 The VPC CIDR is the master address space. Choose RFC 1918 ranges:
 
 | RFC 1918 Range | Common VPC CIDR | Subnets Available |
-|---|---|---|
-| 10.0.0.0/8 | 10.0.0.0/16 | 65,536 IPs |
-| 172.16.0.0/12 | 172.16.0.0/16 | 65,536 IPs |
-| 192.168.0.0/16 | 192.168.0.0/20 | 4,096 IPs |
+| -------------- | --------------- | ----------------- |
+| 10.0.0.0/8     | 10.0.0.0/16     | 65,536 IPs        |
+| 172.16.0.0/12  | 172.16.0.0/16   | 65,536 IPs        |
+| 192.168.0.0/16 | 192.168.0.0/20  | 4,096 IPs         |
 
 **Production guidelines:**
+
 - Use /16 for most VPCs — gives 65K IPs, room to grow
 - Plan ahead for VPC peering and Transit Gateway — overlapping CIDRs cannot be connected
 - Use a CIDR allocation strategy across accounts: e.g., prod=10.0.0.0/16, staging=10.1.0.0/16, dev=10.2.0.0/16
@@ -67,13 +67,13 @@ The VPC CIDR is the master address space. Choose RFC 1918 ranges:
 
 For every subnet you create, AWS reserves **5 IP addresses** at the bottom of the range:
 
-| Reserved IP | Purpose |
-|---|---|
-| x.x.x.0 | Network address |
-| x.x.x.1 | VPC router (implicit gateway) |
-| x.x.x.2 | AWS DNS server (VPC base +2) |
-| x.x.x.3 | Reserved for future use |
-| x.x.x.255 | Broadcast address (AWS doesn't use broadcast but reserves it) |
+| Reserved IP | Purpose                                                       |
+| ----------- | ------------------------------------------------------------- |
+| x.x.x.0     | Network address                                               |
+| x.x.x.1     | VPC router (implicit gateway)                                 |
+| x.x.x.2     | AWS DNS server (VPC base +2)                                  |
+| x.x.x.3     | Reserved for future use                                       |
+| x.x.x.255   | Broadcast address (AWS doesn't use broadcast but reserves it) |
 
 For a /24 subnet (256 addresses), this leaves **251 usable IPs**. For a /28 (16 addresses), only **11 usable IPs**. This matters for EKS: a /28 prefix delegation block yields 11 pods per ENI slot.
 
@@ -89,26 +89,35 @@ A NAT Gateway allows instances in **private subnets** to initiate outbound conne
 
 **Critical production detail**: Deploy one NAT Gateway per AZ. If you have a single NAT Gateway in AZ-a, traffic from AZ-b crosses AZ boundaries (costly and creates a single point of failure).
 
-| Property | Value |
-|---|---|
-| Bandwidth | Up to 100 Gbps burst |
-| Connections | 55,000 simultaneous per destination |
-| Cost | Per-hour + per-GB data processing charge |
-| HA | Per-AZ deployment required |
+| Property    | Value                                    |
+| ----------- | ---------------------------------------- |
+| Bandwidth   | Up to 100 Gbps burst                     |
+| Connections | 55,000 simultaneous per destination      |
+| Cost        | Per-hour + per-GB data processing charge |
+| HA          | Per-AZ deployment required               |
 
 **NAT Gateway vs NAT Instance**: NAT Gateway is managed, scales automatically, and requires no maintenance. NAT Instances (EC2) give you more control (custom routing, filtering) but require patching, sizing, and HA design.
+
+| Feature     | Internet Gateway (IGW)                         | NAT Gateway                                       |
+| ----------- | ---------------------------------------------- | ------------------------------------------------- |
+| Placement   | Attached to the VPC                            | Sits inside a Public Subnet                       |
+| Purpose     | Provides 2-way connectivity for Public Subnets | Provides 1-way (outbound) for Private Subnets     |
+| IP Handling | Maps Private IP to Instance's Public IP        | Maps many Private IPs to the Gateway's Elastic IP |
+| Cost        | Free                                           | Hourly charge + Data processing fees              |
 
 ### VPC Endpoints
 
 VPC Endpoints allow private connectivity to AWS services without using the internet, IGW, or NAT Gateway.
 
 **Gateway Endpoints** (free):
+
 - Only for S3 and DynamoDB
 - Adds a route to the route table pointing to the AWS service prefix list
 - Traffic stays on the AWS backbone
 - Route table entry: `pl-xxxxxxxx (com.amazonaws.us-east-1.s3)` → `vpce-xxxxx`
 
 **Interface Endpoints** (priced per hour + per GB):
+
 - Creates an ENI in your subnet with a private IP
 - DNS resolves the service name to the private IP
 - Supports 100+ AWS services: SSM, ECR, STS, KMS, CloudWatch, etc.
@@ -123,6 +132,7 @@ VPC Endpoints allow private connectivity to AWS services without using the inter
 ### Why Never Use the Default VPC in Production
 
 AWS creates a default VPC in every region with these properties:
+
 - CIDR: 172.31.0.0/16
 - All subnets are public (route 0.0.0.0/0 → IGW)
 - All instances get public IPs by default
@@ -177,18 +187,21 @@ graph TB
 ### Subnet Tier Responsibilities
 
 **Public Subnets** (10.0.0.0/24, 10.0.1.0/24):
+
 - Hosts: ALB, NLB, NAT Gateways, bastion hosts (if used)
 - Route: `0.0.0.0/0 → IGW`
 - Auto-assign public IP: typically disabled (let ALB/NAT GW handle it)
 - Never run application workloads here
 
 **Private Subnets** (10.0.10.0/24, 10.0.11.0/24):
+
 - Hosts: EC2 application servers, EKS nodes, Lambda in VPC, ECS tasks
 - Route: `0.0.0.0/0 → NAT GW` (same AZ), `10.0.0.0/16 → local`
 - Can initiate outbound internet connections; cannot receive inbound from internet
 - S3 traffic should use VPC Gateway Endpoint (no NAT charges)
 
 **Isolated Subnets** (10.0.20.0/24, 10.0.21.0/24):
+
 - Hosts: RDS, ElastiCache, OpenSearch, internal microservices with no internet need
 - Route: **No default route** — only local VPC traffic
 - Cannot reach internet at all; cannot be reached from internet
@@ -240,34 +253,36 @@ graph TD
 
 ### Security Groups
 
-| Property | Detail |
-|---|---|
-| Statefulness | **Stateful** — return traffic automatically allowed |
-| Scope | Instance/ENI level |
-| Default | Allow all outbound; deny all inbound |
-| Rule types | Allow only (no explicit deny) |
-| Evaluation | All rules evaluated; most permissive wins |
-| References | Can reference other security groups (not just CIDRs) |
+| Property     | Detail                                               |
+| ------------ | ---------------------------------------------------- |
+| Statefulness | **Stateful** — return traffic automatically allowed  |
+| Scope        | Instance/ENI level                                   |
+| Default      | Allow all outbound; deny all inbound                 |
+| Rule types   | Allow only (no explicit deny)                        |
+| Evaluation   | All rules evaluated; most permissive wins            |
+| References   | Can reference other security groups (not just CIDRs) |
 
 **Best practices**:
+
 - Use security group references instead of CIDRs for internal traffic (e.g., allow RDS port from `sg-app-servers` rather than `10.0.10.0/24`)
 - Principle of least privilege: no `0.0.0.0/0` on inbound for non-public-facing resources
 - Separate SGs per tier: alb-sg, app-sg, db-sg
 
 ### NACLs (Network Access Control Lists)
 
-| Property | Detail |
-|---|---|
-| Statefulness | **Stateless** — must allow both directions explicitly |
-| Scope | Subnet level |
-| Default | Allow all inbound and outbound |
-| Rule types | Allow and Deny |
-| Evaluation | Lowest rule number first; first match wins |
-| Ephemeral ports | Must allow 1024-65535 for return traffic |
+| Property        | Detail                                                |
+| --------------- | ----------------------------------------------------- |
+| Statefulness    | **Stateless** — must allow both directions explicitly |
+| Scope           | Subnet level                                          |
+| Default         | Allow all inbound and outbound                        |
+| Rule types      | Allow and Deny                                        |
+| Evaluation      | Lowest rule number first; first match wins            |
+| Ephemeral ports | Must allow 1024-65535 for return traffic              |
 
 **Common NACL mistake**: Blocking outbound but forgetting to allow ephemeral ports (1024-65535). TCP responses use source ports in the ephemeral range. A NACL that allows inbound TCP/443 but doesn't allow outbound TCP/1024-65535 will silently drop all HTTPS responses.
 
 **When to use NACLs**: NACLs are blunt instruments. Use them for:
+
 - Broad CIDR-level deny rules (e.g., block an abusive IP range)
 - Defense-in-depth as a secondary barrier behind security groups
 - Blocking specific on-premises subnets from reaching isolated subnets
@@ -281,6 +296,7 @@ For fine-grained application-level rules, always use security groups.
 VPC Flow Logs capture metadata about IP traffic to/from network interfaces. They do NOT capture packet payloads.
 
 **What flow logs capture:**
+
 - Source/destination IP and port
 - Protocol
 - Bytes and packets transferred
@@ -289,6 +305,7 @@ VPC Flow Logs capture metadata about IP traffic to/from network interfaces. They
 - VPC, subnet, and ENI identifiers
 
 **What flow logs miss:**
+
 - DNS queries (use Route 53 Resolver query logs instead)
 - DHCP traffic
 - Instance metadata service (169.254.169.254) traffic
@@ -323,6 +340,7 @@ A Lambda function in a private subnet (10.0.10.0/24) cannot connect to RDS in an
 **Step 1: Confirm VPC configuration for Lambda**
 
 Lambda functions in a VPC get an ENI in the configured subnet. If Lambda is NOT VPC-attached, it uses AWS-managed infrastructure and cannot reach private VPC resources. Check:
+
 ```bash
 aws lambda get-function-configuration --function-name my-function \
   --query 'VpcConfig'
@@ -332,6 +350,7 @@ aws lambda get-function-configuration --function-name my-function \
 **Step 2: Check Lambda security group — outbound rules**
 
 Lambda's SG must allow outbound TCP/5432 (PostgreSQL) or TCP/3306 (MySQL) to the RDS subnet CIDR or RDS security group.
+
 ```bash
 aws ec2 describe-security-groups --group-ids sg-lambda-xxx \
   --query 'SecurityGroups[].IpPermissionsEgress'
@@ -341,6 +360,7 @@ aws ec2 describe-security-groups --group-ids sg-lambda-xxx \
 **Step 3: Check RDS security group — inbound rules**
 
 RDS security group must allow inbound from Lambda's security group (SG reference) or Lambda's subnet CIDR.
+
 ```bash
 aws ec2 describe-security-groups --group-ids sg-rds-xxx \
   --query 'SecurityGroups[].IpPermissions'
@@ -350,6 +370,7 @@ aws ec2 describe-security-groups --group-ids sg-rds-xxx \
 **Step 4: Check NACLs on both subnets**
 
 NACLs are stateless. Check both the isolated subnet NACL (inbound) AND the private subnet NACL (outbound ephemeral ports).
+
 ```bash
 # Check NACL for isolated subnet (inbound rules)
 aws ec2 describe-network-acls \
@@ -366,6 +387,7 @@ Both subnets must have a `10.0.0.0/16 → local` route. If an isolated subnet ac
 **Step 6: Verify with VPC Reachability Analyzer**
 
 AWS provides a managed tool that traces the path without generating actual traffic:
+
 ```bash
 aws ec2 create-network-insights-path \
   --source eni-lambda-xxx \
@@ -383,15 +405,15 @@ The analysis identifies exactly which security group rule or NACL entry is block
 
 ## Failure Modes
 
-| Failure | Symptoms | Detection | Fix |
-|---|---|---|---|
-| NAT Gateway in single AZ | Cross-AZ traffic adds latency; full outage if AZ fails | CloudWatch `ErrorPortAllocation` metric; latency spikes | Deploy NAT GW per AZ; use per-AZ route tables |
-| Security group allows 0.0.0.0/0 inbound | Exposed to internet attacks | AWS Security Hub, GuardDuty finding | Scope to specific CIDRs or SG references |
-| NACL blocking ephemeral ports | TCP connections established but no responses | Flow logs show REJECT on outbound; timeouts in app | Allow TCP 1024-65535 outbound on NACLs |
-| Missing VPC Endpoint for S3 | All S3 traffic routes through NAT GW | High NAT GW data processing costs; increased latency | Create Gateway Endpoint, update route tables |
-| Subnet runs out of IPs | New ENIs/instances fail to launch | EC2 launch failures: "InsufficientFreeAddressesInSubnet" | Add secondary CIDR, create new subnets |
-| Flow logs not enabled | Security incidents undetectable | Manual audit; AWS Config rule `vpc-flow-logs-enabled` | Enable flow logs to S3; set retention policy |
-| Lambda cold start timeout | First Lambda invocation times out in VPC | Lambda `Init Duration` high; ENI creation delays | Use Provisioned Concurrency; increase timeout |
+| Failure                                 | Symptoms                                               | Detection                                                | Fix                                           |
+| --------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------- |
+| NAT Gateway in single AZ                | Cross-AZ traffic adds latency; full outage if AZ fails | CloudWatch `ErrorPortAllocation` metric; latency spikes  | Deploy NAT GW per AZ; use per-AZ route tables |
+| Security group allows 0.0.0.0/0 inbound | Exposed to internet attacks                            | AWS Security Hub, GuardDuty finding                      | Scope to specific CIDRs or SG references      |
+| NACL blocking ephemeral ports           | TCP connections established but no responses           | Flow logs show REJECT on outbound; timeouts in app       | Allow TCP 1024-65535 outbound on NACLs        |
+| Missing VPC Endpoint for S3             | All S3 traffic routes through NAT GW                   | High NAT GW data processing costs; increased latency     | Create Gateway Endpoint, update route tables  |
+| Subnet runs out of IPs                  | New ENIs/instances fail to launch                      | EC2 launch failures: "InsufficientFreeAddressesInSubnet" | Add secondary CIDR, create new subnets        |
+| Flow logs not enabled                   | Security incidents undetectable                        | Manual audit; AWS Config rule `vpc-flow-logs-enabled`    | Enable flow logs to S3; set retention policy  |
+| Lambda cold start timeout               | First Lambda invocation times out in VPC               | Lambda `Init Duration` high; ENI creation delays         | Use Provisioned Concurrency; increase timeout |
 
 ---
 
