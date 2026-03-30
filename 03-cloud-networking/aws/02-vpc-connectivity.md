@@ -195,6 +195,7 @@ graph LR
     InterfaceEndpoint -->|PrivateLink| NLB
     NLB --> Service
 ```
+<img width="541" height="601" alt="image" src="https://github.com/user-attachments/assets/07d08e31-d295-4f4a-b556-0d0bd20d275b" />
 
 ### How It Works
 
