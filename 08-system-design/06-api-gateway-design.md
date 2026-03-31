@@ -208,6 +208,22 @@ Introspection is slower (network call) and stateful (cache). Use JWT where possi
 **mTLS for partner integrations:**
 Partners present a client certificate during TLS handshake. Gateway validates the certificate against a trust store (CA certificates from approved partners). Certificate subject (`CN` or `O` field) is mapped to a partner ID. Rate limits and permissions are tied to the partner ID.
 
+**Auth method selection routing:** The gateway determines which authentication mechanism to use based on a priority chain evaluated per request:
+
+```
+Auth selection logic (evaluated in order):
+1. If client TLS certificate is present → mTLS partner auth
+   (partner routes: /api/partner/*, /api/b2b/*)
+2. If X-API-Key header is present → API key lookup
+   (applies to any route; API key overrides JWT if both present)
+3. If Authorization: Bearer header is present:
+   a. If token is a JWT (contains dots: xxx.yyy.zzz) → JWT validation
+   b. If token is opaque → OAuth2 introspection
+4. If no credentials → 401 Unauthorized
+```
+
+This priority chain is configured per route in the gateway: payment-related routes (`/api/v1/payments/*`) may require JWT + additional scope checks, while public read endpoints (`/api/v1/catalog/*`) may accept API keys. The mapping is defined in the gateway route configuration, not inferred at runtime.
+
 ### 3. Rate Limiting: Sliding Window with Redis
 
 **Why sliding window over fixed window?**
@@ -249,6 +265,23 @@ Retry-After: 30  (on 429 responses only)
 
 **Redis failover for rate limiting:** if Redis cluster is unavailable, two options: (a) **Fail open**: allow all requests (rate limiting unavailable temporarily) — better for availability; (b) **Fail closed**: return 503 to all requests — better for security. Recommendation: fail open with a circuit breaker; alert immediately on Redis unavailability; accept the brief rate limit bypass in exchange for availability. Log all requests during Redis outage for post-hoc rate limit analysis.
 
+**Local rate limiter fallback (defense in depth):** To prevent a single client from consuming all capacity during a Redis outage, each gateway node maintains an **in-memory token bucket** as a rough per-IP rate limiter:
+
+```
+Redis outage fallback:
+1. Gateway detects Redis connection failure (circuit breaker opens)
+2. Gateway switches to local in-memory token bucket per source IP
+3. Local limit: 100 requests/minute per IP per gateway node
+4. Since limits are per-node (not cluster-wide), the effective limit is
+   100 × N nodes = N00 requests/minute per IP globally (approximate)
+5. This is intentionally more generous than the Redis-backed limit
+   to avoid false-positive blocking during the outage
+6. When Redis recovers (circuit breaker half-open → closed), switch
+   back to Redis-backed sliding window; clear local counters
+```
+
+The local fallback does not provide exact rate limiting but prevents any single IP from consuming 100% of gateway capacity, which is the critical safety net during Redis unavailability.
+
 ### 4. Routing and Service Discovery
 
 **Path-based routing configuration:**
@@ -280,6 +313,38 @@ routes:
   # Only traffic with X-Canary: true goes to canary
   # All other traffic goes to stable
 ```
+
+### gRPC-JSON Transcoding
+
+The gateway supports REST ↔ gRPC protocol translation for backend services that implement gRPC while exposing REST APIs to external clients:
+
+**Envoy grpc_json_transcoder filter:**
+```yaml
+http_filters:
+- name: envoy.filters.http.grpc_json_transcoder
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+    proto_descriptor: "/etc/envoy/proto/order_service.pb"
+    services: ["api.v1.OrderService"]
+    print_options:
+      add_whitespace: true
+      always_print_primitive_fields: true
+    convert_grpc_status: true
+```
+
+**How it works:**
+1. Client sends REST request: `POST /api/v1/orders {"item_id": "123", "qty": 2}`
+2. Gateway matches the route and finds the proto descriptor mapping `POST /api/v1/orders` → `OrderService.CreateOrder`
+3. Gateway transcodes the JSON body to a Protocol Buffer message using the `.proto` definition
+4. Gateway sends the gRPC request to the backend over HTTP/2 with `content-type: application/grpc`
+5. Backend responds with a Protocol Buffer message
+6. Gateway transcodes the response back to JSON for the REST client
+
+**Proto descriptor management:**
+- `.proto` files are compiled to `.pb` (FileDescriptorSet) via `protoc --descriptor_set_out`
+- The `.pb` file is mounted into the gateway container, updated via the CI/CD pipeline when proto definitions change
+- Breaking proto changes must follow the same expand-contract pattern as database migrations
+- Kong alternative: use the `grpc-gateway` plugin which provides similar functionality with Kong-specific configuration
 
 ### 5. Circuit Breaking and Retry Policy
 
@@ -316,6 +381,83 @@ retry_policy:
 **Critical**: only retry idempotent requests (GET, HEAD, PUT, DELETE). Never retry POST or PATCH blindly — they may not be idempotent (creating a new order on retry is catastrophically wrong). Require backends to implement idempotency keys for non-idempotent operations.
 
 **Retry budget**: limits the total percentage of in-flight requests that are retries. Without a budget, a degraded backend causes cascading retries that amplify load 3× (each failed request retried 3 times). The retry budget caps this amplification.
+
+### Canary Routing Strategy
+
+**Modulo-based bucketing (recommended over consistent hashing):** Consistent hashing on user ID for canary routing can cause hotspots — if a high-traffic power user lands in the 5% canary bucket, the canary service may be overwhelmed. Modulo-based bucketing distributes more evenly:
+
+```yaml
+routes:
+  - path: /api/v2/orders/*
+    canary:
+      # Deterministic: same user always sees same version
+      bucket_by: user_id   # extracted from JWT X-User-ID header
+      method: modulo        # user_id % 100
+      canary_range: [0, 4]  # users 0-4 (5%) → canary
+      stable_range: [5, 99] # users 5-99 (95%) → stable
+    canary_service: order-service-v3
+    stable_service: order-service-v2
+```
+
+**Monitoring during canary:**
+- Track error rate, P99 latency, and business metrics (order completion rate) separately per version using the `upstream` label in Prometheus
+- Automated promotion: if canary error rate < stable error rate + 0.1% for 30 minutes, promote canary to 100%
+- Automated rollback: if canary error rate > 1% or P99 latency > 200% of stable, roll back immediately
+- ArgoCD Rollouts or Flagger automate this with Prometheus metrics-based promotion/rollback
+
+### API Versioning Strategy
+
+**Versioning via URL path:** `/api/v1/`, `/api/v2/`, etc. — chosen over header-based versioning (`Accept: application/vnd.api.v2+json`) because URL path versioning is visible in access logs, easy to route at the gateway level, and discoverable by API consumers.
+
+**Lifecycle policy:**
+
+| Phase | Duration | Action |
+|-------|----------|--------|
+| Active | Indefinite | Current version; receives features and fixes |
+| Deprecated | 6 months | Sunset header added to all responses: `Sunset: Sat, 01 Nov 2026 00:00:00 GMT`; no new features |
+| End of Life | After deprecation | Returns 410 Gone with migration guide URL in response body |
+
+**Sunset header implementation (gateway-level):**
+```yaml
+routes:
+  - path: /api/v1/orders/*
+    plugins:
+      - name: response-transformer
+        config:
+          add_headers:
+            - "Sunset: Sat, 01 Nov 2026 00:00:00 GMT"
+            - "Deprecation: true"
+            - "Link: <https://docs.example.com/migration/v1-to-v2>; rel=\"successor-version\""
+```
+
+**Migration support:**
+- Publish a migration guide for each version transition
+- Provide a version compatibility matrix in the developer portal
+- Track v1 vs v2 usage per API key in Prometheus; proactively contact high-usage v1 consumers 3 months before EOL
+- Never break backward compatibility within a version — additive changes only (new fields, new endpoints)
+
+### WebSocket Handling
+
+For microservices requiring real-time communication (notifications, live dashboards, collaborative editing), the gateway must handle WebSocket connections:
+
+**Gateway WebSocket support:**
+- Kong and Envoy natively support WebSocket upgrade (`Connection: Upgrade`, `Upgrade: websocket`)
+- The gateway performs authentication during the HTTP upgrade request (JWT validation on the initial `GET /ws` request)
+- After upgrade, the connection is a persistent TCP stream — the gateway acts as a transparent TCP proxy
+
+**Rate limiting for WebSocket:**
+- Per-connection rate (not per-request): limit the number of concurrent WebSocket connections per user (e.g., 5 connections per user ID) via Redis counter
+- Per-message rate: implemented at the application level, not the gateway — the gateway cannot inspect WebSocket frames without protocol-specific logic
+
+**Authentication during long-lived connections:**
+- JWT used during the upgrade request may expire during the WebSocket connection lifetime
+- Two options: (a) The server periodically sends a "re-auth" frame; client responds with a refreshed JWT; (b) Token expiry is handled at the application level — the gateway does not terminate the connection on JWT expiry (the connection was already authenticated at upgrade time)
+- For high-security contexts, prefer option (a) with a 15-minute re-auth interval
+
+**Scaling implications:**
+- WebSocket connections are stateful and long-lived — they create connection affinity between client and gateway node
+- Use connection-aware load balancing (IP hash or cookie affinity) on the ALB to route WebSocket connections to the same gateway node
+- Monitor `active_connections` per gateway node; scale horizontally when approaching the per-node connection limit (typically ~50K-100K concurrent WebSocket connections per node)
 
 ### 6. mTLS from Gateway to Backend
 
