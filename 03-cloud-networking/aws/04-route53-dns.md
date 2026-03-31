@@ -551,3 +551,6 @@ A: Public hosted zone with layered routing:
 **Q: A DNS outage at Dyn in 2016 took down major internet services. How would you design Route 53 usage to survive an equivalent AWS Route 53 outage?**
 
 A: Route 53 outages are extremely rare (100% SLA) but the design should account for it. Multi-provider DNS: use Route 53 as primary but also configure an NS record set pointing to Cloudflare or another DNS provider with identical zone contents. Use a tool like external-dns or Terraform to keep both providers synchronized. For critical records (apex, API endpoints), distribute across both providers: half the resolvers use Route 53's NS, half use Cloudflare's NS. With both providers, a Route 53 outage means only clients whose resolvers had cached Route 53's NS records are affected — and those caches expire (NS TTL typically 2 days, but most resolvers re-query sooner during resolution failures). For the fastest possible mitigation: run your own authoritative name servers (BIND, PowerDNS) on EC2 in multiple regions as tertiary NS records. These give you full control but require operational maintenance.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/44b01902-3740-4ebd-bfb5-bb0f09c2dd7e" />
+
