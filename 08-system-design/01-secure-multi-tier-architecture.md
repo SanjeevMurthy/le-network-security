@@ -148,6 +148,8 @@ flowchart TD
 | Private (App) | 10.0.10-12.0/24 | Private RT (per AZ) | 0.0.0.0/0 → NAT GW (same AZ) |
 | Isolated (Data) | 10.0.20-22.0/24 | Isolated RT | No internet route |
 
+**Subnet sizing consideration:** The current `/24` subnets provide 254 usable IPs per tier per AZ. This is adequate for the initial EC2-based architecture, but if migrating to EKS/Kubernetes later, the AWS VPC CNI assigns one IP per pod — 30 instances running 50 pods each would exhaust a `/24`. For future-proofing, consider `/20` subnets (4,094 IPs) for the app tier if container workloads are on the roadmap. The VPC's `/16` provides sufficient address space for this expansion.
+
 **NAT Gateway placement:** One NAT GW per AZ in the public subnet, not shared. Shared NAT GW creates a cross-AZ dependency — if AZ-A's NAT GW goes down, AZ-B and C app servers lose internet access. The cost increase ($32/month per additional NAT GW) is justified for PCI environments.
 
 **VPC Interface Endpoints** for Secrets Manager, CloudWatch Logs, S3, ECR: keeps traffic off the internet, satisfies PCI requirement that cardholder data environment does not traverse untrusted networks.
@@ -159,6 +161,8 @@ flowchart TD
 - AWS WAF attached: OWASP Top 10 managed rule set, rate limiting (1000 req/5min per IP), SQL injection and XSS rules.
 - **Origin protection**: CloudFront sets a custom HTTP header (`X-Origin-Secret: <secret>`) to the ALB. The ALB listener rule rejects any request without this header. This prevents attackers from bypassing CloudFront to hit the ALB directly.
 - AWS Shield Advanced: always-on DDoS detection, L3/L4 absorption, 24/7 DDoS response team access.
+
+**WAF tuning strategy:** Managed rule groups (OWASP Core Rule Set, Known Bad Inputs) produce false positives in production — a retail checkout form may trigger SQL injection rules if the user's input contains SQL-like characters. Deploy new WAF rules in `Count` mode first (log but do not block). After 7–14 days, analyze WAF logs (via Athena or CloudWatch Insights) to identify false positive rule IDs. Override specific rule actions (`OVERRIDE_ACTION: COUNT` → `NONE`) for confirmed false positives. Only switch to `Block` mode after validation. Maintain an emergency WAF rule disable runbook — a new managed rule update from AWS that causes a false positive surge must be rolled back within minutes by switching the updated rule group back to Count mode.
 
 **Latency trade-off:** CloudFront adds ~10-50ms of overhead on cache misses due to geographic indirection. For a dynamic application, this is usually dominated by application processing time. The DDoS and WAF benefits outweigh the latency cost at production scale.
 
@@ -175,7 +179,7 @@ flowchart TD
 
 - Instances run in private subnets — no public IP, no direct internet ingress.
 - **Security Group (App-SG)**: inbound 443 from ALB security group ID only (not CIDR). Security Group references are preferred over CIDR because they track instance membership dynamically.
-- IAM instance profile (IRSA pattern on EC2): role allows `secretsmanager:GetSecretValue` on specific ARN only, `logs:PutLogEvents` for CloudWatch, and nothing else. No AWS access keys stored on disk.
+- **IAM Instance Profile**: each EC2 instance assumes an IAM role via its Instance Profile (not IRSA — IRSA is an EKS-specific feature for binding Kubernetes ServiceAccounts to IAM roles via OIDC federation). The instance role allows `secretsmanager:GetSecretValue` on specific ARN only, `logs:PutLogEvents` for CloudWatch, and nothing else. No AWS access keys stored on disk. If migrating to EKS in the future, switch to IRSA for pod-level IAM granularity.
 - Auto Scaling Group:
   - Min: 3 (one per AZ), Max: 30
   - Target tracking policy: `ASGAverageCPUUtilization = 70%`
@@ -195,8 +199,10 @@ flowchart TD
 - RDS deployed in isolated subnets with no route to the internet.
 - **Security Group (RDS-SG)**: inbound 5432 from App-SG only. No other inbound rules.
 - **Multi-AZ**: synchronous replication to standby in AZ-B. Automatic failover in ~60-120 seconds if primary fails.
+- **Connection pooling (RDS Proxy)**: RDS Proxy deployed between the app tier and RDS to pool and multiplex database connections. Without pooling, a 3–30 instance ASG each opening 10–50 connections can reach 1,500 total connections — exceeding the default `max_connections` (~500 on `db.r6g.xlarge`). RDS Proxy pins connections to read/write transactions, supports IAM authentication (Instance Profile-based, no password needed), and improves failover time by maintaining connections across RDS Multi-AZ failovers. Alternative: PgBouncer deployed as a sidecar or standalone if RDS Proxy's limitations (no prepared statement support in transaction pooling mode) are an issue.
 - **Encryption at rest**: AES-256 via AWS KMS CMK (customer-managed key). KMS key policy restricts usage to account-level roles; key rotation enabled annually.
 - **Encryption in transit**: `rds.force_ssl = 1` parameter group setting. App connects with `sslmode=verify-full` and the RDS CA certificate bundle.
+- **Application-layer field encryption (PCI Req 3.4)**: RDS disk-level encryption (KMS) protects data at rest on the storage volume, but any role with database query access can read plaintext PAN (Primary Account Number). PCI-DSS Requirement 3.4 mandates rendering PAN unreadable anywhere it is stored. Implement application-layer encryption: the application encrypts PAN fields using AES-256-GCM with a dedicated KMS CMK before writing to the database. The PAN column stores ciphertext; decryption requires both DB access and KMS `Decrypt` permission. This ensures that a compromised database credential alone cannot expose cardholder data.
 - **pgaudit extension**: logs all DDL, DML, and connection events to CloudWatch Logs. Required for PCI audit trail.
 - **Parameter group hardening**: `log_connections=on`, `log_disconnections=on`, `log_duration=on` for queries > 1s.
 - **Backup**: automated backups retained 35 days (PCI maximum), point-in-time recovery to any second in that window. Daily snapshots copied cross-region to us-west-2.
