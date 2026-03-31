@@ -1,4 +1,4 @@
-# Active-Active Multi-Region Architecture on AWS
+# Active-Active Multi-Region Architecture on AWS (Read-Anywhere, Single-Writer)
 
 ## Table of Contents
 
@@ -42,11 +42,11 @@
 - Relational data (PostgreSQL-compatible) with synchronization across regions
 
 ### Non-Functional Requirements
-- RTO (Recovery Time Objective): < 1 minute
+- RTO (Recovery Time Objective): 1–5 minutes (see RTO breakdown below)
 - RPO (Recovery Point Objective): < 5 seconds
 - Availability: 99.99% (< 52 minutes downtime/year)
-- Active-active: both regions serve live traffic simultaneously (not just standby)
-- Failover: automatic, without manual intervention
+- Active-active reads: both regions serve read traffic simultaneously. Writes are routed to a single primary writer (us-east-1) — this is an **active-active read / single-writer** architecture, not a fully symmetric active-active design
+- Failover: automated via Lambda + CloudWatch, without manual intervention
 - Data consistency: eventual consistency for reads acceptable; writes acknowledged only when durable
 - Compliance: GDPR data residency (EU users' data must stay in eu-west-1 for certain data classes)
 
@@ -96,7 +96,7 @@ flowchart TD
         F2["2. R53 routes 100% traffic to eu-west-1"]
         F3["3. Aurora Global DB managed failover\n(API call, ~1 min)\neu-west-1 replica promoted to writer"]
         F4["4. Application reconnects\nto new Aurora writer endpoint"]
-        F5["5. RTO achieved: ~1-2 min total"]
+        F5["5. RTO achieved: ~1-5 min total\n(best case 1m, worst case 5m)"]
     end
 
     subgraph Deploy["Deployment Pipeline"]
@@ -193,7 +193,22 @@ Aurora Global Database is the critical design choice for meeting the < 5 second 
 - Read replica cluster in eu-west-1: serves reads locally (reduces latency for EU users), lag typically < 100ms (well under the 5s RPO requirement)
 - Replication uses Aurora's dedicated storage-layer replication path, not MySQL/PostgreSQL logical replication — this is why the lag is so low
 
-**Write routing:** All writes go to the primary cluster (us-east-1), even from the eu-west-1 application tier. This adds ~80ms cross-region latency for EU write operations, which is a fundamental trade-off: strong consistency requires writes to go to a single writer.
+**Write routing (single-writer constraint):** All writes go to the primary cluster (us-east-1), even from the eu-west-1 application tier. This is the fundamental characteristic that makes this architecture "active-active read / single-writer" rather than fully symmetric active-active. The cross-region write path adds ~80-90ms latency per write from eu-west-1 (network RTT ~80ms + Aurora quorum write ~5ms + TLS overhead ~2ms). For transactions involving multiple sequential writes, this compounds — a 5-write transaction from eu-west-1 takes ~450ms. Mitigate by: (1) batching related writes into a single transaction where possible, (2) moving write-heavy endpoints to us-east-1 via Route 53 geolocation routing, and (3) accepting the latency trade-off as the cost of strong consistency.
+
+**Write buffering during failover:** During the 1–5 minute failover window, all writes globally fail because the primary is unreachable and the secondary is not yet promoted. To prevent data loss for critical writes during this window, implement a local write queue using SQS in each region:
+
+```
+Failover write path:
+1. Application detects Aurora writer is unreachable (connection timeout/error)
+2. Circuit breaker opens on the write path
+3. Critical writes (e.g., payment confirmations) are enqueued to a regional SQS FIFO queue
+4. Application returns 202 Accepted (async) to the client with a tracking ID
+5. After failover completes and the new writer is available, a replay Lambda drains the SQS queue
+6. Replay uses idempotency keys to prevent duplicate writes
+7. Non-critical writes (e.g., analytics, preferences) return 503 with Retry-After during failover
+```
+
+This does not eliminate the write outage but converts it from a hard failure (500 errors) to a graceful degradation (202 Accepted with eventual consistency). The SQS queue provides at-least-once delivery and survives regional failures if the queue is in the surviving region.
 
 **Read routing:** Application in eu-west-1 reads from the local Aurora replica endpoint. Application in us-east-1 reads from the primary. Each region's application is configured with:
 - Writer endpoint: us-east-1 Aurora cluster writer endpoint (cross-region for eu-west-1 app)
@@ -210,6 +225,23 @@ Aurora Global Database is the critical design choice for meeting the < 5 second 
 
 Aurora's managed failover is not fully automatic for Global Database — it requires an API call. This can be automated via a Lambda function triggered by a CloudWatch alarm on Aurora primary DB instance metrics, or via AWS Fault Injection Simulator in testing.
 
+**Realistic RTO breakdown:**
+```
+Component                                    Time
+───────────────────────────────────────────────────
+CloudWatch alarm evaluation (2-3 data points)  1-3 min
+Lambda cold start + verification logic         ~1-5s
+Aurora Global DB failover (API call)           ~1 min
+DNS CNAME update propagation                   ~10-30s
+Application connection pool retry/reconnect    ~10-30s
+───────────────────────────────────────────────────
+Best case (pre-warmed Lambda, 2-point alarm)   ~1 min
+Realistic case                                 ~2-3 min
+Worst case (slow alarm, connection drain)       ~5 min
+```
+
+To reduce RTO toward the best case: (1) use a 1-minute CloudWatch evaluation period with 2-data-point breach; (2) keep the failover Lambda warm with a scheduled ping; (3) configure application connection pools with aggressive retry (reconnect every 5s, timeout after 30s); (4) use Aurora cluster endpoint (not instance endpoint) — the cluster endpoint DNS is updated automatically during failover.
+
 ### Session State: JWT Tokens (Stateless Approach)
 
 **Decision: stateless JWT tokens instead of Redis session sync.**
@@ -218,6 +250,11 @@ Distributing Redis state across regions introduces a new replication problem:
 - Redis Cluster does not support native cross-region replication
 - ElastiCache Global Datastore supports cross-region replication but with eventual consistency (users may see stale session data briefly after failover)
 - Any approach involving session sync adds complexity and creates another potential RPO risk
+
+**Redis use case clarification:** The architecture diagram shows ElastiCache Redis in both regions. With JWT-based sessions, Redis is NOT used for session storage. If Redis is deployed, its purpose is limited to:
+- **Application cache** (e.g., database query cache, API response cache): each region maintains an independent cache; cache invalidation is handled by cache-aside pattern with short TTLs (5-10 minutes). No cross-region cache sync — cache misses fall through to the local Aurora reader.
+- **JWT revocation blocklist** (if required): a small Redis instance (~100MB) storing revoked token JTI (JWT ID) values. If needed cross-region, use ElastiCache Global Datastore for this specific use case only.
+- If neither use case applies, remove Redis from the architecture to reduce operational overhead and cost.
 
 **JWT approach:**
 - Server issues a signed JWT (RS256 or ES256) on login; private key stored in Secrets Manager
@@ -245,8 +282,10 @@ When us-east-1 becomes unhealthy and Route 53 starts routing new connections to 
 
 **GDPR data residency during failover:**
 - When EU users are routed to us-east-1 during eu-west-1 outage, their request data temporarily flows to us-east-1
-- Mitigation: encrypt all EU user data at the application layer with EU-region-managed KMS keys; non-EU infra cannot decrypt
-- Document the temporary cross-border transfer in the incident record for GDPR Art. 30 records
+- The legal basis for this cross-border transfer is **Standard Contractual Clauses (SCCs)** pre-established between the data controller and processor (e.g., your organization and AWS). SCCs are the primary GDPR mechanism for transfers to adequate/non-adequate countries and should be in place before any failover event — not relied upon under the narrower Article 49 derogations (which apply to specific, occasional transfers, not systematic failover architectures)
+- Additionally, encrypt all EU user data at the application layer with EU-region-managed KMS keys; us-east-1 infrastructure cannot decrypt personal data even during failover
+- Document the temporary cross-border transfer in the incident record for GDPR Art. 30 records of processing activities
+- Ensure the Data Protection Impact Assessment (DPIA) for the multi-region architecture explicitly covers the failover scenario
 
 ---
 
@@ -254,7 +293,8 @@ When us-east-1 becomes unhealthy and Route 53 starts routing new connections to 
 
 | Decision | Chosen | Alternative | Why Chosen |
 |----------|--------|-------------|------------|
-| Active-active | Both regions serve traffic | Active-passive | Better RTO (no warm-up needed), better utilization, lower blast radius per region |
+| Active-active reads | Both regions serve read traffic | Active-passive | Better RTO (no warm-up needed), better utilization, lower blast radius per region |
+| Single-writer (Aurora) | All writes to us-east-1 primary | Multi-writer (DynamoDB GT) | SQL/relational model required; Aurora single-writer avoids conflict resolution complexity |
 | Aurora Global DB | Storage-layer replication | DynamoDB Global Tables | SQL/relational model required; Aurora gives < 1s lag; DynamoDB is NoSQL |
 | Aurora Global DB | Managed replication | PostgreSQL logical replication | Aurora abstraction handles split-brain prevention; logical replication requires manual management |
 | JWT sessions | Stateless tokens | Redis ElastiCache Global Datastore | Eliminates session sync problem; simpler failover; Redis Global Datastore still needed for revocation |
@@ -305,6 +345,22 @@ When us-east-1 becomes unhealthy and Route 53 starts routing new connections to 
 4. **EKS cluster limits**: a single EKS cluster supports ~5000 nodes. At 10x scale with 50K pods, use multiple clusters per region behind a single ALB (via AWS Load Balancer Controller cross-cluster routing).
 5. **Aurora replication fan-out**: adding 5 secondary regions means the Aurora primary replicates to 5 remote clusters. Monitor `AuroraGlobalDBReplicationLag` per secondary; scale up primary instance to handle replication overhead.
 6. **Observability at scale**: Prometheus federation or Thanos for cross-region metrics aggregation; centralized logging with cross-region S3 replication.
+
+### Cross-Region Schema Migration Strategy
+
+Schema migrations in a multi-region single-writer architecture must be deployed carefully to avoid breaking the application in either region:
+
+**Expand-Contract pattern:**
+1. **Expand**: add new columns/tables without removing old ones. New code can use new schema; old code continues with old schema. Both code versions run simultaneously across regions.
+2. **Deploy**: roll out the new application version to both regions simultaneously via ArgoCD ApplicationSet.
+3. **Contract**: after all regions run the new code, remove deprecated columns/tables in a separate migration.
+
+**Rules:**
+- Migrations must be backward-compatible: never rename or delete a column in the same release that changes the code using it
+- Never add `NOT NULL` columns without a default: the old code cannot insert rows missing the new column
+- Schema changes are applied to the Aurora primary (us-east-1) only; replication automatically propagates DDL to secondary regions
+- Use a migration tool (Flyway, Alembic) with a shared migration history tracked in the database itself
+- Gate deployments: ArgoCD progressive sync deploys to us-east-1 first, validates health for 5 minutes, then deploys to eu-west-1. If the canary fails, the migration is reverted before reaching the second region
 
 ---
 
@@ -401,8 +457,8 @@ A: Three-layer approach:
 
 1. **Routing layer**: use Route 53 geolocation routing (not just latency) to route EU users to eu-west-1 exclusively for GDPR-sensitive endpoints. This ensures the primary request path stays in the EU.
 2. **Data layer**: EU user data is stored in eu-west-1 Aurora cluster with a separate KMS CMK managed in eu-west-1. Cross-region replication to us-east-1 is disabled for tables containing personal data; only non-personal operational data replicates globally.
-3. **Failover exception**: document in legal agreements that temporary processing in us-east-1 during eu-west-1 outage constitutes a "transfer under necessity" per GDPR Article 49
-4. (c). Implement application-layer encryption for personal data with EU-region-only keys so that us-east-1 cannot decrypt personal data even during failover.
+3. **Failover exception**: document in the Data Protection Impact Assessment (DPIA) that temporary processing in us-east-1 during eu-west-1 outage is covered by pre-established Standard Contractual Clauses (SCCs) between the data controller and AWS. SCCs are the proper GDPR mechanism for systematic cross-border transfer architectures — Article 49 derogations (such as Art. 49(1)(f) for vital interests) are narrower in scope and intended for occasional, non-repetitive transfers, not planned DR failover scenarios.
+4. Implement application-layer encryption for personal data with EU-region-only KMS keys so that us-east-1 cannot decrypt personal data even during failover.
 
 ### Advanced / Staff Level
 
