@@ -157,6 +157,8 @@ cert-manager issues certificates but relies on Kubernetes ServiceAccount tokens 
 - Exposes the Workload API on a Unix socket; the Envoy sidecar fetches its SVID from this socket (SDS — Secret Discovery Service)
 - Certificates are rotated continuously (auto-renew at 50% of TTL)
 
+**SVID TTL cliff alerting:** If the SPIRE Server is down for longer than the maximum SVID TTL (24h), all workload identities expire simultaneously — a catastrophic cliff that breaks all mTLS communication. Mitigations: (1) Monitor SPIRE Server health with a Prometheus alert that fires if `spire_server_uptime` is 0 for > 5 minutes; (2) Alert at 75% of the oldest SVID's remaining TTL while SPIRE Server is unreachable (e.g., if TTL is 24h, alert at 18h of SPIRE downtime); (3) Stagger SVID TTLs across workloads (e.g., 12h for non-critical, 24h for critical services) to avoid simultaneous expiry; (4) Run SPIRE Server as a 3-node Raft cluster with persistent storage across AZs to maximize availability.
+
 **SVID format**: X.509 certificate with SAN=`spiffe://cluster.local/ns/<namespace>/sa/<service-account>`. The SPIFFE ID is verifiable by any peer that trusts the SPIRE root CA.
 
 ### 2. mTLS with Istio: STRICT PeerAuthentication
@@ -178,7 +180,7 @@ spec:
 This single policy, applied to the `istio-system` namespace, enforces that every inter-service connection in the mesh uses mTLS. There are no exceptions unless explicitly overridden at namespace or workload level (and those overrides require explicit justification in code review).
 
 **Certificate integration with SPIRE:**
-Istio's control plane (Istiod) is configured to use SPIRE as the external CA via the `ca.istio.io/override` annotation. Envoy fetches its certificate via SDS from the SPIRE agent on the same node — no certificates are ever stored in Kubernetes Secrets or ConfigMaps.
+Istio's control plane (Istiod) is configured to use SPIRE as the external CA by setting the `PILOT_CERT_PROVIDER` environment variable on Istiod to `spiffe` and mounting the SPIRE Agent's Workload API Unix socket into the Istiod pod. Istiod uses the SPIRE Workload API to fetch its own SVID and to request SVIDs on behalf of workloads. Envoy sidecars fetch their certificates via SDS (Secret Discovery Service) directly from the SPIRE Agent on the same node — no certificates are ever stored in Kubernetes Secrets or ConfigMaps.
 
 **Certificate rotation:** SPIRE issues certificates with 24-hour TTL and renews at 12 hours (50% of lifetime). Envoy SDS receives the new certificate automatically without any connection interruption. This satisfies SOC 2 requirement for certificate lifecycle management.
 
@@ -240,6 +242,24 @@ OPA Gatekeeper runs as an admission webhook — every `kubectl apply` or Helm de
 
 Policies are defined as `ConstraintTemplate` (Rego logic) and `Constraint` (parameters). Both live in Git and are audited. Gatekeeper also runs in audit mode, continuously scanning existing resources for violations and reporting them as Kubernetes events.
 
+**Critical: exempt system namespaces from `failurePolicy: Fail`.** If Gatekeeper is updated with a misconfigured policy that rejects all pods, and `failurePolicy: Fail` is set, the cluster cannot self-heal — `kube-system` pods (CoreDNS, kube-proxy, metrics-server) that need to restart will also be blocked by the webhook. Configure the Gatekeeper webhook to exclude critical namespaces:
+
+```yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: gatekeeper-validating-webhook-configuration
+webhooks:
+- name: validation.gatekeeper.sh
+  namespaceSelector:
+    matchExpressions:
+    - key: admission.gatekeeper.sh/ignore
+      operator: DoesNotExist
+  failurePolicy: Fail
+```
+
+Label `kube-system`, `gatekeeper-system`, and `istio-system` with `admission.gatekeeper.sh/ignore: "true"` to exempt them. Security trade-off: system namespaces are not validated by Gatekeeper, but they are managed by platform teams with separate RBAC controls and Terraform/GitOps enforcement.
+
 ### 5. Kubernetes Network Policies
 
 Network policies are L3/L4 controls enforced by the CNI (Cilium or Calico). They complement Istio's L7 controls — a defense-in-depth layer.
@@ -258,7 +278,42 @@ spec:
   - Egress
 ```
 
-Then explicit allow policies per service pair. The combination of network policy (L3/L4) + Istio AuthorizationPolicy (L7) means an attacker needs to bypass both independent controls to achieve lateral movement.
+**Critical: a default-deny egress policy that doesn't whitelist DNS immediately breaks all service communication.** After applying default-deny, add explicit egress allow policies for essential traffic:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-and-apiserver
+  namespace: payments
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS resolution (kube-dns)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow Kubernetes API server (for service account token refresh, etc.)
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0  # API server IP varies; alternatively use the EKS API endpoint CIDR
+    ports:
+    - protocol: TCP
+      port: 443
+```
+
+Then add explicit allow policies per service pair for application traffic. The combination of network policy (L3/L4) + Istio AuthorizationPolicy (L7) means an attacker needs to bypass both independent controls to achieve lateral movement.
 
 ### 6. Ingress: External Traffic
 
@@ -331,6 +386,14 @@ Phase 2: mTLS enforcement (weeks 5-8)
   - Namespace by namespace, switch from PERMISSIVE to STRICT
   - Start with low-risk namespaces (non-production services)
   - Monitor error rates; roll back if >0.1% error increase
+
+  Rollback procedure for STRICT mTLS failures:
+  - Pre-stage a PERMISSIVE PeerAuthentication manifest in Git (e.g., `permissive-rollback/` branch) before switching to STRICT
+  - If error spike is detected, apply the PERMISSIVE manifest immediately via `kubectl apply -f`
+  - If the error is caused by certificate issues preventing Istiod config push, use `istioctl proxy-config` to verify sidecar state
+  - If Istiod itself is unreachable, Envoy sidecars cache the last-known config — traffic continues with the STRICT policy until Istiod recovers
+  - For emergency bypass: temporarily disable the sidecar on the affected pods with `istioctl kube-uninject` or remove the `istio-injection` label and restart the deployment
+  - Post-incident: investigate root cause (expired SVID, SPIRE Agent crash, misconfigured workload registration) before re-attempting STRICT
 
 Phase 3: AuthorizationPolicy (weeks 9-16)
   - Apply default-deny per namespace
