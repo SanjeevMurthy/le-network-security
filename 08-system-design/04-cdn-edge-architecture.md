@@ -205,9 +205,12 @@ The critical security control preventing origin bypass attacks:
 - Auth service issues a CloudFront signed URL with a 4-hour expiry when a user starts a video
 - Policy document: `{"Statement": [{"Condition": {"DateLessThan": {"AWS:EpochTime": <expiry>}}}]}`
 - The signing key pair (RSA 2048) is stored in Secrets Manager; the public key is registered in CloudFront
-- Segments are accessed via the signed URL; Lambda@Edge validates the signature before CloudFront serves from cache
+- **CloudFront validates signed URLs natively** at the cache layer — no Lambda@Edge is needed for signature validation when using CloudFront's built-in signed URL feature. CloudFront checks the signature, expiry, and optional IP restriction before serving content from cache or forwarding to the origin
+- **When Lambda@Edge IS needed for auth:** use Lambda@Edge only for custom authentication that goes beyond CloudFront's built-in capabilities — for example, validating a JWT from your own auth service (not a CloudFront signed URL), checking custom claims like subscription tier, or enforcing per-user rate limits at the edge. The two approaches are mutually exclusive per cache behavior — do not combine both CloudFront signed URLs and Lambda@Edge signature validation on the same path
 
 **Segment pre-warming:** For popular content (new releases), pre-warm CloudFront cache by making requests to video segments from multiple regions before the release. Use a Lambda function that iterates segment URLs and makes HEAD requests, triggering CloudFront cache fill.
+
+**Pre-warming locality limitation:** CloudFront PoPs are independent caches. Warming from us-east-1 only fills caches at PoPs along the route from that Lambda's region. To warm caches near the target audience, deploy warming Lambda functions in multiple regions (e.g., eu-west-1 for European viewers, ap-northeast-1 for Japanese viewers). Each Lambda triggers HEAD requests that route through local PoPs. This is non-trivial at scale — for most VoD content, accept cold starts on the first viewer and rely on organic traffic to fill caches. Reserve pre-warming for known high-demand launches (new season premieres, live event pre-roll).
 
 ### Edge Compute: CloudFront Functions vs Lambda@Edge
 
@@ -291,6 +294,27 @@ Layer 5: ALB — protected by Security Group allowing only CloudFront IPs
 
 **Key insight:** Fastly's instant cache invalidation (< 150ms) is a significant advantage for news or live sports platforms where content changes must propagate immediately. CloudFront's 1-5 minute invalidation is acceptable for video-on-demand.
 
+### Multi-CDN Failover Mechanism
+
+At 10x scale with a multi-CDN strategy, failover between CDN providers requires an orchestration layer:
+
+**DNS-based CDN selection (simplest):**
+- Route 53 weighted records pointing to CloudFront (weight: 80) and Fastly/Cloudflare (weight: 20)
+- Health checks on each CDN's distribution endpoint; on failure, Route 53 removes the failed CDN
+- Limitation: DNS TTL (60s) means clients may use the failed CDN for up to 60s after detection
+
+**Real User Monitoring (RUM) CDN switching (recommended at scale):**
+- Embed a lightweight JavaScript beacon in the video player that reports playback quality metrics (TTFB, rebuffer rate, bitrate switches) per CDN
+- CDN orchestration service (Conviva, Cedexis/Citrix ITM, or custom) analyzes RUM data in real-time
+- Based on per-region, per-ISP quality metrics, the orchestration service returns the optimal CDN endpoint for each client via a decision API
+- On detected degradation: flag CDN as degraded for the affected region/ISP; shift new sessions to the alternative CDN
+- Existing sessions continue on their current CDN until the player detects rebuffering, then switch via manifest reload
+
+**Client-side fallback (defense in depth):**
+- Video player (HLS.js/ExoPlayer) is configured with a primary and fallback manifest URL pointing to different CDNs
+- If the primary manifest returns 5xx or times out, the player retries with the fallback CDN URL
+- This provides client-level resilience independent of server-side DNS switching
+
 ---
 
 ## Failure Modes and Mitigations
@@ -334,17 +358,39 @@ Layer 5: ALB — protected by Security Group allowing only CloudFront IPs
 | Token expiry | Signed URLs expire in 4h; users must re-authenticate |
 | Geo-blocking | WAF geographic match rule blocks sanctioned countries |
 | Hotlinking prevention | Referer header check in WAF; reject requests without expected Referer |
-| DRM integration | Widevine/FairPlay DRM for premium content; CloudFront delivers encrypted segments |
+| DRM integration | Widevine/FairPlay DRM for premium content; CloudFront delivers encrypted segments (see DRM architecture below) |
 | S3 no public access | All S3 buckets have `BlockPublicAccess` enabled; access only via CloudFront OAC |
+
+**DRM (Digital Rights Management) Architecture:**
+
+For premium content requiring copy protection, DRM adds an encryption layer on top of CDN delivery:
+
+```
+DRM Content Flow:
+1. MediaConvert encrypts segments using AES-128 (HLS) or CENC (DASH) during transcoding
+2. Content encryption keys (CEKs) are generated and stored in DRM license server
+3. HLS manifest includes EXT-X-KEY tag pointing to the license server URL
+4. Player requests license: POST https://license.example.com/widevine (with auth token)
+5. License server validates user subscription, returns decryption key wrapped in device-specific envelope
+6. Player decrypts segments locally in the DRM module (Widevine CDM, FairPlay SecureTime)
+```
+
+**License server deployment:**
+- **Self-hosted** (Axinom, PallyCon) or SaaS (BuyDRM, EZDRM): deployed behind a separate ALB, NOT behind CloudFront (license responses are unique per user/device and must not be cached)
+- Multi-DRM: serve Widevine (Chrome, Android), FairPlay (Safari, iOS), and PlayReady (Edge, Xbox) from a single license endpoint that detects the DRM system from the request
+- License server must be highly available — if the license server is down, premium content is unplayable even though CDN-delivered segments are available
+- **Signed URL + DRM interaction**: CloudFront signed URLs control access to the encrypted segments (can the user reach the content at all); DRM controls decryption (can the user play the content). Both must pass for playback to succeed
 
 ### Security Headers (added via CloudFront Function)
 ```javascript
 response.headers['strict-transport-security'] = {value: 'max-age=31536000; includeSubDomains; preload'};
-response.headers['content-security-policy'] = {value: "default-src 'self'; media-src blob: https:"};
+response.headers['content-security-policy'] = {value: "default-src 'self'; script-src 'self' 'unsafe-inline'; media-src blob: https:; worker-src blob: 'self'; connect-src 'self' https://*.example.com; img-src 'self' https: data:"};
 response.headers['x-content-type-options'] = {value: 'nosniff'};
 response.headers['x-frame-options'] = {value: 'DENY'};
 response.headers['referrer-policy'] = {value: 'strict-origin-when-cross-origin'};
 ```
+
+**CSP tuning for media platforms:** The CSP above is tuned for a video streaming platform: `worker-src blob: 'self'` allows HLS.js Web Workers that use blob URLs; `connect-src` allows XHR/fetch to API domains for metadata and tracking; `media-src blob: https:` allows video element sources from both HTTPS origins and blob URLs (used by MSE-based players). `script-src 'unsafe-inline'` may be needed for some analytics SDKs — prefer `'nonce-'` or `'strict-dynamic'` if the application supports CSP nonces. A CSP of `default-src 'self'` alone would block video playback in most HLS.js configurations.
 
 ---
 
