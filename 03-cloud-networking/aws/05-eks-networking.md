@@ -611,7 +611,10 @@ A: The pod limit is per instance type (ENI count × IPs per ENI - 1 + 2). For m5
 
 **Q: How does the AWS Load Balancer Controller differ between IP mode and instance mode for ALB targets?**
 
-A: Instance mode: ALB targets the EC2 node's NodePort. Traffic goes ALB → Node (any node) → kube-proxy (iptables) → Pod. Source IP is NAT'd by kube-proxy. Instance mode works with any CNI. IP mode: ALB targets the pod IP directly (requires VPC CNI for routable pod IPs). Traffic goes ALB → Pod (direct). Preserves client source IP in `X-Forwarded-For`. Bypasses kube-proxy's SNAT. Required for Fargate (no NodePort concept). IP mode is preferred for EKS clusters using VPC CNI.
+A: 
+Instance mode: ALB targets the EC2 node's NodePort. Traffic goes ALB → Node (any node) → kube-proxy (iptables) → Pod. Source IP is NAT'd by kube-proxy. Instance mode works with any CNI. 
+
+IP mode: ALB targets the pod IP directly (requires VPC CNI for routable pod IPs). Traffic goes ALB → Pod (direct). Preserves client source IP in `X-Forwarded-For`. Bypasses kube-proxy's SNAT. Required for Fargate (no NodePort concept). IP mode is preferred for EKS clusters using VPC CNI.
 
 ### Advanced / Staff Level
 
@@ -637,3 +640,6 @@ A: Namespace-per-tenant model with Defense-in-Depth:
 4. Separate node groups per tenant tier (Spot for batch, On-Demand for production) with node selectors and taints/tolerations; tenant workloads are physically separated on different nodes, eliminating cross-pod attack surface.
 5. Separate ALBs per tenant (using ALB group.name annotation to segregate) so load balancer logs and WAF rules are tenant-scoped.
 6. OPA/Gatekeeper policies enforce namespace-based network policy requirements — new namespaces automatically get default-deny NetworkPolicy applied via admission webhook.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/7021d5a6-3715-4d8a-87de-3c0ac8c132bf" />
+
