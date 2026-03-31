@@ -499,3 +499,5 @@ A: First, enable TGW Flow Logs to understand which VPCs are generating the most 
 2. Backup/replication traffic that should stay within a region but is routed through TGW
 3. Monitoring agents sending all telemetry to a collector in another VPC — consider local collectors with aggregated forwarding
 4. NTP traffic flowing across VPCs. For each traffic category, evaluate: VPC Endpoint (avoid TGW entirely for AWS services), colocation of services within the same VPC, or caching. Calculate TGW attachment fee + data processing fee vs. the cost of adding VPC Endpoints or restructuring VPCs.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/d2204618-d7af-4f83-a955-c74e9550b2de" />
