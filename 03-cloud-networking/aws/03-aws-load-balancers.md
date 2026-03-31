@@ -531,3 +531,6 @@ A: Two separate target groups: one for REST API (deregistration delay: 30s) and 
 **Q: How does WAF integrate with ALB at the network level, and what are the performance implications?**
 
 A: WAF is evaluated inline before the request reaches the target group. The ALB offloads WAF evaluation to AWS's managed WAF service — it does not run in the ALB's data path on the same hardware. WAF adds roughly 1-2ms of latency per request for rule evaluation. Performance impact scales with rule complexity: managed rule groups with many regex patterns have higher overhead than simple IP-based rules. The WAF WCU (Web ACL Capacity Unit) system limits rule complexity — each rule costs WCUs, and a Web ACL has a maximum of 5,000 WCUs. At very high RPS (> 100K), WAF costs (per million requests) can become significant. Mitigation: put CloudFront in front of ALB and attach WAF to CloudFront (evaluated at edge, reduces requests reaching ALB). For bot protection, use AWS WAF Bot Control which specifically optimizes for bot detection without inspecting every request with expensive regex rules.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/3b365731-51a4-46a6-8202-923318e26c39" />
+
