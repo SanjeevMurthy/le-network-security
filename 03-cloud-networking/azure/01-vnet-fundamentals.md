@@ -577,3 +577,6 @@ A:
 4. Traffic arrives at the Private Endpoint NIC (`10.0.4.10`) on the PE subnet.
 5. Azure translates the destination from the PE NIC IP to the actual storage account backend — this is Azure's Private Link internal DNAT.
 6. Response follows the reverse path. The key: no public internet, no gateway, just Azure SDN internal routing. If the PE subnet has `privateEndpointNetworkPolicies: Disabled` (default), NSGs on the PE subnet do not apply to the PE NIC — which is why enabling this policy is a security hardening recommendation.
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/b047006a-41cc-41e9-860b-52a66adac788" />
+
