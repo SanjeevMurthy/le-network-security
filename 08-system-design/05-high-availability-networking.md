@@ -218,7 +218,14 @@ flowchart TD
 - GARPs broadcast the new master's MAC address for the VIP, ensuring existing connections are forwarded to the new master without waiting for ARP expiry
 - Sub-second failover from gateway failure to traffic flowing through backup: VRRP detection (~200ms with 100ms fast timers) + GARP propagation (~50ms) = ~250ms total
 
-**VRRP authentication:** configure MD5 authentication on VRRP group to prevent rogue devices from becoming master.
+**VRRP authentication:** VRRPv3 (RFC 5798) dropped the authentication mechanism entirely because MD5 provides insufficient security on a local subnet. If authentication is required to prevent rogue devices on the VLAN, use link-layer security (802.1X port-based access control or MACsec) rather than relying on VRRP-level authentication. VRRPv2 deployments using MD5 should plan migration to VRRPv3.
+
+**VRRP applicability — on-premises only:** VRRP requires multicast and virtual MAC addresses (00:00:5E:00:01:XX), which are not supported in cloud VPCs. AWS, Azure, and GCP all explicitly block VRRP inside their virtual networks. Cloud equivalents for gateway HA are:
+- **AWS**: NLB/ALB for load balancing; Route 53 health checks for DNS failover; Elastic IP reassignment via Lambda for active/passive
+- **Azure**: Azure Load Balancer with health probes; Floating IP (similar to VIP)
+- **GCP**: Internal Load Balancer with auto-failover
+
+The VRRP design in this document applies specifically to on-premises data centers and colocation environments.
 
 ### BGP: ECMP, BFD, and Fast Convergence
 
@@ -237,7 +244,7 @@ flowchart TD
 - BFD is resource-intensive at very short intervals; balance against router CPU capacity
 
 **BGP security:**
-- **MD5 session authentication**: BGP TCP sessions between peers use MD5 hash of a shared secret to prevent session hijacking
+- **TCP-AO authentication (recommended)**: BGP TCP sessions between peers should use TCP Authentication Option (TCP-AO, RFC 5925), which replaces the legacy MD5 option with HMAC-SHA-256 or AES-128-CMAC. TCP-AO provides stronger cryptographic protection, supports key rollover without session disruption, and is supported on modern routing platforms (JunOS 15.1+, IOS-XR 6.1+, FRRouting 8.4+). For legacy devices that do not support TCP-AO, fall back to TCP MD5 (RFC 2385) with a documented plan to upgrade.
 - **Route filtering**: prefix lists on eBGP sessions — accept only specific prefixes from each peer, never accept default route unless explicitly intended, set maximum-prefix limits (kill session if peer advertises more than N prefixes, protects against route table corruption)
 - **BGP prefix limits**: `neighbor 192.0.2.1 maximum-prefix 1000 warning-only` — alert when approaching limit; hard limit with session termination for genuine prefix bombs
 - **RPKI ROA validation**: validate BGP route announcements against Resource Public Key Infrastructure (RPKI) Route Origin Authorizations. Drop routes where origin AS does not match the ROA. Prevents BGP route origin spoofing (e.g., the famous 2018 AWS Route 53 BGP hijack).
@@ -380,8 +387,9 @@ Split-brain occurs when two nodes both believe they are the active/master node a
 2. **BGP on every server (BGP unnumbered)**: instead of VRRP gateway per subnet, run iBGP on each server (using FRRouting in a container). Each server peers with both ToR switches. ToR switches peer with spines. This eliminates the VRRP bottleneck and provides per-server traffic engineering. LinkedIn and Facebook use this approach at scale.
 3. **EVPN/VXLAN for L2 overlay**: at scale, traditional VLANs spanning the entire data center are operationally complex. EVPN over VXLAN provides L2 overlays with L3 routing fabric beneath — enables VM/container migration without network reconfiguration.
 4. **SmartNIC / DPU offload**: at 400Gbps+ per server, CPU cannot handle all network processing (firewall, NAT, load balancing). SmartNICs (NVIDIA BlueField, Intel IPU) offload packet processing to dedicated network processors, freeing server CPU for applications.
-5. **SR-IOV for low-latency networking**: Single Root I/O Virtualization allows VMs/containers to directly access NIC hardware queues, bypassing the hypervisor network stack. Reduces network latency from ~50 microseconds to ~5 microseconds for latency-sensitive workloads.
+5. **SR-IOV for low-latency networking**: Single Root I/O Virtualization allows VMs/containers to directly access NIC hardware queues, bypassing the hypervisor's virtual switch (vSwitch). This eliminates the vSwitch software processing overhead, reducing virtualization-induced network latency by ~10-20 microseconds per packet. For TCP/IP workloads, the kernel network stack still adds its own latency, so application-level improvement varies by workload. SR-IOV is most impactful for latency-sensitive applications (financial trading, real-time analytics) where even microsecond-level gains are significant.
 6. **BGP ECMP at 100+ paths**: at scale, ECMP may need to distribute across hundreds of paths. Most hardware ASICs support 64-128 ECMP paths; verify hardware capacity before designing for this many parallel paths.
+7. **Segment Routing (SRv6)**: modern network designs increasingly use Segment Routing over IPv6 (SRv6) or SR-MPLS for programmable traffic engineering. Unlike traditional ECMP which distributes flows across equal-cost paths, Segment Routing allows defining explicit paths through the network by encoding a list of segment identifiers (SIDs) in the packet header. Use cases: (a) traffic engineering — steer latency-sensitive traffic along low-latency paths while bulk data uses high-bandwidth paths; (b) fast reroute — pre-computed backup paths with TI-LFA (Topology Independent Loop-Free Alternate) provide sub-50ms failover without BFD; (c) network slicing — isolate different traffic classes on shared infrastructure. SRv6 is supported on JunOS, IOS-XR, and SONIC platforms. For greenfield deployments, consider SRv6 as a replacement for traditional RSVP-TE tunnels.
 
 ---
 
@@ -391,7 +399,7 @@ Split-brain occurs when two nodes both believe they are the active/master node a
 
 | Layer | Control | Purpose |
 |-------|---------|---------|
-| BGP (eBGP) | MD5 session authentication | Prevent BGP session hijacking |
+| BGP (eBGP) | TCP-AO authentication (HMAC-SHA-256) | Prevent BGP session hijacking; replaces legacy MD5 |
 | BGP (eBGP) | RPKI ROA validation | Prevent route origin spoofing |
 | BGP (eBGP) | Prefix filters | Reject invalid/unexpected prefixes |
 | BGP (eBGP) | Max-prefix limits | Protect against route table poisoning |
@@ -424,6 +432,18 @@ Critical principle: the management network used to configure network equipment m
 | Per-AZ NAT GW | $32/month per additional AZ | Required for 99.999%; data processing charges; optimize by using VPC endpoints for AWS services |
 | Direct Connect (10Gbps) | $1,500-4,000/month per connection | Redundant DX is required; data transfer savings offset cost for high-volume workloads |
 | BFD-capable hardware | Premium on some vendors | BFD is supported on all modern routing platforms; no premium on software-based routers |
+| Public IPv4 addresses | $0.005/hour per IP (since Feb 2024) | AWS charges for all public IPv4 addresses; IPv6 is free — migrate to dual-stack to reduce IPv4 usage |
+
+### IPv6 Dual-Stack Considerations
+
+Any new network design in 2026 should be **dual-stack** (IPv4 + IPv6) from day 1:
+
+- **Cost driver**: AWS charges $0.005/hour per public IPv4 address (~$3.60/month per IP). A deployment with 100 public IPs costs $360/month in IPv4 charges alone. IPv6 addresses are free.
+- **Address exhaustion**: IPv4 address space is exhausted globally. New allocations from RIRs are increasingly difficult; IPv4 lease costs are rising.
+- **Performance**: major CDNs and cloud providers route IPv6 natively over backbone networks; some paths have lower latency than IPv4.
+- **Implementation**: AWS VPCs support dual-stack natively. ALBs can listen on both IPv4 and IPv6. Security Groups apply to both. Route 53 supports AAAA records alongside A records.
+- **Migration path**: enable IPv6 on public-facing resources (ALB, CloudFront, Route 53) first. Internal subnets can remain IPv4-only initially. Monitor IPv6 traffic percentage in ALB access logs to track adoption.
+- **Gotcha**: some on-premises firewalls and VPN appliances do not support IPv6. Verify before enabling on Transit Gateway or Direct Connect BGP sessions.
 
 ---
 
