@@ -278,6 +278,9 @@ Implementation: Create a Private DNS Zone with the same name as the public domai
 
 This distinction is critical and frequently tested at staff level interviews.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/c667327d-080b-4e2c-be5a-f262f36504f7" />
+
+
 ### Service Endpoints
 
 Service Endpoints extend the VNet's identity to Azure PaaS services. The PaaS service learns the VNet's subnet ID and allows access from it.
@@ -286,6 +289,8 @@ Service Endpoints extend the VNet's identity to Azure PaaS services. The PaaS se
 - The PaaS service's public endpoint is used, but restricted to allowed VNets/subnets
 - No private IP is created; the storage account's FQDN still resolves to a public IP
 - Firewall rules on the storage account say: "allow from subnet X in VNet Y"
+
+<img width="778" height="382" alt="image" src="https://github.com/user-attachments/assets/2533427e-35bd-45c1-aa55-e3c75603e31e" />
 
 ```bash
 # Enable service endpoint on subnet
@@ -311,6 +316,9 @@ Private Endpoints place a private NIC with a private IP into your VNet that maps
 - Traffic never uses the public endpoint at all
 - The storage account can have its public endpoint disabled entirely
 - Stronger isolation: even if someone gains access to a different subnet in your subscription, they cannot reach this storage account via its private endpoint unless they're in the approved VNet
+
+<img width="778" height="382" alt="image" src="https://github.com/user-attachments/assets/15ad9735-2685-42de-a803-8ee853b36b09" />
+
 
 ### Comparison
 
