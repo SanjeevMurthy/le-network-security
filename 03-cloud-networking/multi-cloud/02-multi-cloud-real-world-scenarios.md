@@ -92,7 +92,8 @@ graph TB
     style EQ fill:#ff6b35,color:#fff
     style OKTA fill:#107c10,color:#fff
 ```
-<img width="3381" height="1476" alt="image" src="https://github.com/user-attachments/assets/e3ab630c-0b0d-4c04-b82f-15cf3464e0df" />
+
+<img width="3381" height="1476" alt="image" src="https://github.com/user-attachments/assets/d7672fbf-0db1-4aa0-af0f-a6456f4f7788" />
 
 
 ### Cloud Services Used
@@ -246,6 +247,8 @@ graph TB
     style replication fill:#107c10,color:#fff
     style CF fill:#f48120,color:#fff
 ```
+<img width="3378" height="1520" alt="image" src="https://github.com/user-attachments/assets/9fa9a325-8a83-4717-a1ca-a9c034e6174b" />
+
 
 ### Cloud Services Used
 
@@ -452,6 +455,8 @@ graph TB
     style azure_ai fill:#0078d4,color:#fff
     style EQUINIX fill:#ff6b35,color:#fff
 ```
+<img width="4082" height="1768" alt="image" src="https://github.com/user-attachments/assets/13053996-e887-4079-a218-b6966dfb1ad2" />
+
 
 ### Cloud Services Used
 
@@ -589,6 +594,9 @@ graph TB
     style TOKEN_SVC fill:#107c10,color:#fff
     style PURVIEW fill:#7d3c98,color:#fff
 ```
+
+<img width="3344" height="1175" alt="image" src="https://github.com/user-attachments/assets/226b7eaf-e2b9-4492-af3d-47e242ce8cff" />
+
 
 ### Cloud Services Used
 
@@ -786,6 +794,9 @@ graph TB
     style aws_fleet fill:#ff9900,color:#000
     style azure_fleet fill:#0078d4,color:#fff
 ```
+
+<img width="3277" height="2270" alt="image" src="https://github.com/user-attachments/assets/337f63bd-6630-49e9-a304-4b71870aa457" />
+
 
 ### Cloud Services Used
 
