@@ -77,6 +77,8 @@ This is the most common architectural mistake in Azure hub-spoke deployments. Te
 
 Peering supports gateway transit: a spoke VNet can use the hub's VPN Gateway or ExpressRoute Gateway to reach on-premises networks.
 
+<img width="600" height="266" alt="image" src="https://github.com/user-attachments/assets/dc3bd7fd-43d0-4502-a303-9690b752390c" />
+
 ```bash
 # Hub VNet: allow gateway transit (hub has the gateway)
 az network vnet peering create \
