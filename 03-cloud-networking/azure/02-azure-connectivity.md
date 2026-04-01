@@ -402,6 +402,8 @@ graph TB
     style ARS fill:#107c10,color:#fff
 ```
 
+<img width="1093" height="682" alt="image" src="https://github.com/user-attachments/assets/b9e4c625-7186-4216-9ed9-d79ca18210fb" />
+
 ### UDR Requirements in Hub-Spoke
 
 Every spoke subnet needs a UDR routing `0.0.0.0/0` to the Azure Firewall private IP in the hub. Without this, inter-spoke traffic and internet traffic bypass the firewall:
