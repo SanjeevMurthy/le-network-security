@@ -285,6 +285,8 @@ az afd origin create \
 
 Traffic Manager is **DNS-based** global load balancing. It does NOT proxy traffic — it returns DNS responses directing clients to specific endpoints. The client connects directly to the endpoint.
 
+<img width="780" height="600" alt="image" src="https://github.com/user-attachments/assets/b2d03821-b18b-4d08-a608-f4f3c63d2854" />
+
 This is fundamentally different from Front Door: Front Door is a reverse proxy that terminates connections; Traffic Manager just influences DNS resolution.
 
 ### Routing Methods
