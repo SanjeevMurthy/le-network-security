@@ -126,6 +126,8 @@ az network vnet peering list --resource-group spoke-rg --vnet-name spoke-vnet -o
 
 Azure Virtual WAN is a Microsoft-managed networking service that provides hub-and-spoke topology with automatic transit routing. It solves the transitivity problem that basic VNet peering cannot.
 
+<img width="1376" height="817" alt="image" src="https://github.com/user-attachments/assets/8224e26a-e033-4b64-94ee-1be4af99d013" />
+
 ### Standard vs Basic Tier
 
 | Feature | Basic | Standard |
@@ -231,6 +233,8 @@ BGP allows dynamic route exchange between Azure and on-premises. Routes advertis
 
 ExpressRoute provides a private, dedicated connection between on-premises and Azure using a connectivity provider (ISP or exchange provider). The connection is NOT over the public internet.
 
+<img width="1215" height="581" alt="image" src="https://github.com/user-attachments/assets/35260d79-584e-42cd-97b3-c6867e925693" />
+
 ### Circuit Characteristics
 
 - Bandwidth: 50 Mbps to 100 Gbps
@@ -264,10 +268,14 @@ Site-A (Japan) --ER--> Microsoft Backbone --ER--> Site-B (London)
                     (Global Reach required)
 ```
 
+<img width="538" height="363" alt="image" src="https://github.com/user-attachments/assets/b5be8e58-dba0-4df0-a580-a663473d405c" />
+
 ### FastPath
 
 > ExpressRoute FastPath is designed to improve data path performance between your on-premises network and your virtual network. When FastPath is enabled, it bypasses the ExpressRoute Gateway for data traffic and sends network traffic directly to virtual machines in the virtual network, significantly increasing throughput and reducing latency.
 > — [Azure Docs: ExpressRoute FastPath](https://learn.microsoft.com/azure/expressroute/about-fastpath)
+
+<img width="1769" height="766" alt="image" src="https://github.com/user-attachments/assets/046544c1-ff07-4464-99cb-486261277999" />
 
 By default, data traffic flows through the ExpressRoute Gateway, creating a bottleneck. FastPath bypasses the gateway for data traffic (gateway still handles control plane). Maximum throughput scales significantly with FastPath enabled on UltraPerformance or ErGw3AZ SKUs.
 
@@ -286,6 +294,8 @@ With ARS:
 - NVA peers BGP with ARS
 - ARS propagates NVA-learned routes into Azure VNet route tables automatically
 - No manual UDR maintenance for dynamic routing scenarios
+
+<img width="1142" height="720" alt="image" src="https://github.com/user-attachments/assets/c8f8ff7f-9b0d-46f5-b5e2-3ee92f2e24bf" />
 
 ```bash
 az network routeserver create \
@@ -314,6 +324,8 @@ ARS requires a dedicated subnet named `RouteServerSubnet` with minimum `/27`. It
 
 While Private Endpoints are for consuming Azure PaaS services privately, Private Link Service allows you to expose YOUR OWN service privately to other Azure customers or tenants.
 
+<img width="1210" height="453" alt="image" src="https://github.com/user-attachments/assets/18c28370-6d34-459c-ae16-46e3f52a86e4" />
+
 Use cases:
 - SaaS provider exposing services to customers without peering
 - Internal platform teams exposing services across subscription boundaries
@@ -324,6 +336,7 @@ Customer VNet
 └── Private Endpoint → ← Private Link Service → Your Standard LB → Your VMs
     (customer's private IP)                      (your VNet)
 ```
+<img width="1016" height="423" alt="image" src="https://github.com/user-attachments/assets/53510f8f-af07-44ba-a4e7-68f38d82b264" />
 
 The customer creates a Private Endpoint in their VNet. The Private Endpoint connects to your Private Link Service (which is attached to your Standard Load Balancer). Customer traffic flows to your backend via Microsoft's backbone, with no VNet peering or IP routing.
 
@@ -411,6 +424,8 @@ az network route-table route create \
   --address-prefix 10.0.0.0/16 \
   --next-hop-type VirtualNetworkGateway
 ```
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/5d491fb3-6d8c-4bf1-bfcd-e9e769fc3939" />
 
 ---
 
