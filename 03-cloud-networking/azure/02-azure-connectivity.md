@@ -55,8 +55,8 @@ Azure connectivity architecture is a layer of decisions that compound. Get VNet 
 > — [Azure Docs: VNet Peering](https://learn.microsoft.com/azure/virtual-network/virtual-network-peering-overview)
 
 VNet Peering connects two VNets at the Azure SDN layer. Traffic flows over Microsoft's backbone, not the public internet. Latency is single-digit milliseconds within a region.
-<img width="709" height="397" alt="image" src="https://github.com/user-attachments/assets/8cd380af-020e-4dea-bd0a-f758b5fb0bc6" />
 
+<img width="709" height="397" alt="image" src="https://github.com/user-attachments/assets/8cd380af-020e-4dea-bd0a-f758b5fb0bc6" />
 
 ### Critical Property: Non-Transitive Routing
 
