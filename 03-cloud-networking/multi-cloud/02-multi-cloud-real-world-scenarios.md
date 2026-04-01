@@ -92,6 +92,8 @@ graph TB
     style EQ fill:#ff6b35,color:#fff
     style OKTA fill:#107c10,color:#fff
 ```
+<img width="3381" height="1476" alt="image" src="https://github.com/user-attachments/assets/e3ab630c-0b0d-4c04-b82f-15cf3464e0df" />
+
 
 ### Cloud Services Used
 
