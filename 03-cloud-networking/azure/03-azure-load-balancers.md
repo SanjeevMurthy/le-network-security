@@ -221,6 +221,9 @@ az network application-gateway probe create \
 
 Azure Front Door is Microsoft's global L7 CDN and load balancer. Unlike Application Gateway (regional), Front Door has Points of Presence (PoPs) in 100+ locations worldwide.
 
+<img width="500" height="530" alt="image" src="https://github.com/user-attachments/assets/f5ac9dd4-1872-4865-8a31-308ac5df0486" />
+
+
 ### Key Architecture Concepts
 
 > Azure Front Door uses anycast to direct end-user requests to the nearest Front Door point of presence (PoP). Connections terminate at the PoP, and Front Door then uses its own optimized WAN path to route requests to the best available origin — accelerating both connection establishment for end users and content delivery from origins.
