@@ -60,6 +60,9 @@ The application layer is where user-facing software meets the network. It define
 
 Understanding the application layer is foundational for engineers who build, debug, or secure networked systems. It explains not just *what* HTTP is, but *why* it works the way it does — from port numbers that route packets to specific processes, to cookies that paper over HTTP's statelessness.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/54268072-817f-4414-9379-5e0df5ac1266" />
+
+
 ---
 
 ## 1. Programs, Processes, and Threads
