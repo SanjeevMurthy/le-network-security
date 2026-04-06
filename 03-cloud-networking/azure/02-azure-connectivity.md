@@ -338,16 +338,47 @@ By default, data traffic flows through the ExpressRoute Gateway, creating a bott
 > Azure Route Server simplifies dynamic routing between your network virtual appliance (NVA) and your Virtual Network. It allows you to exchange routing information directly through BGP between any NVA that supports the BGP routing protocol and the Azure Software Defined Network (SDN) in Azure VNets, without the need to manually configure and maintain route tables.
 > — [Azure Docs: Azure Route Server](https://learn.microsoft.com/azure/route-server/overview)
 
-Azure Route Server (ARS) solves the pain of UDR maintenance when using NVAs. Without ARS:
-- NVA learns routes dynamically from on-premises via BGP
-- But Azure VMs don't know to use the NVA — you must manually create and maintain UDRs
-
-With ARS:
-- NVA peers BGP with ARS
-- ARS propagates NVA-learned routes into Azure VNet route tables automatically
-- No manual UDR maintenance for dynamic routing scenarios
 
 <img width="1142" height="720" alt="image" src="https://github.com/user-attachments/assets/c8f8ff7f-9b0d-46f5-b5e2-3ee92f2e24bf" />
+
+
+**Azure Route Server (ARS)** is a managed BGP service that enables **dynamic routing** between your Network Virtual Appliance (NVA) and Azure VNet.
+
+👉 **Simple definition:**  
+ARS lets Azure automatically **learn and distribute routes** from your firewall/NVA — eliminating manual route tables.
+
+## 🔥 Problem ARS Solves
+
+### ❌ Without ARS
+- NVA (firewall/router) learns routes via BGP  
+- Azure VMs are unaware of these routes  
+
+👉 Result:
+- Manual creation of **UDRs (User Defined Routes)**  
+- Continuous maintenance ❌ *(not scalable)*  
+
+### ✅ With ARS
+- NVA establishes **BGP peering with ARS**  
+- ARS propagates routes into the Azure VNet  
+
+👉 Result:
+- No manual UDRs  
+- Fully dynamic routing  
+
+## ⚙️ How It Works
+
+### 🧩 Components
+- Hub VNet  
+- NVA (Firewall / SD-WAN / Router)  
+- Azure Route Server  
+
+### 🔄 Traffic Flow
+1. On-prem → advertises routes via BGP to NVA  
+2. NVA → advertises routes to ARS  
+3. ARS → injects routes into Azure VNet  
+
+👉 **Final outcome:**  
+All VMs automatically learn routes without manual intervention 🚀
 
 ```bash
 az network routeserver create \
