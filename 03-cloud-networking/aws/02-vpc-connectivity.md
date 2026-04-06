@@ -50,6 +50,7 @@ Connecting VPCs to each other, to on-premises networks, and to the internet is t
 The Senior SRE must know not just what each service does, but exactly where it breaks in production and how to debug it.
 
 <img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/d2204618-d7af-4f83-a955-c74e9550b2de" />
+
 ---
 
 ## VPC Peering
