@@ -37,6 +37,8 @@
 
 AKS networking is one of the most operationally complex areas in Azure. The choice of CNI plugin has cascading effects on VNet IP consumption, network policy capabilities, pod-to-pod latency, and your ability to scale node pools. Getting this wrong early in a cluster's life means a disruptive migration — potentially requiring workload downtime. This guide covers the real trade-offs, production failure patterns, and what a Staff SRE needs to know about AKS networking internals.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/a919a589-d621-4409-a9ea-42e721c66440" />
+
 ---
 
 ## AKS Networking Models
@@ -687,6 +689,3 @@ A: Multi-tenant isolation with Azure CNI Overlay requires layered controls since
 
 **Q: Explain exactly how Azure CNI allocates IPs to pods and what happens when a node runs out of pre-allocated IPs. What is the "IP pre-allocation" behavior and how does it affect scaling?**
 A: Azure CNI pre-allocates IP addresses from the VNet subnet to each node's NIC as secondary IP configurations. At node creation, Azure CNI reserves a pool of IPs on the NIC — the pool size is typically `--max-pods` (default 30). These are Azure secondary IP configurations registered on the node's NIC in the VNet. When a pod is scheduled, Azure CNI assigns one pre-allocated IP to the pod's veth interface. When the pod terminates, the IP returns to the pool on the NIC but remains allocated in Azure (not freed back to the subnet) until the pool is below the low-watermark threshold. The "dynamic" IP allocation mode (introduced in Azure CNI v1.4+) changes this behavior: instead of pre-allocating all IPs at node creation, it allocates IPs on demand and returns them to the subnet pool when pods terminate. This reduces idle IP consumption. However, dynamic mode introduces a small latency for pod startup (IP allocation API call vs using a pre-allocated IP). For latency-sensitive fast-scaling workloads, pre-allocation (static mode) is preferable. The node scale-out consequence: when you add a node, Azure CNI immediately attempts to reserve `max-pods` IPs from the subnet. If the subnet is exhausted, the node's CNI plugin initialization fails, and the node enters `NetworkUnavailable` state. This is why the node count × max-pods calculation must account for ALL nodes that will exist simultaneously, including surge capacity during rolling upgrades.
-
-<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/a919a589-d621-4409-a9ea-42e721c66440" />
-
