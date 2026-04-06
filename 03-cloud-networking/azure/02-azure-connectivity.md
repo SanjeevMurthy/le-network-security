@@ -47,6 +47,8 @@
 
 Azure connectivity architecture is a layer of decisions that compound. Get VNet peering transitivity wrong and you need UDRs everywhere. Choose Basic VPN Gateway SKU and your failover doesn't support BGP. Pick ExpressRoute without Global Reach and regional failover requires a second circuit. Senior SREs who have managed production Azure environments have all hit these walls — this guide walks through each connectivity primitive, the failure modes, and the design decisions that separate functional from resilient.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/8cf4ec36-c7b1-48f7-beb5-f1755d2f5394" />
+
 ---
 
 ## VNet Peering
@@ -681,6 +683,3 @@ A: BGP route leaking prevention in Azure requires a combination of approaches:
 3. **NSG as backstop**: Apply NSGs to every spoke subnet that explicitly deny the opposite environment's CIDR blocks — defense in depth.
 4. **Private DNS isolation**: Use separate Private DNS Zones for prod and dev, linked only to their respective VNets, preventing DNS-based lateral movement.
 5. **Monitor with Azure Policy**: Enforce that no UDRs exist in prod subnets pointing to dev address space and vice versa. The layered approach ensures that even if vWAN routing tables are misconfigured, NSGs and firewall rules provide independent isolation.
-
-<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/8cf4ec36-c7b1-48f7-beb5-f1755d2f5394" />
-
