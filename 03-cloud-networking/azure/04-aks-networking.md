@@ -410,6 +410,8 @@ graph TB
     style PRIV_EP fill:#8b0000,color:#fff
 ```
 
+<img width="3210" height="2354" alt="image" src="https://github.com/user-attachments/assets/98d2d3a7-fcef-4104-be7a-91925602f779" />
+
 ---
 
 ## Real-World Production Scenario
