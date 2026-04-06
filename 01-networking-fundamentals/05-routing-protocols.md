@@ -149,6 +149,8 @@ VPN:
   BGP VPN: customer router advertises CIDRs, AWS advertises VPC CIDR
   Redundancy: two VPN tunnels per connection, BGP detects failover
 ```
+<img width="2796" height="1170" alt="image" src="https://github.com/user-attachments/assets/6f8c16a7-f077-47f3-808c-3e75dc287109" />
+
 
 ```bash
 # Check VPN BGP status (from AWS CLI)
