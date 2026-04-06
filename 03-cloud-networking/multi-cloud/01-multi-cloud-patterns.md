@@ -103,6 +103,39 @@ VPC → Cloud Router (manages BGP) → Interconnect/VPN
 
 **Implication for multi-cloud**: There is no universal abstraction. SD-WAN overlays (Cisco Meraki SD-WAN, Palo Alto Prisma) provide a common management plane but the underlying cloud routing still follows each provider's model.
 
+### 🧠 Interview One-liner: SD-WAN
+SD-WAN overlays create a virtual, encrypted network across multiple underlying transports, enabling centralized control, dynamic path selection, and optimized multi-cloud connectivity.
+
+🚀 **Key Features**
+1. 📊 **Application-aware routing**  
+   - Routes traffic based on application requirements  
+   - *Example:*  
+     - Zoom → lowest latency path  
+     - Backup jobs → cheapest path  
+2. 🔁 **Dynamic failover**  
+   - Automatically switches paths on degradation  
+   - *Example:*  
+     - Internet degrades → switch to MPLS  
+     - Direct Connect fails → switch to VPN  
+3. 🔐 **Built-in encryption**  
+   - End-to-end encryption for all traffic (IPSec)  
+4. 📈 **Path monitoring**  
+   - Continuously tracks:  
+     - Latency  
+     - Jitter  
+     - Packet loss  
+5. 🎛️ **Centralized control**  
+   - Single control plane to manage:  
+     - AWS  
+     - Azure  
+     - On-prem  
+
+🔥 **Popular SD-WAN Solutions**
+
+- Cisco Catalyst SD-WAN (Viptela / Meraki)  
+- Palo Alto Prisma SD-WAN  
+- VMware VeloCloud
+
 ---
 
 ## IPAM Strategy: Preventing CIDR Overlaps
