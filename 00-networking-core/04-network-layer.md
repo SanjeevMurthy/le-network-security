@@ -49,6 +49,8 @@ The network layer is the backbone of the Internet. It is responsible for **logic
 
 The Internet Protocol (IP) is the universal glue at this layer. Every device that participates in global routing speaks IP. Everything above (TCP, UDP, application protocols) and below (Ethernet, WiFi, fiber links) is optional; IP is not.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/020aaaeb-0e1e-4d88-a149-2438e91d833e" />
+
 ---
 
 ## 1. Network Layer Functions
