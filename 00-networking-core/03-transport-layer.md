@@ -62,6 +62,8 @@ The transport layer is where process-to-process communication happens. Below it,
 
 This guide covers the full transport layer stack: UDP, reliable data transfer principles, TCP internals, congestion control theory, AIMD, slow start, and socket programming.
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/773e7256-56d9-41d9-880c-bb9b037a8102" />
+
 ---
 
 ## 1. Transport Layer Overview
