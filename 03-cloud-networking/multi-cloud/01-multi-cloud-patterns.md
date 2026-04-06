@@ -587,6 +587,9 @@ graph TB
     style CENTRAL_DNS fill:#6b35ff,color:#fff
 ```
 
+<img width="4521" height="2676" alt="image" src="https://github.com/user-attachments/assets/5281c1a6-1b5d-45a7-9033-90f0b66447a4" />
+
+
 ---
 
 ## Real-World Production Scenario
