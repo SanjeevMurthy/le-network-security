@@ -389,6 +389,8 @@ graph TB
     style FW_E2 fill:#8b0000,color:#fff
 ```
 
+<img width="3927" height="1585" alt="image" src="https://github.com/user-attachments/assets/44ddadcd-1fba-403d-bf4b-16504ba95c18" />
+
 ---
 
 ## Decision Matrix
