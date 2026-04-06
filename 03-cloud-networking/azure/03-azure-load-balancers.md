@@ -48,6 +48,8 @@ Azure's load balancing portfolio spans four distinct products — each operating
 
 Azure Load Balancer operates at Layer 4 (TCP/UDP). It makes routing decisions based on IP address and port — no HTTP awareness. Standard SKU is the production-grade option; Basic SKU is being deprecated.
 
+<img width="1655" height="423" alt="image" src="https://github.com/user-attachments/assets/eff0e5d3-3a55-4625-a032-628616f22221" />
+
 ### Key Components
 
 **Frontend IP Configuration**: The IP address(es) the load balancer listens on. Can be public (Standard Public IP) or private (VNet IP). A single load balancer can have multiple frontends (useful for multi-tenant or multi-port scenarios).
@@ -137,6 +139,9 @@ Alert threshold: >0 failed SNAT connections
 > — [Azure Docs: Application Gateway Overview](https://learn.microsoft.com/azure/application-gateway/overview)
 
 Application Gateway is Azure's L7 load balancer with WAF capabilities. It terminates TCP connections, reads HTTP headers/paths, and makes routing decisions based on application-layer content.
+
+<img width="968" height="651" alt="image" src="https://github.com/user-attachments/assets/7705ad8e-f2ee-438a-8134-7fdff7a5b64e" />
+
 
 ### Key Features
 
