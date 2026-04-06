@@ -243,6 +243,9 @@ GENEVE (Generic Network Virtualization Encapsulation) carries metadata about the
 - Traffic mirroring and deep packet inspection at scale
 - Compliance requirements for stateful inspection of all traffic
 
+> 🧠 **Interview One-liner**  
+> Gateway Load Balancer itself does not support geolocation-based routing, but it can forward traffic to security appliances that perform geo-based filtering.
+
 ---
 
 ## Connection Draining (Deregistration Delay)
