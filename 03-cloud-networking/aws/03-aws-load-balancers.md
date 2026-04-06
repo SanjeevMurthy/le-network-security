@@ -223,12 +223,18 @@ graph TD
 
 Traffic enters via the IGW, is routed to the GLB (via route table: `0.0.0.0/0 → GLB`), forwarded to security appliances using GENEVE encapsulation, inspected, and returned to GLB which forwards to the original destination. Applications are unaware of inspection.
 
+<img width="700" height="560" alt="image" src="https://github.com/user-attachments/assets/5c614424-3545-48b2-b820-e00693f3a7cf" />
+
+
 ### GENEVE Protocol
 
 > GENEVE (Generic Network Virtualization Encapsulation) is a tunneling protocol used by the Gateway Load Balancer to forward traffic to appliances. It encapsulates the original packet with metadata context, allowing the appliance to process and return the packet without modifying the original source or destination addresses, preserving the appearance of normal through traffic.
 > — [AWS Docs: GENEVE Protocol](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
 
 GENEVE (Generic Network Virtualization Encapsulation) carries metadata about the original traffic along with the encapsulated packet. GLB uses GENEVE on UDP port 6081. Security appliances must support this protocol (most next-gen firewalls support it as of 2024).
+
+<img width="768" height="274" alt="image" src="https://github.com/user-attachments/assets/acb3b6c2-c215-4c9c-a4f3-b3179e0cee87" />
+
 
 ### Use Cases
 
