@@ -103,6 +103,9 @@ Without these routes, the peering exists but traffic is dropped. This is a commo
 
 Transit Gateway is a regional, fully managed, hub-and-spoke network transit hub. Every VPC and VPN connection attaches to the TGW, and the TGW routes between them.
 
+<img width="833" height="458" alt="image" src="https://github.com/user-attachments/assets/582b9301-14a7-4c65-bc82-1fd2686fc1ac" />
+
+
 ```mermaid
 graph TB
     subgraph TGW["Transit Gateway"]
@@ -172,6 +175,26 @@ TGW main route table:    0.0.0.0/0 → vpc-egress-attachment
 Egress VPC route table:  0.0.0.0/0 → nat-gw
 ```
 
+### 🧠 Interview One-liner
+AWS Transit Gateway is a scalable, regional network hub that enables transitive connectivity between multiple VPCs and on-premises networks using centralized routing.
+
+---
+
+### 🎯 When to Use TGW
+
+- You have many VPCs (10+)
+- Need hub-and-spoke architecture
+- Need transitive routing
+- Need network segmentation
+- Connecting on-premises + multiple VPCs
+
+---
+
+### ❌ When **NOT** to Use TGW
+
+- Only 2–3 VPCs → use VPC Peering  
+- Simple architecture → TGW is overkill
+
 ---
 
 ## AWS PrivateLink
@@ -232,6 +255,9 @@ graph LR
 > — [AWS Docs: Site-to-Site VPN](https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html)
 
 Site-to-Site VPN connects on-premises networks to AWS VPCs over IPsec tunnels over the internet.
+
+<img width="1029" height="664" alt="image" src="https://github.com/user-attachments/assets/6849055f-a158-4eac-a737-09cfde1ce610" />
+
 
 ### Architecture
 
