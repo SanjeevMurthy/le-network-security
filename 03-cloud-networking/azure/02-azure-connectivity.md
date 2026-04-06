@@ -101,6 +101,56 @@ az network vnet peering create \
 
 Gateway transit works in one direction only — the spoke uses the hub's gateway. The hub does NOT use the spoke's gateway.
 
+🧠 **What is Gateway Transit?**
+
+Gateway Transit allows a spoke VNet to use the gateway (VPN/ExpressRoute) of a hub VNet.
+
+👉 Instead of creating a gateway in every VNet:
+- Create one gateway in the hub  
+- All spoke VNets reuse it  
+
+---
+
+🏗️ **Why this exists**
+
+**Without Gateway Transit:**
+- Every VNet needs:
+  - Its own VPN Gateway ❌  
+  - Its own ExpressRoute Gateway ❌  
+- Expensive and complex  
+
+**With Gateway Transit:**
+- Only the hub has the gateway ✅  
+- Spokes reuse it → scalable architecture  
+
+---
+
+⚙️ **How it works (step-by-step)**
+
+### 🧩 Setup
+- **Hub VNet** → has VPN/ExpressRoute Gateway  
+- **Spoke VNet** → no gateway  
+
+---
+
+### 🔌 Configuration (VERY IMPORTANT)
+
+**On Hub VNet peering:**
+- Enable `allowGatewayTransit = true`
+
+**On Spoke VNet peering:**
+- Enable `useRemoteGateways = true`
+
+---
+
+### 🔄 Traffic Flow (Spoke → On-prem example)
+
+1. VM in spoke sends traffic to `192.168.0.10`  
+2. Spoke route table forwards traffic to Hub (via peering)  
+3. Hub sends traffic to VPN/ExpressRoute Gateway  
+4. Gateway sends traffic to on-prem
+
+
 ### Global VNet Peering
 
 > Global virtual network peering enables you to connect virtual networks across Azure regions. Traffic between globally peered virtual networks travels over Microsoft's global backbone network and does not traverse the public internet, though data transfer charges apply and higher latency is expected compared to same-region peering.
