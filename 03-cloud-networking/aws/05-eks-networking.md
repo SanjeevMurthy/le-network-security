@@ -367,6 +367,18 @@ kube-proxy runs as a DaemonSet on every node. It programs iptables (or IPVS) rul
 
 **When to switch to IPVS**: Clusters with > 500 services or > 2,000 service endpoints. iptables rule traversal at this scale adds measurable latency.
 
+🧠 **Interview One-liner**
+
+> IPVS is a Linux kernel-based Layer 4 load balancer used by Kubernetes kube-proxy to efficiently route traffic to services using hash-based lookups.
+
+🎯 **When to use IPVS**
+
+**Use when:**
+
+- Large Kubernetes clusters  
+- High number of services  
+- Need better performance than iptables
+
 ### Disabling kube-proxy for Cilium
 
 If using Cilium CNI with kube-proxy replacement enabled, kube-proxy is unnecessary and can be disabled:
