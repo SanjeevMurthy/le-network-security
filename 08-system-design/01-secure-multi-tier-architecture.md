@@ -129,6 +129,92 @@ flowchart TD
     RDSAudit --> SIEM
 ```
 
+<img width="2967" height="1849" alt="image" src="https://github.com/user-attachments/assets/474c1a78-a9ff-4f3b-98c9-f194b33e18db" />
+
+
+A **secure, highly available 3-tier AWS architecture** where each layer is isolated and protected with multiple security controls.
+
+---
+
+### **Traffic Flow (End-to-End)**
+User → **Shield → CloudFront (WAF)** → **ALB** → **App Servers (ASG)** → **RDS (Primary/Standby)**
+
+---
+
+### **1. Edge Layer (Internet-facing security)**
+- **AWS Shield** protects against DDoS attacks  
+- **CloudFront + WAF**:
+  - TLS termination and global edge delivery  
+  - Blocks malicious traffic (SQLi, XSS, rate limiting)  
+  - Uses a **custom header** so only CloudFront can reach ALB (prevents direct attacks)
+
+---
+
+### **2. Load Balancer Layer**
+- **Application Load Balancer (ALB)**:
+  - Layer 7 routing (HTTP/HTTPS)
+  - Spans **3 AZs** for high availability  
+  - Distributes traffic to backend app servers
+
+---
+
+### **3. Application Layer**
+- **EC2 Auto Scaling Group (ASG)**:
+  - App servers deployed across **multiple AZs**
+  - Auto-scales based on load
+  - Accepts traffic only from ALB (via security groups)
+- Retrieves secrets securely from **AWS Secrets Manager** (no hardcoded credentials)
+
+---
+
+### **4. Data Layer**
+- **Amazon RDS PostgreSQL (Multi-AZ)**:
+  - Primary + synchronous standby replica  
+  - Automatic failover for resilience  
+  - Only accessible from app layer over **TLS (port 5432)**  
+  - Runs in **isolated subnets (no internet access)**
+
+---
+
+### **5. Networking & Isolation**
+- **VPC with 3 subnet tiers per AZ**:
+  - Public → ALB, NAT Gateway  
+  - Private → App servers  
+  - Isolated → Database  
+- **NAT Gateway per AZ** ensures reliable outbound access  
+- **VPC Endpoints** keep AWS service traffic private (no internet exposure)
+
+---
+
+### **6. Security & Secrets**
+- **Secrets Manager** stores DB credentials with auto-rotation  
+- IAM roles used instead of static credentials  
+- Strict **Security Groups** enforce least-privilege communication
+
+---
+
+### **7. Observability & Compliance**
+- Logs from all layers:
+  - **CloudTrail** (API activity)  
+  - **VPC Flow Logs** (network traffic)  
+  - **ALB Logs** (requests)  
+  - **RDS Audit Logs** (DB activity)  
+- Centralized into **SIEM/Security Hub** for monitoring and alerts
+
+---
+
+### **Core Design Principles**
+- **Defense in depth** (multiple security layers)  
+- **Zero trust access between tiers**  
+- **High availability (multi-AZ everywhere)**  
+- **No direct internet access to backend/data**  
+- **Full auditability for compliance (PCI-ready)**  
+
+---
+
+### **In One Line**
+A **multi-AZ, zero-trust, defense-in-depth AWS architecture** where secure traffic flows from **CloudFront → ALB → Auto-scaled app tier → Multi-AZ database**, with complete isolation and observability.
+
 ---
 
 ## Component Design
