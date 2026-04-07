@@ -636,6 +636,82 @@ graph TB
 ```
 <img width="4082" height="1768" alt="image" src="https://github.com/user-attachments/assets/13053996-e887-4079-a218-b6966dfb1ad2" />
 
+This architecture represents a **multi-cloud AI system** where AWS handles **data processing + ML recommendations**, and Azure handles **Generative AI (chat + RAG)**, connected through secure private networking.
+
+---
+
+### Architecture Explanation
+
+#### 1. Customer Interaction Layer
+- Users access the system via **Web/Mobile App**
+- Requests are routed through **CloudFront CDN** for low latency and caching
+- All traffic enters via a unified **API Gateway**
+
+---
+
+#### 2. AWS Layer — ML & Recommendations (Primary Compute)
+- **S3** stores product catalog + purchase history (data lake)
+- **Redshift** is used for analytics and feature engineering
+- **SageMaker Training Jobs** run nightly to train recommendation models
+- Trained models are deployed to **SageMaker Endpoints** for real-time inference
+- **Lambda (Recommendation Orchestrator)**:
+  - Receives `/api/recommendations`
+  - Calls SageMaker endpoint
+  - Returns personalized recommendations
+- **ECR** stores model container images
+
+👉 AWS acts as the **system of intelligence for structured ML workloads**
+
+---
+
+#### 3. Azure Layer — Generative AI (Chat + RAG)
+- **Azure OpenAI (GPT-4o)** handles conversational AI
+- **Azure AI Search** provides vector search (RAG over product catalog)
+- **Azure Functions (Chat Orchestrator)**:
+  - Handles `/api/chat` requests
+  - Fetches relevant context from AI Search
+  - Sends enriched prompts to OpenAI
+- **Cosmos DB** stores chat history for context continuity
+
+👉 Azure acts as the **system of engagement using GenAI**
+
+---
+
+#### 4. Cross-Cloud Integration Layer
+- **API Gateway** routes:
+  - `/api/recommendations` → AWS
+  - `/api/chat` → Azure
+- **Equinix / VPN (Private Link)** ensures:
+  - Secure, low-latency communication between AWS and Azure
+  - No public internet exposure
+
+---
+
+#### 5. Data Synchronization (Critical for Consistency)
+- Product catalog originates in **S3 (AWS)**
+- Synced nightly to **Azure Blob Storage**
+- Indexed into **Azure AI Search** for RAG use cases
+
+👉 Ensures both clouds operate on **same data foundation**
+
+---
+
+### Key Design Patterns Used
+
+- **Multi-cloud best-of-breed**:
+  - AWS → ML training & scalable infra
+  - Azure → best-in-class OpenAI integration
+- **RAG (Retrieval-Augmented Generation)**:
+  - Combines vector search + LLM for accurate responses
+- **Active-Active logical split**:
+  - Recommendations → AWS
+  - Chat → Azure
+- **Loose coupling via APIs**
+- **Private connectivity (no public exposure)**
+
+---
+
+
 
 ### Cloud Services Used
 
