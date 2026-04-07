@@ -132,6 +132,73 @@ flowchart TD
     Hubble --> Grafana
 ```
 
+<img width="3954" height="1776" alt="image" src="https://github.com/user-attachments/assets/5dfe1239-94b7-489b-a286-f7acb6376dfb" />
+
+
+## Overall Architecture (Brief)
+
+This architecture implements a **Zero Trust, identity-first security model** for microservices running on Kubernetes, where **no entity is trusted by default**, and every interaction is explicitly authenticated, authorized, and observed.
+
+### 1. Entry Layer (North-South Traffic)
+External users and partner systems access the platform through an **Ingress Gateway (IGW)** using **HTTPS + JWT authentication**. This ensures:
+- End-user identity is validated at the edge
+- Only authenticated and authorized requests enter the cluster
+
+### 2. Workload Identity & Authentication
+Inside the cluster, all services authenticate using **mTLS with SPIFFE identities**:
+- **SPIRE Server + Agents** issue short-lived **X.509 SVIDs** to workloads
+- Each service gets a unique **SPIFFE ID** tied to its namespace and service account
+- **Istio (Envoy sidecars)** uses these identities to enforce **mutual TLS (mTLS)** for all service-to-service communication
+
+This removes reliance on IP-based trust and enables **strong cryptographic identity verification**.
+
+### 3. Service-to-Service Authorization (East-West Traffic)
+- **Istiod** distributes **AuthorizationPolicy and PeerAuthentication** via xDS
+- Communication is restricted using **fine-grained policies** (e.g., only `order → payment`, `payment → fraud`)
+- All internal traffic is:
+  - Encrypted (mTLS)
+  - Identity-verified (SPIFFE)
+  - Policy-controlled (Istio RBAC)
+
+### 4. Policy Enforcement & Governance
+- **OPA (Open Policy Agent)** acts as an **admission controller**
+- Enforces security policies at deployment time (e.g., no privileged containers, required labels, etc.)
+- Ensures only compliant workloads are allowed into the cluster
+
+### 5. Secrets Management
+- **External Secrets Operator (ESO)** fetches secrets from **AWS Secrets Manager (ASM)** using **IRSA (no static credentials)**
+- Secrets are injected into Kubernetes as native secrets and consumed by services securely
+
+### 6. Observability & Security Visibility
+A comprehensive observability stack provides deep visibility:
+- **Prometheus**: metrics (including mTLS status, service health)
+- **Grafana**: dashboards and visualization
+- **Jaeger**: distributed tracing across services
+- **Hubble (Cilium)**: network flow visibility at L3–L7
+
+This enables:
+- Real-time monitoring
+- Debugging of service interactions
+- Detection of anomalous or unauthorized traffic
+
+### 7. End-to-End Flow Summary
+1. User → IGW via HTTPS + JWT  
+2. IGW → Services via mTLS (SPIFFE identity)  
+3. Service-to-service calls allowed only via strict policies  
+4. Secrets fetched securely via ESO + IRSA  
+5. All traffic is continuously monitored and traced  
+
+---
+
+### Key Design Principles
+- **Never trust, always verify**
+- **Identity over network location**
+- **Least privilege access**
+- **Short-lived credentials**
+- **Full observability**
+
+This design ensures a **highly secure, scalable, and cloud-native Zero Trust architecture** suitable for modern distributed systems.
+
 ---
 
 ## Component Design
