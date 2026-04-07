@@ -272,7 +272,7 @@ graph TB
 | KEDA | Open source | Event-driven auto-scaling on AKS during failover |
 
 
-## 🧠 1. High-Level Understanding
+### 🧠 1. High-Level Understanding
 
 👉 This is an **Active-Passive DR setup**
 * **Primary** → AWS (handles all traffic)
@@ -280,7 +280,7 @@ graph TB
 
 ---
 
-## 🌍 2. Global Traffic Routing (ENTRY POINT)
+### 🌍 2. Global Traffic Routing (ENTRY POINT)
 
 ### 🔥 Components:
 
@@ -304,7 +304,7 @@ AWS fails → Route53 detects → Cloudflare switches → Azure
 
 ---
 
-## ☁️ 3. Primary (AWS) — Active Environment
+### ☁️ 3. Primary (AWS) — Active Environment
 
 ### 🧩 Components:
 
@@ -324,7 +324,7 @@ User → ALB → EKS → (DB / Redis / SQS)
 
 ---
 
-## 🔁 4. Cross-Cloud Replication (MOST IMPORTANT)
+### 🔁 4. Cross-Cloud Replication (MOST IMPORTANT)
 
 ### 🔥 This is what enables LOW RPO
 *CDC (Change Data Capture)* is a technique to: Capture and stream every change (INSERT, UPDATE, DELETE) from a database in real-time 
@@ -351,7 +351,7 @@ Azure SQL (apply changes)
 
 ---
 
-## 📦 5. Queue Replication (ASYNC WORKLOADS)
+### 📦 5. Queue Replication (ASYNC WORKLOADS)
 
 ```text
 SQS (AWS) → Lambda → Kafka → Azure Service Bus
@@ -363,7 +363,7 @@ SQS (AWS) → Lambda → Kafka → Azure Service Bus
 
 ---
 
-## ☁️ 6. DR (Azure) — Passive Environment
+### ☁️ 6. DR (Azure) — Passive Environment
 
 ### 🧩 Components:
 * **Azure Front Door** → entry point
@@ -380,7 +380,7 @@ SQS (AWS) → Lambda → Kafka → Azure Service Bus
 
 ---
 
-## 🔄 7. Failover Flow (CRITICAL)
+### 🔄 7. Failover Flow (CRITICAL)
 
 ### 🚨 Step-by-step:
 1. AWS fails ❌
@@ -404,30 +404,30 @@ Traffic served from Azure
 
 ---
 
-## ⚠️ 8. Critical Design Decisions (VERY IMPORTANT)
+### ⚠️ 8. Critical Design Decisions (VERY IMPORTANT)
 
-### 🔐 1. Split-brain prevention
+#### 🔐 1. Split-brain prevention
 
 👉 Before failover:
 * Stop AWS writes (if possible)
 
-### 🔁 2. CDC instead of snapshots
+#### 🔁 2. CDC instead of snapshots
 
 👉 Why?
 * Snapshots → high RPO ❌
 * CDC → near real-time ✅
 
-### 📦 3. Warm standby (not cold)
+#### 📦 3. Warm standby (not cold)
 
 👉 Why?
 * Cold start = 5–10 min ❌
 * Warm = instant scale ✅
 
-### 🔑 4. Stateless sessions (or replicated Redis)
+#### 🔑 4. Stateless sessions (or replicated Redis)
 👉 Otherwise:
 * Users get logged out on failover
 
-# 🎯 Final takeaway
+### 🎯 Final takeaway
 👉 This architecture achieves:
 * ✅ Multi-cloud resilience
 * ✅ Near-zero data loss (low RPO)
@@ -436,10 +436,10 @@ Traffic served from Azure
 
 ---
 
-# 🧠 Interview One-liner
+### 🧠 Interview One-liner
 > This is an active-passive multi-cloud DR architecture where AWS serves as primary and Azure as standby, with CDC-based replication via Kafka and DNS-based failover using Cloudflare to achieve low RPO and RTO.
 
-# ⚡ Pro insight (this is gold for you)
+### ⚡ Pro insight (this is gold for you)
 👉 This design combines **4 critical layers**:
 
 1. **DNS (Cloudflare)** → traffic control
