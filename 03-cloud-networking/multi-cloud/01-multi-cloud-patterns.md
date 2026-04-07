@@ -465,6 +465,67 @@ graph TB
 
 **Key principle**: Never trust a request because it came from "inside the network." In multi-cloud, there is no inside. Use SPIFFE/SPIRE to issue workload identities as X.509 SVIDs — both AWS workloads and Azure workloads present certificates that identify them, independent of which network they're on. Validate the certificate, not the source IP.
 
+**SPIFFE (Secure Production Identity Framework For Everyone)**  
+A standard that defines **how to assign secure, verifiable identities to workloads** (pods, services, VMs) across environments.
+
+- Gives each workload a **SPIFFE ID** (URI format):  
+  ```
+  spiffe://example.com/service/payment
+  ```
+- Identity is **independent of IP, hostname, or cloud**
+- Used to enable **Zero Trust communication**
+
+**SPIRE (SPIFFE Runtime Environment)**  
+An implementation of SPIFFE that **issues and manages identities**.
+
+- Components:
+  - **SPIRE Server** → acts like a Certificate Authority (CA)
+  - **SPIRE Agent** → runs on nodes, validates workloads
+- Responsibilities:
+  - Verifies workload identity (attestation)
+  - Issues certificates (SVIDs)
+  - Rotates them automatically
+
+👉 SPIFFE = standard  
+👉 SPIRE = implementation
+
+**SVID (SPIFFE Verifiable Identity Document)**  
+The **actual identity credential** given to a workload.
+
+- Types:
+  - **X.509 certificate** → used for mTLS (most common)
+  - **JWT token** → used for API authentication
+- Contains:
+  - SPIFFE ID
+  - Public key
+  - Issuer (SPIRE)
+
+## 🔑 How they work together
+
+1. Workload starts (pod/VM)  
+2. SPIRE verifies it (based on environment metadata)  
+3. SPIRE issues an **SVID**  
+4. Workload uses SVID for:
+   - mTLS communication  
+   - identity-based authorization  
+
+## 🧠 Quick memory trick
+
+- **SPIFFE** → Identity standard  
+- **SPIRE** → Identity issuer system  
+- **SVID** → Identity proof (certificate/token)  
+
+---
+
+## 💡 Why important (especially for you - multi-cloud / service mesh)
+
+- Removes dependency on IP-based trust  
+- Enables **identity-based security across clouds**  
+- Core building block for:
+  - Istio / Cilium service mesh  
+  - mTLS  
+  - Zero Trust architectures  
+
 ---
 
 ## Observability in Multi-Cloud
