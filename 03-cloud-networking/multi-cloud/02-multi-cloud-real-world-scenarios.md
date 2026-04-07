@@ -194,6 +194,8 @@ aws iam create-saml-provider \
 
 A digital banking platform processes $2B in daily transactions on AWS. Regulatory requirements mandate that the platform can survive a **full AWS region failure** (not just AZ failure) with RPO < 60 seconds and RTO < 5 minutes. The regulator explicitly requires that the DR environment be on a **different cloud provider** — the logic being that a systemic issue at AWS (billing outage, IAM outage, control plane failure) would affect all AWS regions simultaneously.
 
+<img width="4042" height="1280" alt="image" src="https://github.com/user-attachments/assets/e4609611-8e25-48ca-8ccf-9d2a851de4e0" />
+
 The DR target is Azure. The platform must fail over to Azure AKS with minimal data loss and near-zero manual intervention.
 
 ### What Problem It Solves
