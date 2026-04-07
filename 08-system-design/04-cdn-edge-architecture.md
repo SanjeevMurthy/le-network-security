@@ -140,6 +140,9 @@ flowchart TD
     CF_POP --> CW_Metrics
 ```
 
+<img width="2538" height="1970" alt="image" src="https://github.com/user-attachments/assets/4a021f82-bba9-4387-bd9c-7574b46d3535" />
+
+
 This architecture represents a **secure, scalable CDN-based video delivery platform** built on AWS, optimized for low latency, high availability, and strong origin protection.
 
 At a high level, users (browser, mobile, smart TV) access content via **CloudFront edge locations (CDN PoPs)** over HTTP/2 or HTTP/3. CloudFront acts as the primary entry point, handling caching, TLS termination, and request routing.
