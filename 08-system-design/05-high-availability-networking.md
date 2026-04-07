@@ -185,6 +185,22 @@ flowchart TD
     R53_HC --> NMS
 ```
 
+The architecture represents a highly available, multi-datacenter network design integrated with cloud infrastructure, built to eliminate single points of failure and ensure low-latency, resilient traffic flow.
+
+At the data center layer (DC1 and DC2), servers are dual-homed using LACP bonding to two separate ToR (Top-of-Rack) switches, ensuring link-level redundancy and load distribution. Each ToR connects to multiple spine switches using ECMP over high-speed links (e.g., 100G), enabling horizontal scalability and equal-cost multipath routing across the fabric.
+
+The spine layer connects to redundant border/edge routers, which establish external connectivity using eBGP with multiple ISPs and IXPs. This provides internet redundancy, route optimization, and fault tolerance at the edge. Both data centers follow a similar design, enabling active-active operation.
+
+An Anycast VIP is advertised from both DC1 and DC2 using BGP, allowing incoming traffic to be routed to the nearest or healthiest data center automatically. This improves latency and provides seamless failover in case one data center becomes unavailable.
+
+The architecture is extended into AWS via redundant Direct Connect links from each data center. These connect to a Virtual Private Gateway (VGW), which uses BGP for failover between connections, and then to a Transit Gateway (TGW) that acts as a hub for multi-VPC and multi-region connectivity. Within AWS, applications are deployed behind a Multi-AZ Application Load Balancer, with NAT Gateways provisioned per AZ to avoid cross-AZ dependencies. Route 53 health checks provide application-level monitoring and DNS-based failover.
+
+For gateway redundancy inside the data center, VRRP is used between border routers to provide a virtual IP with fast failover using gratuitous ARP.
+
+Finally, comprehensive observability is implemented using BFD for sub-second failure detection on BGP links, SNMP/gNMI for device telemetry, NetFlow/IPFIX for traffic analysis, and a centralized NMS (Prometheus + Grafana with PagerDuty) for monitoring, alerting, and incident response.
+
+Overall, this design ensures high availability through redundancy at every layer (server, network, edge, and cloud), fast failure detection, intelligent traffic routing, and seamless failover across both on-prem and cloud environments.
+
 ---
 
 ## Component Design
