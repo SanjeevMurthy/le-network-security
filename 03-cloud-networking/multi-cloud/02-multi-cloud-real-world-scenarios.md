@@ -327,6 +327,8 @@ User → ALB → EKS → (DB / Redis / SQS)
 ## 🔁 4. Cross-Cloud Replication (MOST IMPORTANT)
 
 ### 🔥 This is what enables LOW RPO
+*CDC (Change Data Capture)* is a technique to: Capture and stream every change (INSERT, UPDATE, DELETE) from a database in real-time 
+🔥 Key Idea (VERY IMPORTANT) Instead of copying full database ❌ 👉 CDC captures only what changed ✅
 
 ### 🔄 Flow:
 ```text
