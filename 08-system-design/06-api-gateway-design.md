@@ -141,6 +141,29 @@ flowchart TD
     Jaeger --> Grafana
 ```
 
+<img width="3624" height="2231" alt="image" src="https://github.com/user-attachments/assets/c2dbfca3-0259-475d-8246-0ee63ed9b870" />
+
+
+The architecture represents a **multi-layered, secure, and highly scalable API Gateway system** designed to handle different client types, enforce security, and provide observability across the entire request lifecycle.
+
+At the entry point, **external clients (mobile apps, browsers, partners)** send requests over HTTPS to a **load-balanced edge gateway**. This gateway acts as the first line of defense and control, performing **TLS termination, authentication (JWT/API key/mTLS), and rate limiting**. Authentication is handled using a combination of **JWT validation via JWKS**, **OAuth2 token introspection for opaque tokens**, and **API key verification backed by Redis + RDS**, ensuring both performance (through caching) and reliability.
+
+Once authenticated, requests pass through a **rate-limiting layer** (powered by Redis) to prevent abuse and ensure fair usage. Valid requests are then routed through a **routing and transformation layer**, where request shaping, protocol translation, and enrichment happen before forwarding downstream.
+
+The architecture then introduces **Backend-for-Frontend (BFF) services**, which are tailored for different client types (mobile, web, partner). These BFFs aggregate multiple backend service calls into optimized responses, reducing latency and improving client experience. This also decouples frontend requirements from internal service design.
+
+Behind the BFF layer, services communicate via a **service mesh (Envoy sidecars with mTLS using SPIFFE identities)**. This ensures **secure, encrypted service-to-service communication**, along with capabilities like **circuit breaking, retries, and traffic policies**. Internal services do not handle authentication directly, as trust is established at the gateway and enforced via the mesh.
+
+A strong **observability stack** is integrated throughout the flow. Metrics are collected via Prometheus, distributed tracing is handled by Jaeger/Tempo (using trace context propagation), and structured access logs are stored in S3 for analysis (via Athena). Grafana dashboards provide real-time visibility into latency, error rates, and system health.
+
+Overall, this architecture cleanly separates concerns:
+- **Edge Gateway** → security, authentication, rate limiting  
+- **BFF Layer** → client-specific aggregation and response shaping  
+- **Service Mesh (Sidecars)** → secure internal communication and resilience  
+- **Observability Stack** → monitoring, tracing, and logging  
+
+This layered approach ensures **scalability, security, flexibility, and operational visibility**, making it well-suited for large-scale distributed systems.
+
 ---
 
 ## Component Design
