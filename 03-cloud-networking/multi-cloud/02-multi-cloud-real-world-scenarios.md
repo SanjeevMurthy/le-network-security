@@ -1052,6 +1052,37 @@ graph TB
 
 <img width="3277" height="2270" alt="image" src="https://github.com/user-attachments/assets/337f63bd-6630-49e9-a304-4b71870aa457" />
 
+### Architecture Explanation
+
+This architecture represents a **multi-cloud, Kubernetes-first platform** designed to run workloads seamlessly across **AWS and Azure**, while maintaining centralized control, governance, and observability.
+
+At the core, the platform operates two independent Kubernetes fleets:
+- **AWS EKS Fleet** spanning multiple regions (us-east-1, eu-west-1, ap-south-1) for production workloads, along with staging clusters.
+- **Azure AKS Fleet** deployed across regions like East US and West Europe, also with staging environments.
+
+A **GitOps model (ArgoCD)** is used to ensure consistent and automated deployments across all clusters. Any change pushed to Git is automatically synced to both EKS and AKS clusters, enabling uniform application rollout across clouds.
+
+**Policy enforcement (Kyverno / OPA Gatekeeper)** ensures governance and compliance across environments. Policies such as security rules, resource limits, and compliance constraints are enforced uniformly across both AWS and Azure clusters.
+
+For **platform abstraction**, **Crossplane** plays a key role. Instead of developers dealing with cloud-specific services:
+- Developers request resources like databases or caches using Kubernetes manifests.
+- Crossplane translates these into cloud-native services:
+  - On AWS → provisions services like RDS, S3, ElastiCache
+  - On Azure → provisions Azure SQL, Blob Storage, Redis  
+This enables a **true cloud-agnostic developer experience**.
+
+The architecture also implements **unified observability** using:
+- **Grafana Cloud** for metrics and dashboards
+- **Tempo** for distributed tracing
+- **Loki** for centralized logging  
+
+Telemetry is collected via **OpenTelemetry (OTel)**, while logs are shipped using Fluentd/Fluent Bit, ensuring consistent monitoring across both clouds.
+
+Overall, this setup achieves:
+- **Cloud portability** (run workloads on AWS or Azure seamlessly)
+- **Operational consistency** (same deployment, policy, and monitoring model)
+- **Developer abstraction** (no need to handle cloud-specific complexities)
+- **Centralized observability and governance** across a distributed multi-cloud environment.
 
 ### Cloud Services Used
 
