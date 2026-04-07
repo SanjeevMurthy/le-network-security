@@ -123,6 +123,18 @@ flowchart TD
     Helm --> EKS_W
 ```
 
+This architecture is a **multi-region, highly available system** designed to handle global traffic with low latency and fast failover using **us-east-1 (primary)** and **eu-west-1 (secondary)**.
+
+User requests are routed via **Route 53 latency-based routing**, which sends traffic to the nearest healthy region. **CloudFront** accelerates content delivery globally by caching static assets at edge locations.
+
+Each region runs an identical stack consisting of **Application Load Balancer (ALB)** and **EKS-based stateless services** deployed across multiple availability zones. Because the application layer is stateless, traffic can be shifted between regions without impacting user experience.
+
+The database layer uses **Aurora Global Database**, where **us-east-1 acts as the primary writer** and **eu-west-1 serves as a read replica** with near real-time replication. Reads are served locally in both regions, while writes are centralized to the primary region to maintain consistency.
+
+Health checks continuously monitor both regions. If the primary region becomes unhealthy, **Route 53 automatically redirects traffic to the secondary region**, and **Aurora performs a managed failover**, promoting the secondary region to the new primary. Applications then reconnect to the updated database endpoint.
+
+This design ensures **low latency, high availability (99.99%), minimal data loss (RPO < 5s), and fast recovery (RTO ~1–5 minutes)** while keeping the system simpler than a fully active-active multi-writer architecture.
+
 ---
 
 ## Component Design
