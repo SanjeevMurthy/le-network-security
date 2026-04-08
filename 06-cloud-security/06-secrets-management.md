@@ -149,11 +149,12 @@ providers:
 **Envelope encryption mechanism:**
 ```mermaid
 flowchart LR
-    SEC[Secret Data] -->|Encrypt with DEK| EDEK[Encrypted Secret]
-    DEK[Data Encryption Key\nGenerated per secret] -->|Encrypt with KEK| EDEK_KEY[Encrypted DEK]
-    KEK[Key Encryption Key\nKMS manages this] -->|Stored in KMS| KMS[AWS KMS / Azure Key Vault]
-    EDEK + EDEK_KEY -->|Stored in etcd| ETCD[etcd]
-    Note[KEK never leaves KMS\nDEK encrypted with KEK\nOnly etcd stores encrypted data]
+    SEC["Secret Data"] -->|"Encrypt with DEK"| EDEK["Encrypted Secret"]
+    DEK["Data Encryption Key<br/>Generated per secret"] -->|"Encrypt with KEK"| EDEK_KEY["Encrypted DEK"]
+    KEK["Key Encryption Key<br/>KMS manages this"] -->|"Stored in KMS"| KMS["AWS KMS / Azure Key Vault"]
+    EDEK -->|"Stored together"| ETCD["etcd"]
+    EDEK_KEY -->|"Stored together"| ETCD
+    style ETCD fill:#f96,stroke:#333
 ```
 
 Even if etcd is compromised, decryption requires calling the KMS — which is controlled by IAM and has its own audit log.
