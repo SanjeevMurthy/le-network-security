@@ -56,7 +56,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Isolated virtual network in AWS with custom CIDR blocks, subnets, route tables, and gateways |
+| **What** | Isolated virtual network in AWS with custom CIDR blocks (e.g., `10.0.0.0/16`), subnets, route tables, and gateways.<br/><br/>A VPC spans all Availability Zones in a region and serves as the foundational networking construct for all AWS resources. Supports VPC peering for cross-VPC connectivity, VPN/Direct Connect for hybrid access, and flow logs for traffic visibility. Example: a production VPC with public subnets (ALB), private subnets (app tier), and isolated subnets (RDS) across 3 AZs. |
 | **Problem Solved** | Network isolation for workloads; prevents uncontrolled access between environments |
 | **Usage** | Define CIDR (e.g., `10.0.0.0/16`), create public/private subnets across AZs, attach IGW or NAT GW |
 | **Scenarios** | Secure multi-tier architecture (01), PCI-DSS CDE isolation (08), multi-region failover (03) |
@@ -65,7 +65,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Stateful instance-level firewalls with ALLOW-only rules; referenced by ID for tier chaining |
+| **What** | Stateful instance-level firewalls with ALLOW-only rules (no explicit DENY); return traffic is automatically permitted regardless of outbound rules.<br/><br/>Security Groups are referenced by ID rather than IP, enabling dynamic tier chaining — e.g., `App-SG` allows port 8080 only from `ALB-SG`, so any new ALB instance is automatically trusted. Up to 5 SGs per ENI with rules evaluated as a union (any match = allow). Example: `DB-SG` allows `5432/tcp` only from `App-SG`, ensuring no direct access from the internet tier. |
 | **Problem Solved** | Network-level access control without hardcoded IPs; auto-scales with ASG membership |
 | **Usage** | `ALB-SG → App-SG (allow 8080 from ALB-SG) → DB-SG (allow 5432 from App-SG)` |
 | **Scenarios** | Three-tier SG chaining (02-aws-security), PCI CDE segmentation (08-compliance), HA networking (05) |
@@ -74,7 +74,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Stateless subnet-level ACLs with explicit ALLOW and DENY rules evaluated in numbered order |
+| **What** | Stateless subnet-level ACLs with explicit ALLOW and DENY rules, evaluated in ascending numbered order (lowest number wins).<br/><br/>Unlike Security Groups, NACLs are stateless — you must define both inbound and outbound rules (including ephemeral port ranges 1024-65535 for return traffic). Rules are processed in order; first match applies and remaining rules are skipped. Example: Rule 100 DENY `192.168.1.50/32` on all ports blocks a specific attacker IP, even if Rule 200 ALLOWs the broader subnet. |
 | **Problem Solved** | Subnet-level defense-in-depth; IP-based blocking during incident response |
 | **Usage** | `aws ec2 create-network-acl-entry --rule-action deny --cidr-block "$ATTACKER_IP/32"` |
 | **Scenarios** | S3 exfiltration containment (02-aws-security), CDE segmentation test (08-compliance) |
@@ -92,7 +92,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Regional hub-and-spoke network connector supporting VPC peering, VPN, and Direct Connect attachments |
+| **What** | Regional hub-and-spoke network router that connects up to 5,000 VPCs, VPN tunnels, and Direct Connect gateways through a single managed attachment point.<br/><br/>Each attachment is associated with a route table, enabling segmented routing domains — e.g., a "Security" route table inspects all inter-VPC traffic via a firewall appliance, while a "Shared Services" table allows direct connectivity. Supports cross-region peering for global transit networks. Example: CDE VPC traffic routes through TGW → Network Firewall for L7 inspection before reaching the non-CDE VPC. |
 | **Problem Solved** | Eliminates N×N VPC peering; centralizes routing and firewall inspection between VPCs |
 | **Usage** | Attach CDE and non-CDE VPCs; route inter-VPC traffic through Transit Gateway Firewall for L7 inspection |
 | **Scenarios** | PCI CDE-to-non-CDE segmentation (08-compliance), multi-account networking (01-multi-cloud-patterns) |
@@ -101,7 +101,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Dedicated private network connection from on-premise to AWS (1 Gbps / 10 Gbps / 100 Gbps) |
+| **What** | Dedicated private network connection from on-premise to AWS, available at 1 Gbps, 10 Gbps, or 100 Gbps, bypassing the public internet entirely.<br/><br/>Supports three virtual interface (VIF) types: Private VIF (access VPCs), Public VIF (access AWS public services like S3), and Transit VIF (attach to Transit Gateway for multi-VPC access). Link Aggregation Groups (LAGs) bond multiple connections for redundancy. Example: a financial institution provisions two DX connections via Equinix in active/passive LAG, with a Site-to-Site VPN as tertiary backup. |
 | **Problem Solved** | Consistent latency and bandwidth for hybrid workloads; avoids internet for sensitive traffic |
 | **Usage** | Provision via Equinix/Megaport interconnect fabric; pair with VPN as backup |
 | **Scenarios** | M&A network integration (02-multi-cloud-scenarios), hybrid connectivity (01-multi-cloud-patterns) |
@@ -114,7 +114,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Stateful network filtering at subnet and NIC level with priority-ordered rules |
+| **What** | Stateful network filtering applied at both subnet and NIC level, with priority-ordered rules (lower number = higher priority, range 100-4096).<br/><br/>Supports augmented security rules with Service Tags (e.g., `AzureCloud`, `Internet`, `Sql`) for dynamic IP management and Application Security Groups (ASGs) for role-based grouping without hardcoded IPs. NSG Flow Logs (v2) capture 5-tuple metadata and byte counts for forensic analysis. Example: an NSG rule allows `Tcp/443` from ASG `web-tier` to ASG `api-tier`, automatically applying to any VM added to those groups. |
 | **Problem Solved** | Subnet-level traffic control; flow logging for forensics and anomaly detection |
 | **Usage** | Apply to subnets; enable NSG Flow Logs → Storage Account → Traffic Analytics → Sentinel |
 | **Scenarios** | Lateral movement containment (03-azure-security), VM quarantine during incident response |
@@ -123,7 +123,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Managed L7 FQDN-filtering firewall with threat intelligence integration |
+| **What** | Fully managed, cloud-native L4-L7 firewall with FQDN-based filtering, threat intelligence feeds, and centralized policy management across hub-spoke topologies.<br/><br/>The Premium SKU adds TLS inspection (terminating and re-encrypting TLS to inspect encrypted traffic), IDPS with signature-based detection, URL categorization, and Web categories filtering. Also functions as a DNS proxy, enabling FQDN rules for network rules (not just application rules). Example: in a hub VNet, Azure Firewall inspects all spoke-to-internet egress, blocking traffic to known C2 domains via Microsoft Threat Intelligence. |
 | **Problem Solved** | Centralized egress filtering; blocks known-malicious domains at the network edge |
 | **Usage** | Deploy in hub VNet; route spoke traffic through firewall; apply FQDN rules |
 | **Scenarios** | Azure network plane security (03-azure-security), CDE egress control |
@@ -132,7 +132,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Private IP addresses for PaaS services (Key Vault, Storage, SQL) within your VNet |
+| **What** | Private IP addresses injected into your VNet for Azure PaaS services (Key Vault, Storage, SQL, App Service), making them accessible only via internal networking.<br/><br/>Each Private Endpoint creates a NIC in your subnet with a private IP from your CIDR range. Combined with Azure Private DNS Zones, the service FQDN (e.g., `myvault.vault.azure.net`) resolves to the private IP instead of the public one — transparent to applications with zero code changes. Public access can then be fully disabled. Example: Key Vault accessible at `10.0.2.5` via Private Endpoint; public endpoint returns 403. |
 | **Problem Solved** | Removes public endpoints from PaaS services; traffic stays on Azure backbone |
 | **Usage** | Deploy Private Endpoint for Key Vault; disable public access; access via private IP only |
 | **Scenarios** | Key Vault without public endpoint (03-azure-security), HIPAA ePHI protection |
@@ -141,7 +141,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Dedicated private connection from on-premise or other clouds to Azure (up to 100 Gbps) |
+| **What** | Dedicated private connection from on-premise or other clouds to Azure, available at speeds up to 100 Gbps via ExpressRoute Direct.<br/><br/>Supports two peering types: Azure Private Peering (access VNets) and Microsoft Peering (access M365/Dynamics). Global Reach enables site-to-site connectivity through the Microsoft backbone (e.g., London office ↔ Frankfurt DC routed via Azure). FastPath bypasses the ExpressRoute Gateway for latency-sensitive workloads, routing directly to VNet VMs. Example: two ExpressRoute circuits from different providers in active-active for carrier-diverse redundancy. |
 | **Problem Solved** | Private, low-latency connectivity; required for compliance workloads avoiding public internet |
 | **Usage** | Provision via Equinix/Megaport; peer with Azure VNets via ExpressRoute Gateway |
 | **Scenarios** | M&A Azure integration (02-multi-cloud-scenarios), cross-cloud connectivity (01-multi-cloud-patterns) |
@@ -154,7 +154,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Modern, lightweight VPN protocol using Noise Protocol Framework with ~4,000 lines of code |
+| **What** | Modern, lightweight VPN protocol built on the Noise Protocol Framework, using ChaCha20-Poly1305 encryption in just ~4,000 lines of kernel code.<br/><br/>Significantly faster than OpenVPN (userspace) and simpler than IPSec (no IKE negotiation phase — peers exchange static public keys). Operates over UDP with built-in roaming support, making it ideal for cloud-to-cloud tunnels where endpoints may change IPs. Example: an AWS VPN gateway VM (`10.0.1.5`) peers with an Azure VM (`172.16.1.5`), encrypting cross-cloud traffic at near-wire speed with <1ms overhead. |
 | **Problem Solved** | Encrypted cross-cloud tunnels with minimal overhead; faster than IPSec for cloud-to-cloud |
 | **Usage** | Deploy on VPN gateway VMs in each cloud; configure peer endpoints and allowed IPs |
 | **Scenarios** | AWS-to-Azure encrypted tunnel (02-multi-cloud-scenarios), cross-cloud DR connectivity |
@@ -172,7 +172,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Software-defined overlay network with centralized policy and application-aware routing |
+| **What** | Software-defined overlay network that decouples network control from the physical transport, providing centralized policy management and application-aware routing across WAN links.<br/><br/>Unlike traditional MPLS networks, SD-WAN dynamically selects the best path (internet, MPLS, LTE, cloud interconnect) per application based on real-time metrics (latency, jitter, loss). Modern platforms integrate ZTNA (Zero Trust Network Access) for per-user, per-app access control. Example: Cisco Viptela routes video conferencing traffic over the low-latency DX circuit while sending email traffic over broadband, with automatic failover in <1 second. |
 | **Problem Solved** | Multi-WAN path selection; automatic failover between internet, MPLS, and cloud circuits |
 | **Usage** | Deploy SD-WAN edge appliances in each cloud VPC/VNet; centrally define routing policies |
 | **Scenarios** | Multi-cloud overlay networking (01-multi-cloud-patterns), branch-to-cloud connectivity |
@@ -181,7 +181,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Centralized IP address allocation strategy preventing CIDR overlaps across clouds |
+| **What** | Centralized IP address allocation strategy and tooling that prevents CIDR overlaps and routing conflicts when interconnecting multi-cloud, hybrid, and multi-account networks.<br/><br/>Tools like NetBox (open-source), Infoblox (enterprise), or AWS VPC IPAM provide automated CIDR allocation, conflict detection, and subnet planning. The core challenge is ensuring RFC 1918 ranges don't collide when VPCs/VNets are peered or connected via VPN. Example: assigning AWS `10.0.0.0/8`, Azure `172.16.0.0/12`, GCP `192.168.0.0/16` as supernets, then carving `/20` blocks per environment per region from each supernet. |
 | **Problem Solved** | Prevents routing conflicts when connecting AWS (`10.0.0.0/8`), Azure (`172.16.0.0/12`), GCP VPCs |
 | **Usage** | Assign non-overlapping supernets per cloud: AWS `10.0.0.0/8`, Azure `172.16.0.0/12`, GCP `192.168.0.0/16` |
 | **Scenarios** | Multi-cloud CIDR planning (01-multi-cloud-patterns), M&A network merge (02-multi-cloud-scenarios) |
@@ -247,7 +247,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | AWS L7 load balancer supporting path/host-based routing, WebSocket, gRPC, and WAF integration |
+| **What** | AWS Layer 7 load balancer that routes HTTP/HTTPS requests based on host headers, URL paths, query strings, and HTTP methods to target groups of EC2, ECS, Lambda, or IP targets.<br/><br/>Supports native OIDC/Cognito authentication at the LB layer (offloading auth from backends), WebSocket and gRPC protocols, slow-start mode for warming up new targets, and sticky sessions via app cookies. Integrates directly with AWS WAF for L7 filtering. Example: `/api/*` routes to ECS Fargate target group, `/static/*` routes to S3 via fixed-response, and `/health` returns a 200 directly from the ALB. |
 | **Problem Solved** | Distributes HTTP/HTTPS traffic across targets with content-based routing |
 | **Usage** | Target groups per microservice; health checks; WAF association for L7 filtering |
 | **Scenarios** | Multi-tier architecture (01-secure-multi-tier), API gateway frontend (06-api-gateway) |
@@ -256,7 +256,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | AWS L4 load balancer with static IPs, ultra-low latency, and millions of RPS capacity |
+| **What** | AWS Layer 4 load balancer operating at the TCP/UDP/TLS level, capable of handling millions of requests per second with ultra-low latency (~100µs added) and static Elastic IPs per AZ.<br/><br/>Preserves client source IP natively (no X-Forwarded-For needed), supports TLS passthrough (backend terminates TLS), and serves as the entry point for AWS PrivateLink services. Cross-zone load balancing distributes traffic evenly across AZs. Example: NLB with static IPs fronts a gRPC service on EKS, enabling firewall allowlisting by IP; also exposes the service via PrivateLink to partner VPCs without VPC peering. |
 | **Problem Solved** | TCP/UDP load balancing for non-HTTP protocols; preserves source IP |
 | **Usage** | Front gRPC services, database proxies, or VPN endpoints |
 | **Scenarios** | HA networking (05-high-availability), cross-AZ database routing |
@@ -329,7 +329,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Identifies resources accessible from outside your AWS Organization; detects unused permissions |
+| **What** | AWS service that continuously analyzes resource policies (S3, SQS, KMS, Lambda, IAM roles) to identify resources shared with external entities outside your AWS Organization.<br/><br/>Operates in two modes: External Access Analysis (finds resources accessible to external principals — other accounts, public) and Unused Access Analysis (identifies IAM roles/users with permissions not exercised in 90+ days). Can auto-generate least-privilege policies from CloudTrail activity. Example: detects an S3 bucket policy granting `s3:GetObject` to `Principal: "*"` and raises a finding for immediate remediation. |
 | **Problem Solved** | Finds accidental public exposure; generates least-privilege policies from CloudTrail activity |
 | **Usage** | `aws iam generate-service-last-accessed-details` → generates minimum-privilege policy from 90 days of activity |
 | **Scenarios** | Least privilege enforcement (02-aws-security), SOC 2 quarterly access reviews (08-compliance) |
@@ -338,7 +338,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Maps Kubernetes ServiceAccounts to AWS IAM Roles via OIDC federation — no static credentials |
+| **What** | EKS-native identity mechanism that maps Kubernetes ServiceAccounts to AWS IAM Roles via OIDC federation, eliminating the need for static AWS access keys in pods.<br/><br/>Works by configuring an OIDC identity provider in IAM, then annotating a K8s ServiceAccount with the IAM role ARN. The pod receives a projected service account token (JWT) that STS exchanges for temporary AWS credentials via `AssumeRoleWithWebIdentity`. The IAM role's trust policy validates the token's `iss` (cluster OIDC URL) and `sub` (namespace:serviceaccount). Example: a pod running ESO assumes `arn:aws:iam::123:role/eso-secrets-reader` scoped to only `secretsmanager:GetSecretValue`. |
 | **Problem Solved** | Eliminates AWS access keys in pods; per-pod IAM role scoping |
 | **Usage** | Annotate SA with `eks.amazonaws.com/role-arn`; pod assumes role via projected token |
 | **Scenarios** | ESO accessing Secrets Manager (06-secrets-mgmt), Zero Trust workload identity (01-zero-trust) |
@@ -347,7 +347,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Issues temporary security credentials for assuming roles and cross-account access |
+| **What** | AWS service that issues temporary, limited-privilege security credentials (access key + secret key + session token) for assuming IAM roles and cross-account access.<br/><br/>Supports multiple federation types: `AssumeRole` (cross-account), `AssumeRoleWithSAML` (enterprise SSO), and `AssumeRoleWithWebIdentity` (OIDC/Cognito). Session policies can further restrict the assumed role's permissions. Uses External ID in trust policies to prevent the confused deputy problem in third-party integrations. Example: a CI/CD pipeline in Account A calls `sts:AssumeRole` to deploy to Account B with a 15-minute session and external ID `deploy-prod-2024`. |
 | **Problem Solved** | Short-lived credentials reduce blast radius of compromise; enables cross-account patterns |
 | **Usage** | `aws sts assume-role` with short TTL; session policies limit assumed role permissions further |
 | **Scenarios** | Cross-account access (02-aws-security), incident response credential rotation |
@@ -356,7 +356,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Organization-level guardrails that override account-level IAM; cannot be bypassed by account admins |
+| **What** | Organization-level permission guardrails applied to OUs and accounts that set the maximum available permissions, overriding any account-level IAM policy — even for account root users.<br/><br/>Typically implemented as deny-list strategy (allow `*`, then explicitly deny dangerous actions) rather than allow-list (which is harder to maintain). SCPs follow the organizational hierarchy: a deny at the OU level applies to all child accounts. They do not grant permissions — they only restrict. Example: an SCP on the Production OU denies `ec2:RunInstances` unless the instance type is in an approved list and the region is `us-east-1` or `eu-west-1`. |
 | **Problem Solved** | Prevents disabling security controls (CloudTrail, GuardDuty); enforces mandatory guardrails |
 | **Usage** | Deny: `guardduty:DeleteDetector`, `cloudtrail:StopLogging`, `iam:CreateAccessKey` for root |
 | **Scenarios** | PCI defense-in-depth (02-aws-security), multi-account governance (08-compliance) |
@@ -378,7 +378,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Auto-managed identity for Azure resources; certificate rotated automatically by Azure — no static credentials |
+| **What** | Azure-native identity automatically managed by the platform, where certificate credentials are rotated every 46 days with zero operator intervention.<br/><br/>Two types: System-Assigned (lifecycle tied to the resource — deleted when VM/App Service is deleted) and User-Assigned (independent lifecycle, shareable across multiple resources). The identity obtains tokens via the Instance Metadata Service (IMDS) at `169.254.169.254` — no credentials are ever stored in code or config. Tokens are short-lived (default 24h) with proactive refresh. Example: an AKS pod with User-Assigned Managed Identity requests a token for Key Vault scope, receives a JWT, and reads secrets — all without any client secret or certificate in the pod spec. |
 | **Problem Solved** | Eliminates client secrets and API keys for Azure service-to-service authentication |
 | **Usage** | VM/App Service calls IMDS (`169.254.169.254/metadata`) → receives short-lived access token → accesses Key Vault |
 | **Scenarios** | AKS Workload Identity (03-azure-security), Key Vault access without secrets |
@@ -387,7 +387,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Just-in-time role elevation with time limits, justification, and approval workflows |
+| **What** | Just-in-time privileged role activation with configurable time limits (1-24 hours), mandatory justification, optional approvals, and MFA enforcement.<br/><br/>Distinguishes between Eligible Assignments (user can activate when needed) and Active Assignments (permanently assigned — should be minimized). Includes built-in Access Reviews that periodically require managers or resource owners to re-certify continued access need. All activations produce audit logs for SOC 2/ISO 27001 evidence. Example: a DevOps engineer has an eligible "Contributor" role on `prod-rg`; they activate it for 2 hours with justification "deploy hotfix CR-4521", requiring Security Lead approval. |
 | **Problem Solved** | Reduces standing privilege exposure; creates audit trail for all elevations |
 | **Usage** | Engineer requests Owner on prod-rg for 1 hour → Security Lead approves → role auto-expires |
 | **Scenarios** | Break-glass procedures (03-azure-security), SOC 2 access control evidence (08-compliance) |
@@ -409,7 +409,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | OIDC federation mapping Kubernetes ServiceAccounts to Azure Managed Identities |
+| **What** | OIDC federation mechanism that maps Kubernetes ServiceAccounts to Azure User-Assigned Managed Identities, enabling per-pod Azure RBAC without any static credentials.<br/><br/>Works through a three-step token exchange: the pod receives a projected K8s service account JWT → the Azure Identity SDK exchanges it via Azure AD's OIDC endpoint → receives an Azure access token scoped to the Managed Identity's RBAC assignments. Requires a Federated Credential configured on the Managed Identity that trusts the AKS cluster's OIDC issuer URL and specific namespace:serviceaccount. Example: the payments pod in `ns:payments/sa:payments-api` exchanges its K8s token for an Azure token and reads secrets from Key Vault — no connection string or client secret needed. |
 | **Problem Solved** | Per-pod Azure identity without static credentials; scoped RBAC per workload |
 | **Usage** | SA annotation `azure.workload.identity/client-id` + pod label `azure.workload.identity/use: "true"` |
 | **Scenarios** | AKS pod identity (03-azure-security), payments API accessing Key Vault |
@@ -460,7 +460,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Records resource configuration changes over time; evaluates against managed and custom rules |
+| **What** | AWS service that continuously records resource configuration state and changes over time, evaluating them against managed rules, custom rules (Lambda-backed), and conformance packs.<br/><br/>Config Aggregator provides a multi-account, multi-region single-pane view of compliance status. The Configuration Timeline shows exactly what changed, when, and by whom (via CloudTrail correlation). Supports auto-remediation via SSM Automation documents — e.g., a non-compliant SG rule is automatically revoked. Example: the PCI Conformance Pack evaluates 40+ rules (`restricted-ssh`, `encrypted-volumes`, `vpc-flow-logs-enabled`) and triggers SSM remediation within minutes of drift detection. |
 | **Problem Solved** | Compliance drift detection; automated remediation via SSM Automation when rules are violated |
 | **Usage** | PCI Conformance Pack: `restricted-ssh`, `vpc-flow-logs-enabled`, `cloud-trail-enabled` + auto-remediation |
 | **Scenarios** | PCI compliance automation (08-compliance), CDE SG monitoring (08-compliance), SOC 2 evidence |
@@ -469,7 +469,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | ML-powered S3 data classification service detecting PII, PHI, and sensitive data |
+| **What** | ML-powered data classification service that automatically discovers, classifies, and protects sensitive data stored in Amazon S3 buckets across your organization.<br/><br/>Uses ML models and pattern matching to identify sensitive data types: PII (names, SSNs, credit cards), PHI (medical records), credentials (API keys, private keys), and financial data. Supports custom data identifiers using regex + proximity keywords for organization-specific patterns. Scheduled discovery jobs can scan all buckets or target specific prefixes. Example: Macie scans 500 S3 buckets nightly, finds 12 buckets containing unencrypted credit card numbers, and sends findings to Security Hub for SOC triage. |
 | **Problem Solved** | Identifies which S3 buckets contain sensitive data; detects accidental public exposure |
 | **Usage** | Enable on S3 buckets; findings feed Security Hub; cross-reference with PII classification during breach |
 | **Scenarios** | S3 data exfiltration scope assessment (02-aws-security), GDPR/CCPA notification determination |
@@ -491,7 +491,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Unified CSPM + CWP across Azure, AWS, and GCP; Secure Score, attack path analysis, and regulatory compliance |
+| **What** | Unified Cloud Security Posture Management (CSPM) and Cloud Workload Protection (CWP) platform covering Azure, AWS, and GCP from a single console.<br/><br/>CSPM provides Secure Score (0-100%), attack path analysis (visualizing multi-step exploit chains), and regulatory compliance dashboards. CWP plans include Defender for Servers (vulnerability assessment, adaptive application controls), Defender for Containers (runtime threat detection, admission control), Defender for SQL (anomalous query detection), and Defender for Key Vault (suspicious access patterns). Agentless scanning discovers vulnerabilities without deploying agents. Example: attack path analysis reveals Internet → exposed VM → managed identity → Key Vault → database credentials as a 4-step exploit chain requiring immediate remediation. |
 | **Problem Solved** | Multi-cloud security posture visibility; prioritized remediation recommendations |
 | **Usage** | Enable CSPM + workload protection plans; review Secure Score; use attack path analysis for exposure |
 | **Scenarios** | Azure posture management (03-azure-security), multi-cloud CSPM (03-azure-security) |
@@ -500,7 +500,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Cloud-native SIEM + SOAR with 200+ data connectors, KQL analytics rules, and Logic App playbooks |
+| **What** | Cloud-native SIEM (Security Information and Event Management) and SOAR (Security Orchestration, Automation, and Response) platform with 200+ built-in data connectors.<br/><br/>Ingests logs from Azure (Activity, Entra ID, NSG), AWS (CloudTrail, GuardDuty), M365, and third-party sources. Analytics rules written in KQL detect threats like impossible travel, brute force, and lateral movement. UEBA (User and Entity Behavior Analytics) baselines normal behavior and flags anomalies. Workbooks provide interactive investigation dashboards. Logic App Playbooks automate response — disable user, revoke sessions, isolate VM — in seconds. Example: a KQL rule detects sign-ins from two countries within 10 minutes, triggers a Playbook that disables the account, revokes all refresh tokens, and creates a ServiceNow incident. |
 | **Problem Solved** | Threat detection, investigation, and automated response across Azure, AWS, M365, and third-party |
 | **Usage** | KQL analytics rules for impossible travel; Playbooks auto-disable user + revoke tokens + isolate VM |
 | **Scenarios** | Lateral movement containment (03-azure-security), impossible travel detection, SOC operations |
@@ -509,7 +509,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | ARM-level policy enforcement with effects: Audit, Deny, Modify, DeployIfNotExists |
+| **What** | Azure Resource Manager-level policy enforcement engine that evaluates every resource create/update/delete against policy rules, with effects including Audit, Deny, Modify, DeployIfNotExists, and Disabled.<br/><br/>Policies are individual rules; Initiatives (formerly Policy Sets) group related policies for compliance standards like HIPAA/HITRUST, CIS, or NIST. Remediation Tasks can retroactively fix non-compliant existing resources. Exemptions allow time-limited exceptions with justification. Example: a HIPAA initiative applied at subscription scope includes 120+ policies; a `DeployIfNotExists` policy automatically enables encryption on any new Storage Account that lacks it. |
 | **Problem Solved** | Prevents non-compliant resource creation; auto-deploys required configurations |
 | **Usage** | HIPAA/HITRUST initiative applied at subscription scope; AKS security baseline initiative |
 | **Scenarios** | HIPAA compliance (08-compliance), AKS security enforcement (03-azure-security) |
@@ -522,7 +522,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | L7 web application firewall with managed rule groups (OWASP, Bot Control) and custom rules |
+| **What** | AWS Layer 7 web application firewall that inspects HTTP/HTTPS requests using managed rule groups (AWS Managed Rules, OWASP Core Rule Set, Bot Control, Account Takeover Prevention) and custom rules.<br/><br/>Supports rate-based rules (auto-block IPs exceeding thresholds), IP reputation lists (Amazon IP threat intelligence), geo-match conditions, and regex pattern matching. Logs to S3, CloudWatch, or Kinesis Firehose for analysis. Operates at both CloudFront (edge) and ALB/API Gateway (regional) attachment points. Example: a WAF WebACL on CloudFront blocks SQL injection via managed OWASP rules, rate-limits to 2000 RPM per IP, and uses a custom rule to deny requests to `/actuator/*` and `/admin/*` paths from external IPs. |
 | **Problem Solved** | Blocks SQL injection, XSS, SSRF patterns, bot traffic, and debug endpoint access |
 | **Usage** | Associate with ALB/CloudFront; managed OWASP Core Rule Set + custom rules for `/actuator/*` blocking |
 | **Scenarios** | CDN edge security (04-cdn-edge), API security misconfiguration (07-owasp-api), business flow abuse |
@@ -531,7 +531,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | General-purpose policy engine (Rego language) for authorization decisions across API, K8s, and infrastructure |
+| **What** | General-purpose policy engine for authorization decisions. OPA uses the Rego declarative language and runs as a sidecar/library evaluating policies against structured data (JSON). Cedar (by AWS) uses a typed, human-readable policy language with schema validation.<br/><br/>OPA is widely used for Kubernetes admission control (via Gatekeeper), API authorization, and Terraform plan validation. Cedar's advantage is its typed schemas — policies are validated against an entity schema at authoring time, catching errors before deployment. Both support sub-millisecond evaluation at 10K+ RPS when embedded as an in-process library. Example: an OPA Rego policy maps each API route + HTTP method to required roles: `allow { input.method == "DELETE"; input.path == "/api/users"; "admin" in input.user.roles }`. |
 | **Problem Solved** | Centralized default-deny authorization; replaces scattered `if (user.role == "admin")` checks |
 | **Usage** | Maps routes + methods to required roles; in-process SDK for sub-ms evaluation at 10K+ RPS |
 | **Scenarios** | BFLA prevention (07-owasp-api), Zero Trust policy enforcement (01-zero-trust), PCI RBAC (08-compliance) |
@@ -544,7 +544,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | DDoS protection: Standard (free, auto L3/L4) and Advanced ($3K/mo, L7, cost protection, SRT access) |
+| **What** | AWS DDoS protection service in two tiers: Shield Standard (free, automatic L3/L4 protection on all AWS resources) and Shield Advanced ($3K/month, adds L7 protection, real-time visibility, cost protection, and access to the DDoS Response Team).<br/><br/>Shield Advanced provides automatic engagement of the AWS Shield Response Team (SRT) during detected events, proactive engagement for known large-scale events, and cost protection that refunds scaling charges caused by DDoS attacks. Includes DDoS event visibility dashboards and integration with WAF for L7 mitigation. Example: during a 2 Tbps volumetric attack on CloudFront, Shield Standard absorbs the L3/L4 flood; Shield Advanced's SRT deploys custom WAF rules to filter the L7 application-layer attack, and the customer is refunded for the CloudFront traffic spike. |
 | **Problem Solved** | Absorbs volumetric DDoS at the edge; Advanced provides real-time attack visibility and response team |
 | **Usage** | Shield Advanced on CloudFront + ALB; DDoS Response Team (SRT) for active attacks |
 | **Scenarios** | CDN DDoS resilience (04-cdn-edge), HA networking (05-high-availability) |
@@ -553,7 +553,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Managed DDoS mitigation with adaptive tuning and integration with Azure Monitor |
+| **What** | Azure-managed DDoS mitigation service with two plans: DDoS Network Protection (per-VNet, adaptive tuning based on traffic patterns) and DDoS IP Protection (per-public-IP, cost-effective for smaller deployments).<br/><br/>Automatically profiles normal traffic patterns for each public IP and mitigates anomalies in real-time without impacting legitimate traffic. Includes 24/7 Rapid Response support during active attacks, DDoS protection telemetry in Azure Monitor, and cost guarantee credits if DDoS causes resource scale-out charges. Example: a public-facing AKS cluster with DDoS Network Protection auto-mitigates a SYN flood attack within 30 seconds, with attack telemetry streamed to Sentinel for SOC visibility. |
 | **Problem Solved** | Protects Azure public endpoints from volumetric and protocol attacks |
 | **Usage** | Enable on VNet; auto-mitigates; logs available in Azure Monitor |
 | **Scenarios** | Azure network security (03-azure-security) |
@@ -608,7 +608,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | eBPF-based security observability and runtime enforcement from Cilium project |
+| **What** | eBPF-based security observability and runtime enforcement engine from the Cilium project, operating at the Linux kernel level without requiring kernel modules or application changes.<br/><br/>Unlike Falco (which primarily detects and alerts), Tetragon can enforce responses directly in the kernel — killing processes, sending signals, or overriding syscall return values — with near-zero latency. Uses TracingPolicy CRDs to define match criteria (binary path, arguments, capabilities) and enforcement actions. Hooks into kprobes, tracepoints, and LSM hooks for deep kernel visibility. Example: a TracingPolicy matches any execution of `xmrig` (cryptominer) binary and immediately sends SIGKILL, preventing the process from running even a single instruction after `execve`. |
 | **Problem Solved** | Kernel-level process, file, and network monitoring with enforcement (kill, signal) — not just alerting |
 | **Usage** | TracingPolicy CRD defines: match on binary + enforce action (sigkill); blocks cryptominer execution |
 | **Scenarios** | eBPF runtime enforcement (04-container-security), advanced threat response |
@@ -617,7 +617,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Linux kernel feature restricting which syscalls a process can make |
+| **What** | Linux kernel security facility (Secure Computing Mode) that restricts which system calls a containerized process is allowed to make, acting as a syscall-level firewall.<br/><br/>Three action types: `SCMP_ACT_ALLOW` (permit), `SCMP_ACT_ERRNO` (deny with error), and `SCMP_ACT_LOG` (audit mode). The `RuntimeDefault` profile (Docker/containerd default) blocks ~44 dangerous syscalls including `unshare` (namespace escape), `mount` (filesystem manipulation), `ptrace` (process debugging), and `reboot`. Custom profiles can be generated from production behavior using tools like `oci-seccomp-bpf-hook` or Inspektor Gadget. Example: a Java application's custom profile allows `clone3` (needed for JVM threads) but blocks `personality` and `keyctl` (not needed, reduces attack surface). |
 | **Problem Solved** | Prevents container escape via dangerous syscalls like `unshare`, `mount`, `ptrace` |
 | **Usage** | `RuntimeDefault` profile blocks ~44 dangerous syscalls; custom profiles for app-specific allowlists |
 | **Scenarios** | Pod hardening (04-container-security), PCI container runtime controls (08-compliance) |
@@ -626,7 +626,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Linux security module enforcing per-program profiles restricting file, network, and capability access |
+| **What** | Linux Security Module (LSM) that enforces mandatory access control via per-program profiles, restricting file reads/writes, network access, capability usage, and mount operations.<br/><br/>Profiles operate in two modes: Complain (log violations but allow) for profiling, and Enforce (block violations) for production. Unlike SELinux (which uses labels/contexts and is more complex), AppArmor uses path-based rules that are easier to write and audit. Profiles are loaded into the kernel and applied per-container via pod annotations. Example: a profile for a web server allows read access to `/app/**` and `/etc/ssl/**`, network TCP on port 8080, and denies all writes except to `/tmp/**` — preventing an attacker from writing a webshell to the application directory. |
 | **Problem Solved** | Constrains container filesystem access and network operations beyond what namespaces provide |
 | **Usage** | Pod annotation `container.apparmor.security.beta.kubernetes.io/app: runtime/default` |
 | **Scenarios** | Container confinement (04-container-security), defense-in-depth layering |
@@ -657,7 +657,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Built-in Kubernetes admission controller enforcing Pod Security Standards at namespace level |
+| **What** | Built-in Kubernetes admission controller (GA since v1.25) that enforces Pod Security Standards at the namespace level using three modes that can operate simultaneously on the same namespace.<br/><br/>The three modes are: Enforce (reject non-compliant pods), Audit (allow but log violations in audit logs), and Warn (allow but return a warning to the user). This enables a staged rollout: start with `warn: restricted` to discover violations, then escalate to `audit`, and finally `enforce`. Three security levels: Privileged (unrestricted), Baseline (prevents known privilege escalations), and Restricted (hardened, requires non-root, drops capabilities, read-only root filesystem). Example: namespace label `pod-security.kubernetes.io/enforce: restricted, pod-security.kubernetes.io/warn: restricted` rejects non-compliant pods and warns on `kubectl apply`. |
 | **Problem Solved** | Baseline security without external tools; three levels: Privileged, Baseline, Restricted |
 | **Usage** | Label namespace: `pod-security.kubernetes.io/enforce: restricted` |
 | **Scenarios** | Namespace security baseline (04-container-security), PCI pod hardening (08-compliance) |
@@ -670,7 +670,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | L3/L4 network access control between pods using label selectors |
+| **What** | Kubernetes-native L3/L4 network access control between pods, using label selectors and namespace selectors to define allowed ingress and egress traffic flows.<br/><br/>Without any NetworkPolicy, all pods can freely communicate with all other pods (flat network). Applying a policy to a pod immediately makes it default-deny for the selected direction (ingress/egress). Rules use `podSelector` (select pods in same namespace), `namespaceSelector` (select pods in other namespaces), and `ipBlock` (external CIDRs). DNS egress (UDP/53) must be explicitly allowed when egress is restricted. Example: a payment namespace policy denies all ingress except from pods with label `app: api-gateway` on port 8443, and denies all egress except to pods with label `app: postgres` on port 5432 and DNS on UDP/53. |
 | **Problem Solved** | East-west microsegmentation; default-deny prevents lateral movement between namespaces |
 | **Usage** | Default deny all ingress/egress → explicit allow rules for required flows (e.g., frontend → backend on port 8080) |
 | **Scenarios** | Zero Trust pod isolation (02-zero-trust-design), PCI CDE segmentation (08-compliance) |
@@ -712,7 +712,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Framework for securing the entire software supply chain by signing each step and verifying the chain |
+| **What** | Framework for securing the entire software supply chain by defining a Layout (expected steps) and collecting signed Links (evidence of each step) from authorized Functionaries (actors/CI systems).<br/><br/>The Layout specifies which steps must occur, in what order, by which functionary, and what artifacts each step consumes/produces. After all steps complete, the final verification checks the full chain: every expected step was performed, by the authorized functionary, with cryptographic signatures. This prevents skipped steps (e.g., bypassing code review) and unauthorized modifications. Example: a Layout requires steps [checkout, build, test, scan, sign] performed by functionaries [github-actions, trivy-ci, cosign-ci]; verification fails if the scan step is missing or performed by an unauthorized identity. |
 | **Problem Solved** | End-to-end supply chain integrity from source checkout to deployment |
 | **Usage** | Each CI step produces a signed link; final verification checks that all expected steps were performed by authorized actors |
 | **Scenarios** | Supply chain attestation (05-supply-chain), SLSA L3+ evidence |
@@ -734,7 +734,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Automated dependency update tools creating PRs when new versions or security patches are available |
+| **What** | Automated dependency update tools that monitor project manifests (package.json, go.mod, requirements.txt, Dockerfile FROM) and create pull requests when new versions or security patches are published.<br/><br/>Dependabot (GitHub-native) scans daily and auto-creates standalone PRs per dependency. Renovate (open-source, more configurable) supports grouping updates (e.g., all patch updates in one PR), automerge for patch/minor versions with passing CI, scheduled merge windows, and custom managers for non-standard package files. Renovate's noise reduction features (group, schedule, automerge) are critical for large monorepos. Example: Renovate groups all `@aws-sdk/*` package updates into a single weekly PR, automerges if CI passes, and assigns the platform team for major version bumps requiring review. |
 | **Problem Solved** | Prevents dependency rot; ensures security patches are applied before exploitation |
 | **Usage** | Configure in `.github/dependabot.yml`; auto-merge patch updates; require review for major versions |
 | **Scenarios** | Dependency management (05-supply-chain), SOC 2 patch management evidence |
@@ -798,7 +798,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Kubernetes CSI driver mounting secrets from external providers (Vault, AWS SM, Azure KV) directly as volumes |
+| **What** | Kubernetes CSI (Container Storage Interface) driver that mounts secrets from external providers (Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager) directly as tmpfs volumes in pods.<br/><br/>Secrets are fetched from the provider at pod start and mounted as files — bypassing the K8s Secret object entirely, so secrets never transit etcd. Supports optional rotation (re-fetching secrets periodically) and optional sync-as-K8s-Secret for workloads that require environment variables instead of files. Each provider has a dedicated SecretProviderClass driver plugin. Example: a `SecretProviderClass` references Azure Key Vault, specifying secret names `db-password` and `api-key`; the pod mounts them as files at `/mnt/secrets/db-password` and `/mnt/secrets/api-key`, refreshed every 2 minutes. |
 | **Problem Solved** | Bypasses K8s Secret object entirely; secrets never stored in etcd; direct provider-to-pod delivery |
 | **Usage** | `SecretProviderClass` CRD specifies provider + secret paths; pod mounts via CSI volume |
 | **Scenarios** | Direct secret mounting (06-secrets-mgmt), high-security secret delivery |
@@ -853,7 +853,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Azure NSG-level traffic logs capturing 5-tuple flows, byte counts, and rule evaluation results |
+| **What** | Azure-native network traffic logs captured at the NSG level, recording 5-tuple flow information (src/dst IP, src/dst port, protocol), byte counts, packet counts, and the NSG rule that matched each flow.<br/><br/>Version 2 format adds additional fields: flow state tracking (begin/continuing/end), throughput in bytes/packets per interval, and encryption status. Logs are stored in Storage Accounts with configurable retention (1-365 days). Traffic Analytics (built on Log Analytics workspace) provides geo-visualization, traffic hotspot detection, and anomaly identification. Example: during a lateral movement investigation, Traffic Analytics reveals a compromised VM sending 50GB to an internal database server over port 1433 at 3 AM — flagged as anomalous by the baseline model. |
 | **Problem Solved** | Azure network forensics; Traffic Analytics provides visualization and anomaly detection |
 | **Usage** | Enable on NSG → Storage Account → Traffic Analytics workspace → Sentinel integration |
 | **Scenarios** | Azure incident investigation (03-azure-security), VM quarantine validation |
@@ -930,7 +930,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | CNCF GitOps toolkit with Kustomization and HelmRelease controllers for progressive delivery |
+| **What** | CNCF-graduated GitOps toolkit providing a set of composable controllers (Source Controller, Kustomize Controller, Helm Controller, Notification Controller, Image Automation Controller) for progressive delivery.<br/><br/>Unlike ArgoCD's single-binary approach, Flux's modular architecture lets you adopt only the controllers you need. The Notification Controller dispatches alerts to Slack/Teams/PagerDuty on reconciliation failures. Image Automation Controller watches container registries for new tags matching a policy (e.g., semver `>=1.0.0 <2.0.0`) and auto-commits updated image references to Git. Supports multi-tenancy via RBAC-scoped `Kustomization` resources per team namespace. Example: Flux watches a Helm chart in an OCI registry, auto-updates the Git manifest when a new patch version is published, then reconciles the HelmRelease in the cluster — fully automated CD without any CI pipeline trigger. |
 | **Problem Solved** | Pull-based deployment; Helm chart reconciliation; image automation for CD pipelines |
 | **Usage** | `GitRepository` + `Kustomization` CRDs; automated image updates via ImagePolicy |
 | **Scenarios** | GitOps alternative to ArgoCD (05-supply-chain), Helm-based deployments |
@@ -1014,7 +1014,7 @@
 
 | Attribute | Detail |
 |---|---|
-| **What** | Resilience pattern with three states: Closed (normal), Open (fail-fast), Half-Open (probe) |
+| **What** | Resilience pattern for distributed systems with three states: Closed (requests flow normally, failures are counted), Open (requests are immediately rejected/fail-fast for a cooldown period), and Half-Open (limited probe requests test if the backend has recovered).<br/><br/>In Envoy/Istio, this is implemented via outlier detection: if an upstream host returns 5 consecutive 5xx errors, it is ejected from the load balancing pool for 30 seconds (configurable). Istio's `DestinationRule` supports both consecutive errors and success-rate-based ejection. Unlike client-library approaches (Hystrix — now deprecated), service mesh circuit breaking is transparent to application code and applies uniformly across all services. Example: an `DestinationRule` ejects any backend pod returning >10% errors over a 10-second window for 60 seconds, with max 30% of pods ejectable to prevent full service unavailability. |
 | **Problem Solved** | Prevents cascade failures; stops requests to failing backends; enables graceful degradation |
 | **Usage** | Envoy circuit breaker: 5 consecutive 5xx → open for 30s → half-open probe → reset on success |
 | **Scenarios** | API gateway resilience (06-api-gateway), HA networking (05-high-availability) |
