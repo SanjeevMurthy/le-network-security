@@ -276,3 +276,19 @@ Now:
 4. Explain why this structure is optimal
 
 Then STOP and wait for approval.
+
+---
+
+@beautifulMention @beautifulMention @beautifulMention Read all the secnarios and architecture discussed in the markdown files within all the above mentioned folders and ultrathink and understand the tools/tech/services used for each of the action from all the scenarios from all the markdown files within this folder.
+
+once you have all the clear understanding, need a cheetsheet-markdown to be created under @beautifulMention based on the below instructions:
+
+1. Get all the tools / technology / services that are discussed in all the scenarios and examples from all the markdown files processed.
+2. Group them based on the umberella they belong to
+3. For each of the identified element - Explain in brief what it is ? What problem it solves ? how is it used ? which are the scenarios/architecture/examples where it has been used ?
+4. This document will be like a cheetsheet / guide to all the tools and tech along with it explanations.
+5. Along with the above instructions, add any other detail which you feel it is necessary.
+6. Design and structure the document in such a way that it is userfriendly and eady to follow.
+
+Ultrathink and Create the final markdown document
+ask me any questions if you have before we proceed
